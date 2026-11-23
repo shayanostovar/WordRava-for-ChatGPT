@@ -5,8 +5,16 @@ import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
 const center = process.env.WORDRAVA_CENTER_URL;
-if (!center || !center.startsWith('https://')) {
-  throw new Error('WORDRAVA_CENTER_URL must be an HTTPS URL.');
+if (!center) throw new Error('WORDRAVA_CENTER_URL is required.');
+const parsedCenterUrl = new URL(center);
+const internalAllowed = process.env.WORDRAVA_ALLOW_INTERNAL_HTTP === 'true' &&
+  parsedCenterUrl.protocol === 'http:' && parsedCenterUrl.hostname === 'center-api' &&
+  (parsedCenterUrl.port === '' || parsedCenterUrl.port === '8080');
+if (parsedCenterUrl.protocol !== 'https:' && !internalAllowed) {
+  throw new Error('Center requires HTTPS, except the explicitly enabled center-api Docker network address.');
+}
+if (parsedCenterUrl.username || parsedCenterUrl.password || parsedCenterUrl.search || parsedCenterUrl.hash) {
+  throw new Error('Center URL must not contain credentials, query, or fragment.');
 }
 const base = center.replace(/\/$/, '');
 const app = express();
