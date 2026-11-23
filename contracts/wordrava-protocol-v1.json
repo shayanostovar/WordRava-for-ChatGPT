@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "protocol": "wordrava",
+  "minimumConnectorProtocol": "1.0",
+  "pairing": {
+    "issuer": "wordpress-connector",
+    "ttlSeconds": 600,
+    "singleUse": true,
+    "claimEndpoint": "POST /api/v1/pairings/claim",
+    "proof": "server-side-verification-required"
+  },
+  "operation": {
+    "endpoint": "POST /api/v1/sites/{siteId}/operations",
+    "idempotencyHeader": "Idempotency-Key",
+    "authorization": "center-per-operation",
+    "quota": "center-atomic-reservation",
+    "chargeOn": "successful-operation",
+    "blockedSite": "deny",
+    "blockedUser": "deny"
+  },
+  "usage": {
+    "timezone": "UTC",
+    "reset": "00:00",
+    "freeDailyLimitDefault": 200,
+    "limitSource": "center-plan",
+    "purchasedCredits": "separate-ledger"
+  },
+  "compatibility": {
+    "additiveChanges": "no-plugin-update",
+    "breakingChanges": "new-protocol-version",
+    "securityFixes": "plugin-update-may-be-required"
+  }
+}
