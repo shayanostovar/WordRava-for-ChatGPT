@@ -68,4 +68,4 @@ jobs:
           ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
             -i ~/.ssh/wordrava_deploy -p "$DEPLOY_PORT" \
             "$DEPLOY_USER@$DEPLOY_HOST" \
-            bash /opt/wordrava/source/deploy/deploy.sh mcp "$GITHUB_SHA"
+            wordrava-deploy mcp "$GITHUB_SHA"
