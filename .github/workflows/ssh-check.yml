@@ -1,0 +1,34 @@
+name: WordRava SSH Connectivity Check
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check-ssh:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Verify restricted SSH access, without deploying
+        env:
+          DEPLOY_HOST: ${{ secrets.WORDRAVA_SSH_HOST }}
+          DEPLOY_USER: ${{ secrets.WORDRAVA_SSH_USER }}
+          DEPLOY_KEY: ${{ secrets.WORDRAVA_SSH_PRIVATE_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.WORDRAVA_SSH_KNOWN_HOSTS }}
+          DEPLOY_PORT: ${{ vars.WORDRAVA_SSH_PORT || '22' }}
+        run: |
+          set -euo pipefail
+          : "${DEPLOY_HOST:?Missing SSH host}"
+          : "${DEPLOY_USER:?Missing SSH username}"
+          : "${DEPLOY_KEY:?Missing private key secret}"
+          : "${DEPLOY_KNOWN_HOSTS:?Missing pinned host key}"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/wordrava_deploy
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/wordrava_deploy ~/.ssh/known_hosts
+          SSH_ARGS=(-o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=10 -i ~/.ssh/wordrava_deploy -p "$DEPLOY_PORT")
+          ssh "${SSH_ARGS[@]}" "$DEPLOY_USER@$DEPLOY_HOST" wordrava-status
+          if ssh "${SSH_ARGS[@]}" "$DEPLOY_USER@$DEPLOY_HOST" whoami; then
+            echo "ERROR: Key unexpectedly allowed unrestricted shell access" >&2
+            exit 1
+          fi
+          echo "Restricted SSH connectivity verified; no deployment was performed."
