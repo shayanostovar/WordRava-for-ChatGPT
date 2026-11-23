@@ -1,0 +1,71 @@
+name: Publish and Deploy WordRava MCP
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'tsconfig.json'
+      - 'Dockerfile'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+concurrency:
+  group: mcp-production-pipeline
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Normalize registry owner
+        run: echo "OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ env.OWNER }}/wordrava-for-chatgpt:main
+            ghcr.io/${{ env.OWNER }}/wordrava-for-chatgpt:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: publish
+    if: ${{ vars.WORDRAVA_DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-24.04
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - name: Deploy approved image SHA to Ubuntu
+        env:
+          DEPLOY_HOST: ${{ secrets.WORDRAVA_SSH_HOST }}
+          DEPLOY_USER: ${{ secrets.WORDRAVA_SSH_USER }}
+          DEPLOY_KEY: ${{ secrets.WORDRAVA_SSH_PRIVATE_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.WORDRAVA_SSH_KNOWN_HOSTS }}
+          DEPLOY_PORT: ${{ vars.WORDRAVA_SSH_PORT || '22' }}
+        run: |
+          set -euo pipefail
+          : "${DEPLOY_HOST:?Missing WORDRAVA_SSH_HOST}"
+          : "${DEPLOY_USER:?Missing WORDRAVA_SSH_USER}"
+          : "${DEPLOY_KEY:?Missing WORDRAVA_SSH_PRIVATE_KEY}"
+          : "${DEPLOY_KNOWN_HOSTS:?Missing WORDRAVA_SSH_KNOWN_HOSTS}"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/wordrava_deploy
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/wordrava_deploy ~/.ssh/known_hosts
+          ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -i ~/.ssh/wordrava_deploy -p "$DEPLOY_PORT" \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            bash /opt/wordrava/source/deploy/deploy.sh mcp "$GITHUB_SHA"
