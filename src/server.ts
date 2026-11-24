@@ -198,6 +198,24 @@ function createServer(token: string, session: Session): McpServer {
       return bad('WordRava rejected the request; verify your site ownership, scope and operation arguments.');
     }
   };
+  server.registerTool('wordrava_discover_site', {
+    description: 'Discover this WordPress installation before planning any changes: installed plugin slugs and versions, active theme, custom post types, taxonomies, REST namespaces, installed adapters and available permission levels. Discovery does not imply automatic support for unknown plugins.',
+    inputSchema: { site_id: z.string().uuid() }, annotations: externalReadAnnotations, _meta: oauthContentRead,
+  }, async ({ site_id }) => submit(site_id, { kind: 'discover_capabilities', contentType: 'post' }, false));
+  server.registerTool('wordrava_list_media', {
+    description: 'List the latest 50 media library attachments, including IDs, MIME types and URLs. Read-only.',
+    inputSchema: { site_id: z.string().uuid() }, annotations: externalReadAnnotations, _meta: oauthContentRead,
+  }, async ({ site_id }) => submit(site_id, { kind: 'list_media', contentType: 'post' }, false));
+  server.registerTool('wordrava_publish_draft', {
+    description: 'Publish an existing draft after the user explicitly confirms publication. Requires WordPress administrator publication opt-in and unchanged modified_gmt. Does not edit content or publish anything else. Publishing is irreversible to public readers.',
+    inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']), item_id: z.number().int().positive(),
+      expected_modified_gmt: z.string().min(10).max(40),
+      user_confirmed: z.literal(true).describe('True only when the user has explicitly approved publishing this exact draft.'),
+      request_id: z.string().uuid() },
+    annotations: { ...writeAnnotations, destructiveHint: true }, _meta: oauthContentWrite,
+  }, async ({ site_id, content_type, item_id, expected_modified_gmt, user_confirmed, request_id }) =>
+    submit(site_id, { kind: 'publish_draft', contentType: content_type, itemId: item_id,
+      expectedModifiedGmt: expected_modified_gmt, confirmChanges: user_confirmed }, true, request_id));
   server.registerTool('wordrava_site_overview', {
     description: 'Queue a read-only WordPress site overview (site name, WordPress version and active theme). Returns an asynchronous job ID.',
     inputSchema: { site_id: z.string().uuid() }, annotations: externalReadAnnotations, _meta: oauthContentRead,
