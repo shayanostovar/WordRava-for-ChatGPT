@@ -202,6 +202,15 @@ function createServer(token: string, session: Session): McpServer {
     description: 'Discover this WordPress installation before planning any changes: installed plugin slugs and versions, active theme, custom post types, taxonomies, REST namespaces, installed adapters and available permission levels. Discovery does not imply automatic support for unknown plugins.',
     inputSchema: { site_id: z.string().uuid() }, annotations: externalReadAnnotations, _meta: oauthContentRead,
   }, async ({ site_id }) => submit(site_id, { kind: 'discover_capabilities', contentType: 'post' }, false));
+  server.registerTool('wordrava_read_rest_route', {
+    description: 'Read data from a discovered, registered WordPress plugin REST API route using an internal GET request with the paired WordPress user. Native REST permission callbacks are enforced; credential routes are denied and response secrets redacted. Read-only; inspect REST namespaces with wordrava_discover_site.',
+    inputSchema: { site_id: z.string().uuid(),
+      route: z.string().regex(/^\/[a-z0-9_-]+\/v[0-9]+(?:\/[a-zA-Z0-9_./-]*)?$/).max(190),
+      query_json: z.string().max(10000).default('{}') },
+    annotations: externalReadAnnotations, _meta: oauthContentRead,
+  }, async ({ site_id, route, query_json }) =>
+    submit(site_id, { kind: 'rest_read', contentType: 'post', title: route,
+      content: query_json }, false));
   server.registerTool('wordrava_run_read_ability', {
     description: 'Run only a WordPress-registered Ability that explicitly declares readonly=true and destructive=false, following its input schema and WordPress permission callback. Inspect with wordrava_discover_site before using. Sensitive response fields are redacted.',
     inputSchema: { site_id: z.string().uuid(),
