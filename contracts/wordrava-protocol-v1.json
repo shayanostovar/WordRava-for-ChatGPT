@@ -108,5 +108,19 @@
     "additiveChanges": "wire protocol 1.0 retained",
     "breakingChanges": "new-protocol-version",
     "securityFixes": "plugin-update-may-be-required"
+  },
+  "quickPairing": {
+    "mode": "wordpress-first",
+    "version": 1,
+    "featureFlag": "WORDRAVA_QUICK_PAIRING_ENABLED",
+    "passwordlessOAuthFlag": "WORDRAVA_PASSWORDLESS_OAUTH_ENABLED",
+    "generateCode": "WordPress admin-only: 256-bit random hex, 600 seconds",
+    "start": "POST /api/v1/pairing/start (OAuth authenticated)",
+    "confirm": "POST /api/v1/pairing/confirm (WP outbound, exact code+request ID+URL, one-use)",
+    "status": "GET /api/v1/pairing/status/{requestId} (OAuth authenticated)",
+    "identity": "Provisional OAuth principal activates only after WordPress administrator confirmation",
+    "accountPlan": "Free default; Admin account plan overrides default; explicit per-site plan overrides account plan",
+    "limits": "No automatic takeover of an already paired site; recovery requires a separately verified account-linking workflow",
+    "writes": "Disabled until explicit administrator and user approvals"
   }
 }
