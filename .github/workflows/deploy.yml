@@ -47,7 +47,9 @@ jobs:
 
   deploy:
     needs: publish
-    if: ${{ vars.WORDRAVA_DEPLOY_ENABLED == 'true' }}
+    # Auto-deploy every verified immutable main image. Requires the existing
+    # restricted SSH Actions secrets and production environment to be configured.
+    if: ${{ github.ref == 'refs/heads/main' && github.repository == 'shayanostovar/WordRava-for-ChatGPT' }}
     runs-on: ubuntu-24.04
     environment: production
     permissions:
