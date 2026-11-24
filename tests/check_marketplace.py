@@ -18,6 +18,9 @@ assert cfg["extensions"]["com.openai"]["auth"]["client"]["mode"] == "provided"
 assert cfg["extensions"]["com.openai"]["auth"]["client"]["tokenEndpointAuthMethod"] == "none"
 assert ".well-known/oauth-protected-resource" in server
 assert "/api/v1/oauth/session" in server
+assert "securitySchemes" in server and "content:write" in server
+assert "mcp/www_authenticate" in server
+assert "openai/profile" in server and "structuredContent" in server
 assert "registerTool" in server
 for tool in ["list_sites", "my_account", "site_usage", "capabilities",
              "site_overview", "list_plugins", "list_menus", "list_content", "get_content",
