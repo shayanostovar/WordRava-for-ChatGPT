@@ -202,6 +202,15 @@ function createServer(token: string, session: Session): McpServer {
     description: 'Discover this WordPress installation before planning any changes: installed plugin slugs and versions, active theme, custom post types, taxonomies, REST namespaces, installed adapters and available permission levels. Discovery does not imply automatic support for unknown plugins.',
     inputSchema: { site_id: z.string().uuid() }, annotations: externalReadAnnotations, _meta: oauthContentRead,
   }, async ({ site_id }) => submit(site_id, { kind: 'discover_capabilities', contentType: 'post' }, false));
+  server.registerTool('wordrava_run_read_ability', {
+    description: 'Run only a WordPress-registered Ability that explicitly declares readonly=true and destructive=false, following its input schema and WordPress permission callback. Inspect with wordrava_discover_site before using. Sensitive response fields are redacted.',
+    inputSchema: { site_id: z.string().uuid(),
+      ability_name: z.string().regex(/^[a-z0-9_-]+\/[a-z0-9_-]+$/).max(120),
+      input_json: z.string().max(20000).default('{}') },
+    annotations: externalReadAnnotations, _meta: oauthContentRead,
+  }, async ({ site_id, ability_name, input_json }) =>
+    submit(site_id, { kind: 'run_read_ability', contentType: 'post', title: ability_name,
+      content: input_json }, false));
   server.registerTool('wordrava_list_media', {
     description: 'List the latest 50 media library attachments, including IDs, MIME types and URLs. Read-only.',
     inputSchema: { site_id: z.string().uuid() }, annotations: externalReadAnnotations, _meta: oauthContentRead,
