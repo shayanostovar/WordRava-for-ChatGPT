@@ -8,13 +8,13 @@ root = pathlib.Path(__file__).resolve().parents[1]
 source = root / "marketplace"
 manifest = json.loads((source / "plugin.json").read_text())
 auth = json.loads((source / "mcp.json").read_text())
-assert manifest["name"] == "wordrava" and manifest["version"] == "0.2.0"
+assert manifest["name"] == "wordrava" and manifest["version"] == "0.3.0"
 assert auth["mcpServers"]["wordrava"]["type"] == "streamable-http"
 assert auth["mcpServers"]["wordrava"]["url"] == "https://wordrava.shayanostovar.com/mcp"
 review = manifest["extensions"]["com.openai"]["review"]["test_cases"]
-assert len(review["positive"]) == 5 and len(review["negative"]) == 3
+assert len(review["positive"]) == 6 and len(review["negative"]) == 3
 paths = ["plugin.json", "mcp.json", "assets/logo.svg", "assets/icon.svg"]
-dest = root / "dist" / "wordrava-chatgpt-plugin-0.2.0-review-draft.zip"
+dest = root / "dist" / "wordrava-chatgpt-plugin-0.3.0-review-draft.zip"
 dest.parent.mkdir(exist_ok=True)
 with zipfile.ZipFile(dest, "w", zipfile.ZIP_DEFLATED) as z:
     for file in paths:
