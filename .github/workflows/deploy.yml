@@ -2,15 +2,8 @@ name: Publish and Deploy WordRava MCP
 on:
   push:
     branches: [main]
-    paths:
-      - 'src/**'
-      - 'marketplace/**'
-      - 'scripts/**'
-      - 'tests/**'
-      - 'package.json'
-      - 'tsconfig.json'
-      - 'Dockerfile'
-      - '.github/workflows/deploy.yml'
+    # Center sync-mcp.sh resolves the exact latest main SHA. Every main commit,
+    # including documentation-only commits, must therefore publish that SHA image.
   workflow_dispatch:
 permissions:
   contents: read
