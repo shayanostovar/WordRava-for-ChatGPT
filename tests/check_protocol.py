@@ -1,47 +1,29 @@
 #!/usr/bin/env python3
-"""Static compatibility guard for the shared WordRava private-beta v1 contract.
-
-This does not replace integration, penetration, or WordPress runtime tests.
-"""
+"""Static contract guard. Does not replace live OAuth/WordPress security tests."""
 import json
 from pathlib import Path
-
 root = Path(__file__).resolve().parents[1]
-contract = json.loads((root / "contracts/wordrava-protocol-v1.json").read_text(encoding="utf-8"))
-assert contract["schemaVersion"] == "1.1"
-assert contract["protocolVersion"] == "1.0"
-assert contract["pairing"]["claimEndpoint"] == "POST /api/v1/connectors/claim"
-assert contract["usage"]["limitSource"] == "center-plan"
-assert contract["operation"]["status"] == "planned-not-exposed"
-assert contract["capabilities"]["remoteWriteEnabled"] is False
-assert contract["capabilities"]["publicOAuthEnabled"] is False
+c = json.loads((root / "contracts/wordrava-protocol-v1.json").read_text(encoding="utf-8"))
+assert c["schemaVersion"] == "1.2" and c["protocolVersion"] == "1.0"
+assert c["centerVersion"] == "0.2.0"
+assert c["pairing"]["claimEndpoint"] == "POST /api/v1/connectors/claim"
+assert c["oauth"]["token"] == "POST /oauth/token"
+assert "content:write" in c["oauth"]["scopes"]
+assert c["capabilities"]["enabledByDefault"] is False
+assert c["operation"]["status"] == "implemented-feature-flagged-beta"
+assert c["operation"]["endpoint"] == "POST /api/v1/sites/{siteId}/jobs"
+assert c["operation"]["connectorPoll"] == "POST /api/v1/connector-jobs/poll"
+assert c["operation"]["types"]["write"] == ["create_draft", "update_draft"]
+assert c["usage"]["limitSource"] == "center-plan"
 
-def contains(file: str, *required: str) -> None:
-    body = (root / file).read_text(encoding="utf-8")
-    for word in required:
-        assert word in body, f"{file}: missing {word!r}"
-
-if (root / "src/WordRavaCenter/Program.cs").exists():
-    contains("src/WordRavaCenter/Program.cs",
-        'app.MapPost("/api/v1/connectors/claim"',
-        'app.MapGet("/api/v1/capabilities"',
-        '"0.1.1"', "request.ProtocolVersion", "s.IsBlocked",
-        's.OwnerId == owner && !s.IsBlocked')
-    contains("web/admin/src/main.tsx", "s.isBlocked", "t.blocked")
-elif (root / "wordrava-connector.php").exists():
-    contains("wordrava-connector.php",
-        "Version: 0.1.1",
-        "WORDRAVA_CONNECTOR_PROTOCOL_VERSION",
-        "'protocolVersion' => WORDRAVA_CONNECTOR_PROTOCOL_VERSION",
-        "'api/v1/connectors/claim'",
-        "'remote_write' => false")
-elif (root / "src/server.ts").exists():
-    contains("src/server.ts",
-        "version: '0.2.0'",
-        "wordrava_capabilities", "wordrava_list_content", "wordrava_create_draft", "wordrava_job_status",
-        "'/api/v1/capabilities'",
-        "current UTC-day quota of a WordRava site",
-        "error.status === 403")
-else:
-    raise AssertionError("Unrecognized WordRava repository layout")
-print("WordRava protocol 1.0 / contract schema 1.1 static compatibility check passed.")
+def contains(path, *values):
+    body = (root / path).read_text(encoding="utf-8")
+    for word in values:
+        assert word in body, f"{path}: missing {word!r}"
+contains("src/server.ts",
+    "version: '0.2.0'", "wordrava_capabilities",
+    "wordrava_list_content", "wordrava_create_draft", "wordrava_job_status",
+    "securitySchemes", "content:write", "mcp/www_authenticate",
+    "openai/profile", "Idempotency-Key")
+contains("marketplace/mcp.json", "https://wordrava.shayanostovar.com/mcp")
+print("ChatGPT MCP 0.2.0 / protocol 1.0 OAuth and job contract passed.")
