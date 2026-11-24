@@ -1,6 +1,6 @@
 # WordRava for ChatGPT: private beta
 
-This server implements a **limited stateless MCP endpoint** with three read-only tools: `wordrava_list_sites`, `wordrava_my_account`, `wordrava_site_usage`. They delegate authorization to WordRavaCenter.
+This server implements a **limited stateless MCP endpoint** with four read-only tools: `wordrava_list_sites`, `wordrava_my_account`, `wordrava_site_usage`, `wordrava_capabilities`. They delegate authorization to WordRavaCenter.
 
 ## Run
 
@@ -17,10 +17,11 @@ This server implements a **limited stateless MCP endpoint** with three read-only
 Center:
 - `GET /api/v1/me`
 - `GET /api/v1/sites`
-- `GET /api/v1/usage/{site_id}`
+- `GET /api/v1/usage/{site_id}` (plan-derived limits; blocked site is unavailable)
+- `GET /api/v1/capabilities` (protocol 1.0, read-only beta capability declaration)
 
 No arbitrary URLs, administrative commands, SQL, shell execution or write tools are exposed. Site authorization is enforced in Center on every request.
 
 ## Versions
 
-MCP 0.1.0 is independently versioned from Center API 0.1.0 and WordPress Connector 0.1.0.
+MCP 0.1.1 is independently versioned from Center API 0.1.1 and WordPress Connector 0.1.1. The wire protocol remains 1.0, with an additive schema 1.1 contract. JWTs are revalidated by Center for each MCP call; blocked users are rejected and blocked sites cannot retrieve usage.
