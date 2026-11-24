@@ -33,13 +33,31 @@ app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', ver
 const metadata = {
   resource,
   authorization_servers: [publicOrigin],
-  scopes_supported: ['sites:read', 'content:read'],
+  scopes_supported: ['sites:read', 'content:read', 'content:write'],
 };
 app.get('/.well-known/oauth-protected-resource', (_req, res) => res.json(metadata));
 app.get('/.well-known/oauth-protected-resource/mcp', (_req, res) => res.json(metadata));
 
 class CenterHttpError extends Error {
   constructor(public readonly status: number) { super(`Center returned HTTP ${status}`); }
+}
+async function centerPost<T>(
+  path: string, token: string, payload: Record<string, unknown>, idempotencyKey?: string,
+): Promise<T> {
+  const response = await fetch(base + path, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
+    },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(12000),
+    redirect: 'error',
+  });
+  if (!response.ok) throw new CenterHttpError(response.status);
+  return await response.json() as T;
 }
 async function centerGet<T>(path: string, token: string): Promise<T> {
   const response = await fetch(base + path, {
