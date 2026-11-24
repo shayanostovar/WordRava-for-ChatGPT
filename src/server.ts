@@ -74,7 +74,7 @@ function bearer(req: Request): string | null {
 }
 function challenge(res: Response, status = 401, error = 'invalid_token') {
   res.setHeader('WWW-Authenticate', `Bearer resource_metadata="${protectedResourceMetadata}", scope="sites:read content:read", error="${error}", error_description="Connect or reauthorize WordRava"`);
-  return res.status(status).json({ error, message: 'Connect your WordRava account using OAuth 2.1.' });
+  return res.status(status).json({ error, message: 'Authorize the WordRava connection through OAuth 2.1.' });
 }
 type Session = { owner_id: string, scope: string, token_type: 'oauth' };
 async function validateSession(token: string): Promise<Session> {
@@ -134,6 +134,34 @@ function createServer(token: string, session: Session): McpServer {
         name: account.email ?? undefined };
       return { ...good(profile), structuredContent: profile };
     } catch { return bad('Unable to retrieve your WordRava account.'); }
+  });
+  server.registerTool('wordrava_connect_wordpress', {
+    description: 'Start a secure WordPress-first pairing. Ask the user to open WordRava Quick Connect in WordPress administration, generate a code, and paste the site URL and 64-character code. Returns an admin-only confirmation link. Never ask for WordPress credentials. The 10-minute code is single-use and must not be logged.',
+    inputSchema: {
+      site_url: z.string().url().refine(v => v.startsWith('https://')),
+      pairing_code: z.string().regex(/^[a-f0-9]{64}$/),
+    },
+    annotations: { ...writeAnnotations, destructiveHint: false },
+    _meta: oauthSites,
+  }, async ({ site_url, pairing_code }) => {
+    try {
+      const result = await centerPost<{request_id:string,confirmation_url:string,expires_in:number,status:string}>(
+        '/api/v1/pairing/start', token, { siteUrl: site_url, code: pairing_code },
+      );
+      return good({ ...result, next_step: 'Open confirmation_url while logged into your WordPress admin and explicitly approve. Then call wordrava_pairing_status with request_id.' });
+    } catch (error) {
+      if (error instanceof CenterHttpError && error.status === 503) return bad('Quick pairing is not enabled on this Center yet.');
+      if (error instanceof CenterHttpError && error.status === 409) return bad('This pairing code is already in use. Generate a new code in WordPress.');
+      return bad('Unable to initiate pairing. Verify the HTTPS URL and regenerate your WordPress code.');
+    }
+  });
+  server.registerTool('wordrava_pairing_status', {
+    description: 'Check whether a WordPress administrator confirmed a pending one-time WordRava pairing. Does not reveal secrets.',
+    inputSchema: { request_id: z.string().uuid() },
+    annotations: readAnnotations, _meta: oauthSites,
+  }, async ({ request_id }) => {
+    try { return good(await centerGet<unknown>(`/api/v1/pairing/status/${request_id}`, token)); }
+    catch { return bad('Pairing request is expired, unavailable or belongs to a different connection.'); }
   });
   server.registerTool('wordrava_site_usage', {
     description: 'Read the current UTC-day quota of a WordRava site (limit set by its plan). A blocked site is unavailable.',
