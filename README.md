@@ -2,7 +2,7 @@
 
 WordRava Plugin v0.2.0 connects WordPress sites to ChatGPT through your own WordRava Center using an OAuth 2.1 authorization-code + PKCE flow and a remote Streamable HTTP MCP server.
 
-The plugin offers tools to view account identity and sites, plan quotas, site overview, plugins, menus, posts and pages. **Draft-only** create/update tools use an asynchronous, outbound-only WordPress Connector job queue and require WordPress administrator opt-in and explicit user approval. No publishing, deleting or arbitrary code execution.
+The plugin offers tools to view account identity and sites, plan quotas, site overview, plugins, menus, posts and pages. Initial OAuth linking requests **read-only scopes**; draft-edit permission is requested only when the user elects a write action, and Center has its own separate write kill switch. **Draft-only** create/update tools use an asynchronous, outbound-only WordPress Connector job queue and require WordPress administrator opt-in and explicit user approval. No publishing, deleting or arbitrary code execution.
 
 ## Current release state
 

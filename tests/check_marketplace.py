@@ -16,6 +16,7 @@ assert cfg["url"].endswith("/mcp")
 assert cfg["extensions"]["com.openai"]["auth"]["type"] == "oauth"
 assert cfg["extensions"]["com.openai"]["auth"]["client"]["mode"] == "provided"
 assert cfg["extensions"]["com.openai"]["auth"]["client"]["tokenEndpointAuthMethod"] == "none"
+assert cfg["extensions"]["com.openai"]["auth"]["baseScopes"] == ["sites:read", "content:read"], "Do not request WordPress write access on initial connection"
 assert ".well-known/oauth-protected-resource" in server
 assert "/api/v1/oauth/session" in server
 assert "securitySchemes" in server and "content:write" in server

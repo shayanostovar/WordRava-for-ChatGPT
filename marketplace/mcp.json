@@ -15,7 +15,10 @@
             },
             "authorizationServerBase": "https://wordrava.shayanostovar.com",
             "resource": "https://wordrava.shayanostovar.com/mcp",
-            "baseScopes": ["sites:read", "content:read", "content:write"]
+            "baseScopes": [
+              "sites:read",
+              "content:read"
+            ]
           }
         }
       }
