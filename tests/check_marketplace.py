@@ -21,6 +21,11 @@ assert "/api/v1/oauth/session" in server
 assert "securitySchemes" in server and "content:write" in server
 assert "mcp/www_authenticate" in server
 assert "openai/profile" in server and "structuredContent" in server
+assert "const updateAnnotations = { ...writeAnnotations, destructiveHint: true };" in server
+update_tool = server.split("server.registerTool('wordrava_update_draft'", 1)[1].split("server.registerTool('wordrava_job_status'", 1)[0]
+assert "annotations: updateAnnotations" in update_tool, "Draft overwrite must carry destructive hint"
+create_tool = server.split("server.registerTool('wordrava_create_draft'", 1)[1].split("server.registerTool('wordrava_update_draft'", 1)[0]
+assert "annotations: writeAnnotations" in create_tool
 assert "registerTool" in server
 for tool in ["list_sites", "my_account", "site_usage", "capabilities",
              "site_overview", "list_plugins", "list_menus", "list_content", "get_content",
