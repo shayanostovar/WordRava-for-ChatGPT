@@ -28,3 +28,21 @@ WordRava 1.0.2 — **By ShayanOstovar**: https://github.com/shayanostovar. The M
 
 
 WordRava 1.0.2 retains OAuth least-privilege scopes. WordPress administrators can grant or revoke draft-write permission without re-pairing, but ChatGPT needs content:write OAuth consent for writes.
+
+
+## WordRava 1.0.2 — ChatGPT-only feature set
+Tools: `wordrava_discover_site` inventories installed plugins, active theme,
+registered WordPress Abilities with input schemas, REST namespaces, post types
+and taxonomies before creating an operation plan. `wordrava_list_media` reads
+the Media Library, `wordrava_import_image` imports an approved public HTTPS
+image with WordPress-safe request validation and a strict 8 MiB/MIME limit,
+and `wordrava_publish_draft` publishes a revision-matched draft only after
+the WordPress administrator enables the separate Publish permission and
+explicitly approves the operation.
+
+**Not implemented:** Arbitrary plugin Abilities execution, theme editing,
+Elementor/Yoast native saves, multipart image bytes streamed from ChatGPT,
+bulk Word/PDF-to-website composition, generic SQL access. Discovery does not
+grant arbitrary capabilities; future support requires validation and tests.
+WordRava currently uses outbound HTTPS WordPress polling and does not require
+WordPress to preserve an inbound `Authorization` header.
