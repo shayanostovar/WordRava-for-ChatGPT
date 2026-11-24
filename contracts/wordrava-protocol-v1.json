@@ -122,5 +122,12 @@
     "accountPlan": "Free default; Admin account plan overrides default; explicit per-site plan overrides account plan",
     "limits": "No automatic takeover of an already paired site; recovery requires a separately verified account-linking workflow",
     "writes": "Disabled until explicit administrator and user approvals"
+  },
+  "releaseComponents": {
+    "center": "0.2.x auto-patch",
+    "wordpressConnector": "0.3.0",
+    "chatgptMcp": "0.3.0",
+    "protocol": "1.0",
+    "writes": "feature-gated and disabled until explicit approval"
   }
 }
