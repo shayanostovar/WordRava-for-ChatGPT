@@ -16,3 +16,7 @@ Code has been prepared for an interoperable private beta; **public distribution 
 - [WordPress Connector](https://github.com/shayanostovar/WordRava-WordPress-Connector)
 
 Run `npm install && npm run build` to typecheck. Run `python3 scripts/build_plugin.py` to assemble a ZIP with both manifests at its root. Keep credentials and review accounts out of source code and ZIPs.
+
+## Passwordless WordPress-first onboarding
+
+Install WordRava on WordPress, open WordRava > Quick Connect as an administrator, generate a 10-minute code, and paste the displayed command into ChatGPT after connecting this MCP server. `wordrava_connect_wordpress` issues an admin-only confirmation link. After the WordPress admin approves, `wordrava_pairing_status` confirms the site and Center activates the account automatically with a Free plan. Center administrators may change account plans; site-specific overrides remain possible. Reconnecting a previously paired site with its existing connector key can recover the original account on a new browser; ChatGPT OAuth must be refreshed afterward. No WordPress password is sent to ChatGPT. These capabilities remain feature-gated until end-to-end tests and a coordinated production deployment are verified.
