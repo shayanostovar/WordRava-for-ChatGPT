@@ -160,7 +160,13 @@ function createServer(token: string, session: Session): McpServer {
     inputSchema: { request_id: z.string().uuid() },
     annotations: readAnnotations, _meta: oauthSites,
   }, async ({ request_id }) => {
-    try { return good(await centerGet<unknown>(`/api/v1/pairing/status/${request_id}`, token)); }
+    try {
+      const result = await centerGet<{status:string,site_id?:string|null}>(`/api/v1/pairing/status/${request_id}`, token);
+      if (result.status === 'reconnected') {
+        return good({ ...result, next_step: 'Your WordPress administrator verified account recovery. Reconnect WordRava OAuth in ChatGPT to refresh the identity and see your original sites and plan.' });
+      }
+      return good(result);
+    }
     catch { return bad('Pairing request is expired, unavailable or belongs to a different connection.'); }
   });
   server.registerTool('wordrava_site_usage', {
