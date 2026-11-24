@@ -1,9 +1,18 @@
-# WordRava for ChatGPT
+# WordRava for ChatGPT and Codex
 
-WordRava's MCP server and ChatGPT integration.
+WordRava Plugin v0.2.0 connects WordPress sites to ChatGPT through your own WordRava Center using an OAuth 2.1 authorization-code + PKCE flow and a remote Streamable HTTP MCP server.
 
-This repository currently exposes **four read-only authenticated MCP tools** to inspect registered WordPress sites, account identity, plan-driven usage and Center capabilities. Future tools may request explicitly approved changes through [WordRavaCenter](https://github.com/shayanostovar/WordRavaCenter) and the [WordPress Connector](https://github.com/shayanostovar/WordRava-WordPress-Connector).
+The plugin offers tools to view account identity and sites, plan quotas, site overview, plugins, menus, posts and pages. **Draft-only** create/update tools use an asynchronous, outbound-only WordPress Connector job queue and require WordPress administrator opt-in and explicit user approval. No publishing, deleting or arbitrary code execution.
 
-**Principles:** OAuth 2.1 / PKCE-compatible authentication; separate read and write tools; tenant-level authorization; no secrets in tools or logs; per-site quota enforced in Center; bilingual user-facing instructions.
+## Current release state
 
-**Status:** private-beta MCP 0.1.1, protocol 1.0, **no write tools**. The current bearer-JWT bridge is for developer testing, not public ChatGPT OAuth. Public distribution requires OAuth 2.1/PKCE, security review, privacy disclosures and app review. Blocked accounts and blocked-site usage are denied by Center on each request.
+Code has been prepared for an interoperable private beta; **public distribution is not yet cleared**. OAuth and job processing require coordinated Center 0.2.x and WordPress Connector 0.2.x deployment, staging security tests, public legal URLs, reviewer account, demo recording and OpenAI review. Center private-repo hosted CI has been failing before tests start; its uncompiled releases must not be deployed.
+
+- [MCP implementation](src/server.ts)
+- [Portable plugin package](marketplace/plugin.json)
+- [MCP server + OAuth declaration](marketplace/mcp.json)
+- [Submission and staging runbook](docs/MARKETPLACE_RELEASE.md)
+- [Center](https://github.com/shayanostovar/WordRavaCenter)
+- [WordPress Connector](https://github.com/shayanostovar/WordRava-WordPress-Connector)
+
+Run `npm install && npm run build` to typecheck. Run `python3 scripts/build_plugin.py` to assemble a ZIP with both manifests at its root. Keep credentials and review accounts out of source code and ZIPs.

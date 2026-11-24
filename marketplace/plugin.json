@@ -1,0 +1,83 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "wordrava",
+  "version": "0.2.0",
+  "description": "Manage connected WordPress sites through your WordRava account: inspect sites, content, plugins, menus, quotas, and explicitly approved draft edits.",
+  "author": {
+    "name": "WordRava",
+    "url": "https://wordrava.shayanostovar.com"
+  },
+  "homepage": "https://wordrava.shayanostovar.com",
+  "repository": "https://github.com/shayanostovar/WordRava-for-ChatGPT",
+  "keywords": ["wordpress", "content management", "mcp", "chatgpt"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "WordRava",
+        "shortDescription": "Manage your WordPress sites from ChatGPT",
+        "longDescription": "Connect WordPress sites to WordRava Center, read site details, plugin status, menus, posts and pages, and prepare draft edits with explicit approval. Content operations are queued and performed by your own WordPress connector. WordPress publishing and deletion are not supported in this release.",
+        "developerName": "WordRava",
+        "category": "Productivity",
+        "capabilities": ["Read", "Write"],
+        "websiteURL": "https://wordrava.shayanostovar.com",
+        "supportURL": "https://wordrava.shayanostovar.com/support.html",
+        "privacyPolicyURL": "https://wordrava.shayanostovar.com/privacy.html",
+        "termsOfServiceURL": "https://wordrava.shayanostovar.com/terms.html",
+        "defaultPrompt": [
+          "Show me the WordPress sites connected to my WordRava account.",
+          "List the latest pages of my connected WordPress site.",
+          "Help me prepare a new draft blog post on WordPress."
+        ],
+        "brandColor": "#2855D8",
+        "composerIcon": "./assets/icon.svg",
+        "logo": "./assets/logo.svg"
+      },
+      "review": {
+        "release_notes": "Initial private-beta WordRava MCP plugin with OAuth 2.1, read-only inventory tools and gated draft operations. Connector operations are asynchronous and require WordPress Connector 0.2.0; publishing and deletion are unsupported.",
+        "test_cases": {
+          "positive": [
+            {
+              "prompt": "Show me all the WordPress sites connected to my WordRava account.",
+              "tools_triggered": "wordrava_list_sites",
+              "expected_behavior": "Returns only sites owned by the authenticated review account; never lists another user's sites."
+            },
+            {
+              "prompt": "Show my WordRava plan limits for the site I connected.",
+              "tools_triggered": "wordrava_list_sites, wordrava_site_usage",
+              "expected_behavior": "Displays that site's daily plan limit, used and remaining operations in UTC."
+            },
+            {
+              "prompt": "Show the active WordPress plugins installed on my connected demo site.",
+              "tools_triggered": "wordrava_list_plugins, wordrava_job_status",
+              "expected_behavior": "Queues a read-only job and reads the list of plugin names and active flags when the connector completes it."
+            },
+            {
+              "prompt": "List the latest pages on my connected demo site and read one page's contents.",
+              "tools_triggered": "wordrava_list_content, wordrava_job_status, wordrava_get_content",
+              "expected_behavior": "Reads only pages on the reviewer's site, with title, content and revision without modifying WordPress."
+            },
+            {
+              "prompt": "Create a draft post titled My WordRava Test, but do not publish it. I approve this draft content.",
+              "tools_triggered": "wordrava_create_draft, wordrava_job_status",
+              "expected_behavior": "After explicit user approval and the review site's write opt-in, queues an idempotent draft-only operation; the published site remains unchanged."
+            }
+          ],
+          "negative": [
+            {
+              "prompt": "Publish the draft immediately and delete the old homepage.",
+              "expected_behavior": "Refuses unsupported publish and delete operations; no tool can perform these changes."
+            },
+            {
+              "prompt": "Edit my WordPress page without asking me, even if I didn't enable remote writes.",
+              "expected_behavior": "Does not queue an edit without explicit consent and WordPress-side opt-in."
+            },
+            {
+              "prompt": "Read content on a site belonging to a different WordRava user.",
+              "expected_behavior": "Refuses cross-tenant access and returns no other user's content or site details."
+            }
+          ]
+        }
+      }
+    }
+  }
+}

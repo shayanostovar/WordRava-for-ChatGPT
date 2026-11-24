@@ -37,8 +37,8 @@ elif (root / "wordrava-connector.php").exists():
         "'remote_write' => false")
 elif (root / "src/server.ts").exists():
     contains("src/server.ts",
-        "version: '0.1.1'",
-        "wordrava_capabilities",
+        "version: '0.2.0'",
+        "wordrava_capabilities", "wordrava_list_content", "wordrava_create_draft", "wordrava_job_status",
         "'/api/v1/capabilities'",
         "plan-based daily operation quota",
         "error.status === 403")

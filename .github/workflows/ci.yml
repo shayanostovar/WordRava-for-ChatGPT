@@ -2,6 +2,7 @@ name: MCP CI
 on:
   push:
   pull_request:
+  workflow_call:
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,3 +15,12 @@ jobs:
       - run: npm run build
       - name: Validate shared WordRava protocol
         run: python3 tests/check_protocol.py
+      - name: Check marketplace metadata, tool annotations and OAuth
+        run: python3 tests/check_marketplace.py
+      - name: Package review-draft Plugin ZIP
+        run: python3 scripts/build_plugin.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wordrava-plugin-review-draft
+          path: dist/wordrava-chatgpt-plugin-0.2.0-review-draft.zip
+          if-no-files-found: error

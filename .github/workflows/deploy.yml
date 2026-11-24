@@ -4,6 +4,9 @@ on:
     branches: [main]
     paths:
       - 'src/**'
+      - 'marketplace/**'
+      - 'scripts/**'
+      - 'tests/**'
       - 'package.json'
       - 'tsconfig.json'
       - 'Dockerfile'
@@ -16,7 +19,10 @@ concurrency:
   group: mcp-production-pipeline
   cancel-in-progress: false
 jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
   publish:
+    needs: verify
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
