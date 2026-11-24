@@ -27,7 +27,7 @@ const protectedResourceMetadata = publicOrigin + '/.well-known/oauth-protected-r
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '256kb' }));
-app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '0.2.0' }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '0.3.0' }));
 
 // OAuth 2.1 / RFC 9728 protected-resource metadata. Nginx routes this path to MCP.
 const metadata = {
@@ -111,7 +111,7 @@ function scopeError(scope: string) {
 }
 
 function createServer(token: string, session: Session): McpServer {
-  const server = new McpServer({ name: 'WordRava', version: '0.2.0' });
+  const server = new McpServer({ name: 'WordRava', version: '0.3.0' });
   server.registerTool('wordrava_list_sites', {
     description: 'List only the WordPress sites in the signed-in WordRava account, including whether each site is blocked. Does not query site content.',
     inputSchema: {}, annotations: readAnnotations, _meta: oauthSites,
