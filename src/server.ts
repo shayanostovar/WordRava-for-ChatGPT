@@ -94,6 +94,9 @@ function bad(message: string) {
 const readAnnotations = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
 const externalReadAnnotations = { readOnlyHint: true, destructiveHint: false, idempotentHint: false, openWorldHint: true };
 const writeAnnotations = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true };
+// Replacing an existing draft can overwrite unsaved work; advertise it as destructive
+// so the host asks for higher-friction review instead of treating it like a new draft.
+const updateAnnotations = { ...writeAnnotations, destructiveHint: true };
 // Explicit per-tool OAuth 2.1 policy makes the ChatGPT linking UI discoverable.
 const oauthSites = { securitySchemes: [{ type: 'oauth2', scopes: ['sites:read'] }] };
 const oauthContentRead = { securitySchemes: [{ type: 'oauth2', scopes: ['sites:read', 'content:read'] }] };
@@ -192,7 +195,7 @@ function createServer(token: string, session: Session): McpServer {
     description: 'Update an existing DRAFT only. Requires exact modified_gmt revision, explicit approval and WordPress-side opt-in. Never publish or delete.',
     inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']), item_id: z.number().int().positive(),
       title: z.string().min(1).max(200), content: z.string().max(100000), expected_modified_gmt: z.string().min(10).max(40),
-      user_confirmed: z.literal(true), request_id: z.string().uuid() }, annotations: writeAnnotations, _meta: oauthContentWrite,
+      user_confirmed: z.literal(true), request_id: z.string().uuid() }, annotations: updateAnnotations, _meta: oauthContentWrite,
   }, async ({ site_id, content_type, item_id, title, content, expected_modified_gmt, user_confirmed, request_id }) => submit(site_id,
     { kind: 'update_draft', contentType: content_type, itemId: item_id, title, content, expectedModifiedGmt: expected_modified_gmt,
       confirmChanges: user_confirmed }, true, request_id));
