@@ -73,7 +73,7 @@ function bearer(req: Request): string | null {
   return match?.[1] ?? null;
 }
 function challenge(res: Response, status = 401, error = 'invalid_token') {
-  res.setHeader('WWW-Authenticate', `Bearer resource_metadata="${protectedResourceMetadata}", scope="sites:read content:read", error="${error}"`);
+  res.setHeader('WWW-Authenticate', `Bearer resource_metadata="${protectedResourceMetadata}", scope="sites:read content:read", error="${error}", error_description="Connect or reauthorize WordRava"`);
   return res.status(status).json({ error, message: 'Connect your WordRava account using OAuth 2.1.' });
 }
 type Session = { owner_id: string, scope: string, token_type: 'oauth' };
@@ -94,32 +94,54 @@ function bad(message: string) {
 const readAnnotations = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
 const externalReadAnnotations = { readOnlyHint: true, destructiveHint: false, idempotentHint: false, openWorldHint: true };
 const writeAnnotations = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true };
+// Explicit per-tool OAuth 2.1 policy makes the ChatGPT linking UI discoverable.
+const oauthSites = { securitySchemes: [{ type: 'oauth2', scopes: ['sites:read'] }] };
+const oauthContentRead = { securitySchemes: [{ type: 'oauth2', scopes: ['sites:read', 'content:read'] }] };
+const oauthContentWrite = { securitySchemes: [{ type: 'oauth2', scopes: ['sites:read', 'content:write'] }] };
+const challengeFor = (scope: string) =>
+  `Bearer resource_metadata="${protectedResourceMetadata}", error="insufficient_scope", error_description="Reconnect WordRava to grant ${scope}"`;
+function scopeError(scope: string) {
+  return {
+    ...bad(`Missing WordRava permission: ${scope}`),
+    _meta: { 'mcp/www_authenticate': [challengeFor(scope)] },
+  };
+}
+
 function createServer(token: string, session: Session): McpServer {
   const server = new McpServer({ name: 'WordRava', version: '0.2.0' });
   server.registerTool('wordrava_list_sites', {
     description: 'List only the WordPress sites in the signed-in WordRava account, including whether each site is blocked. Does not query site content.',
-    inputSchema: {}, annotations: readAnnotations,
+    inputSchema: {}, annotations: readAnnotations, _meta: oauthSites,
   }, async () => {
     try { return good(await centerGet<unknown[]>('/api/v1/sites', token)); }
     catch { return bad('Unable to retrieve your WordRava sites.'); }
   });
   server.registerTool('wordrava_my_account', {
-    description: 'Read the identity and role of the WordRava account that authenticated this plugin. No password or tokens.',
-    inputSchema: {}, annotations: readAnnotations,
+    description: 'Read the stable identity of the WordRava account that authenticated this connection; no password or tokens.',
+    inputSchema: {},
+    outputSchema: { id: z.string().min(1), name: z.string().optional(),
+      email: z.string().optional(), nickname: z.string().optional() },
+    annotations: readAnnotations,
+    _meta: { ...oauthSites, 'openai/profile': true },
   }, async () => {
-    try { return good(await centerGet<unknown>('/api/v1/me', token)); }
-    catch { return bad('Unable to retrieve your WordRava account.'); }
+    try {
+      const account = await centerGet<{ id?: string, email?: string }>('/api/v1/me', token);
+      if (!account.id) return bad('Stable WordRava profile identity is unavailable.');
+      const profile = { id: account.id, email: account.email ?? undefined,
+        name: account.email ?? undefined };
+      return { ...good(profile), structuredContent: profile };
+    } catch { return bad('Unable to retrieve your WordRava account.'); }
   });
   server.registerTool('wordrava_site_usage', {
     description: 'Read the current UTC-day quota of a WordRava site (limit set by its plan). A blocked site is unavailable.',
-    inputSchema: { site_id: z.string().uuid() }, annotations: readAnnotations,
+    inputSchema: { site_id: z.string().uuid() }, annotations: readAnnotations, _meta: oauthSites,
   }, async ({ site_id }) => {
     try { return good(await centerGet<unknown>(`/api/v1/usage/${site_id}`, token)); }
     catch { return bad('Site is blocked, unavailable, or not owned by your WordRava account.'); }
   });
   server.registerTool('wordrava_capabilities', {
     description: 'Read the current supported WordRava features and protocol. Use to check whether content operations are enabled before trying them.',
-    inputSchema: {}, annotations: readAnnotations,
+    inputSchema: {}, annotations: readAnnotations, _meta: oauthSites,
   }, async () => {
     try { return good(await centerGet<unknown>('/api/v1/capabilities', token)); }
     catch { return bad('Unable to retrieve current WordRava capabilities.'); }
@@ -128,7 +150,7 @@ function createServer(token: string, session: Session): McpServer {
   // over outbound HTTPS and sends results back. ChatGPT polls wordrava_job_status.
   const can = (scope: string) => session.scope.split(' ').includes(scope);
   const submit = async (site_id: string, input: Record<string, unknown>, write: boolean, request_id?: string) => {
-    if (!can(write ? 'content:write' : 'content:read')) return bad(`Missing OAuth permission: ${write ? 'content:write' : 'content:read'}. Reconnect WordRava with the required scope.`);
+    if (!can(write ? 'content:write' : 'content:read')) return scopeError(write ? 'content:write' : 'content:read');
     try {
       const job = await centerPost<unknown>(`/api/v1/sites/${site_id}/jobs`, token, input, request_id);
       return good({ operation: 'queued', ...(job as object), next_step: 'Use wordrava_job_status with the returned job_id. The WordPress connector runs by WP-Cron or manual sync.' });
@@ -141,44 +163,44 @@ function createServer(token: string, session: Session): McpServer {
   };
   server.registerTool('wordrava_site_overview', {
     description: 'Queue a read-only WordPress site overview (site name, WordPress version and active theme). Returns an asynchronous job ID.',
-    inputSchema: { site_id: z.string().uuid() }, annotations: externalReadAnnotations,
+    inputSchema: { site_id: z.string().uuid() }, annotations: externalReadAnnotations, _meta: oauthContentRead,
   }, async ({ site_id }) => submit(site_id, { kind: 'site_overview', contentType: 'post' }, false));
   server.registerTool('wordrava_list_plugins', {
     description: 'Queue a read-only list of installed plugins and activation status for a connected site. Returns an asynchronous job ID.',
-    inputSchema: { site_id: z.string().uuid() }, annotations: externalReadAnnotations,
+    inputSchema: { site_id: z.string().uuid() }, annotations: externalReadAnnotations, _meta: oauthContentRead,
   }, async ({ site_id }) => submit(site_id, { kind: 'list_plugins', contentType: 'post' }, false));
   server.registerTool('wordrava_list_menus', {
     description: 'Queue read-only WordPress menu names and links for a connected site. Returns an asynchronous job ID.',
-    inputSchema: { site_id: z.string().uuid() }, annotations: externalReadAnnotations,
+    inputSchema: { site_id: z.string().uuid() }, annotations: externalReadAnnotations, _meta: oauthContentRead,
   }, async ({ site_id }) => submit(site_id, { kind: 'list_menus', contentType: 'post' }, false));
   server.registerTool('wordrava_list_content', {
     description: 'Queue read-only listing of the latest 20 WordPress posts or pages. No content edits. Returns an asynchronous job ID.',
-    inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']) }, annotations: externalReadAnnotations,
+    inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']) }, annotations: externalReadAnnotations, _meta: oauthContentRead,
   }, async ({ site_id, content_type }) => submit(site_id, { kind: 'list_content', contentType: content_type }, false));
   server.registerTool('wordrava_get_content', {
     description: 'Queue a read-only fetch of one WordPress post/page, including its modified_gmt revision. Returns an asynchronous job ID.',
-    inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']), item_id: z.number().int().positive() }, annotations: externalReadAnnotations,
+    inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']), item_id: z.number().int().positive() }, annotations: externalReadAnnotations, _meta: oauthContentRead,
   }, async ({ site_id, content_type, item_id }) => submit(site_id, { kind: 'get_content', contentType: content_type, itemId: item_id }, false));
   server.registerTool('wordrava_create_draft', {
     description: 'Create a WordPress DRAFT post/page only, after user approval and WordPress-side opt-in. Never publish. Enqueues an asynchronous job.',
     inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']), title: z.string().min(1).max(200), content: z.string().max(100000),
       user_confirmed: z.literal(true).describe('Must be true only after user explicitly approves the exact draft content.'), request_id: z.string().uuid().describe('Stable idempotency UUID; reuse on retries.') },
-    annotations: writeAnnotations,
+    annotations: writeAnnotations, _meta: oauthContentWrite,
   }, async ({ site_id, content_type, title, content, user_confirmed, request_id }) => submit(site_id,
     { kind: 'create_draft', contentType: content_type, title, content, confirmChanges: user_confirmed }, true, request_id));
   server.registerTool('wordrava_update_draft', {
     description: 'Update an existing DRAFT only. Requires exact modified_gmt revision, explicit approval and WordPress-side opt-in. Never publish or delete.',
     inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']), item_id: z.number().int().positive(),
       title: z.string().min(1).max(200), content: z.string().max(100000), expected_modified_gmt: z.string().min(10).max(40),
-      user_confirmed: z.literal(true), request_id: z.string().uuid() }, annotations: writeAnnotations,
+      user_confirmed: z.literal(true), request_id: z.string().uuid() }, annotations: writeAnnotations, _meta: oauthContentWrite,
   }, async ({ site_id, content_type, item_id, title, content, expected_modified_gmt, user_confirmed, request_id }) => submit(site_id,
     { kind: 'update_draft', contentType: content_type, itemId: item_id, title, content, expectedModifiedGmt: expected_modified_gmt,
       confirmChanges: user_confirmed }, true, request_id));
   server.registerTool('wordrava_job_status', {
     description: 'Read the status and sanitized result of a queued WordPress operation. Use the job ID returned by a previous read or draft tool.',
-    inputSchema: { site_id: z.string().uuid(), job_id: z.string().uuid() }, annotations: readAnnotations,
+    inputSchema: { site_id: z.string().uuid(), job_id: z.string().uuid() }, annotations: readAnnotations, _meta: oauthContentRead,
   }, async ({ site_id, job_id }) => {
-    if (!can('content:read')) return bad('Missing OAuth content:read permission.');
+    if (!can('content:read')) return scopeError('content:read');
     try { return good(await centerGet<unknown>(`/api/v1/sites/${site_id}/jobs/${job_id}`, token)); }
     catch { return bad('Job is not available to your WordRava account or the site has been blocked.'); }
   });
