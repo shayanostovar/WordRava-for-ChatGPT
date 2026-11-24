@@ -3,7 +3,7 @@
   "protocol": "wordrava",
   "protocolVersion": "1.0",
   "minimumConnectorProtocol": "1.0",
-  "centerVersion": "0.2.0",
+  "centerVersion": "1.0.0",
   "pairing": {
     "issuer": "center",
     "claimant": "wordpress-connector",
