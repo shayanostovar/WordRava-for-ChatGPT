@@ -2,40 +2,53 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "wordrava",
   "version": "0.2.0",
-  "description": "Manage connected WordPress sites through your WordRava account: inspect sites, content, plugins, menus, quotas, and explicitly approved draft edits.",
+  "description": "Manage WordPress sites from ChatGPT with passwordless WordPress-admin-confirmed pairing, read tools and permission-gated draft edits.",
   "author": {
     "name": "WordRava",
     "url": "https://wordrava.shayanostovar.com"
   },
   "homepage": "https://wordrava.shayanostovar.com",
   "repository": "https://github.com/shayanostovar/WordRava-for-ChatGPT",
-  "keywords": ["wordpress", "content management", "mcp", "chatgpt"],
+  "keywords": [
+    "wordpress",
+    "content management",
+    "mcp",
+    "chatgpt"
+  ],
   "extensions": {
     "com.openai": {
       "interface": {
         "displayName": "WordRava",
         "shortDescription": "Manage your WordPress sites from ChatGPT",
-        "longDescription": "Connect WordPress sites to WordRava Center, read site details, plugin status, menus, posts and pages, and prepare draft edits with explicit approval. Content operations are queued and performed by your own WordPress connector. WordPress publishing and deletion are not supported in this release.",
+        "longDescription": "Install WordRava Connector on WordPress, generate a short-lived code as a WordPress admin, paste it into ChatGPT and approve the returned link. WordRava creates your managed account automatically, with no separate user signup. Read content, site information, plugins and menus. Draft edits require separate explicit approval and WordPress administrator opt-in.",
         "developerName": "WordRava",
         "category": "Productivity",
-        "capabilities": ["Read", "Write"],
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
         "websiteURL": "https://wordrava.shayanostovar.com",
         "supportURL": "https://wordrava.shayanostovar.com/support.html",
         "privacyPolicyURL": "https://wordrava.shayanostovar.com/privacy.html",
         "termsOfServiceURL": "https://wordrava.shayanostovar.com/terms.html",
         "defaultPrompt": [
-          "Show me the WordPress sites connected to my WordRava account.",
-          "List the latest pages of my connected WordPress site.",
-          "Help me prepare a new draft blog post on WordPress."
+          "Connect my WordPress site to WordRava using its Quick Connect code.",
+          "Show the WordPress sites I connected.",
+          "List the latest pages of my connected WordPress site."
         ],
         "brandColor": "#2855D8",
         "composerIcon": "./assets/icon.svg",
         "logo": "./assets/logo.svg"
       },
       "review": {
-        "release_notes": "Initial private-beta WordRava MCP plugin with OAuth 2.1, read-only inventory tools and gated draft operations. Connector operations are asynchronous and require WordPress Connector 0.2.0; publishing and deletion are unsupported.",
+        "release_notes": "Private-beta WordRava MCP with WordPress-first passwordless pairing (feature-gated), verified account activation and recovery, OAuth 2.1, read-only tools and separately approved draft operations.",
         "test_cases": {
           "positive": [
+            {
+              "prompt": "I installed WordRava on WordPress. Connect my HTTPS site using this one-time Quick Connect code.",
+              "tools_triggered": "wordrava_connect_wordpress, wordrava_pairing_status",
+              "expected_behavior": "Returns the administrator-only confirmation link; never marks the site connected before the WordPress administrator confirms. A managed account becomes active and visible in Center with the default Free plan."
+            },
             {
               "prompt": "Show me all the WordPress sites connected to my WordRava account.",
               "tools_triggered": "wordrava_list_sites",
