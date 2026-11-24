@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "wordrava",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Manage WordPress sites from ChatGPT with passwordless WordPress-admin-confirmed pairing, read tools and permission-gated draft edits.",
   "author": {
     "name": "WordRava",
