@@ -40,7 +40,7 @@ elif (root / "src/server.ts").exists():
         "version: '0.2.0'",
         "wordrava_capabilities", "wordrava_list_content", "wordrava_create_draft", "wordrava_job_status",
         "'/api/v1/capabilities'",
-        "plan-based daily operation quota",
+        "current UTC-day quota of a WordRava site",
         "error.status === 403")
 else:
     raise AssertionError("Unrecognized WordRava repository layout")
