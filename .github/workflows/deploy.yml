@@ -47,9 +47,11 @@ jobs:
 
   deploy:
     needs: publish
-    # Auto-deploy every verified immutable main image. Requires the existing
-    # restricted SSH Actions secrets and production environment to be configured.
-    if: ${{ github.ref == 'refs/heads/main' && github.repository == 'shayanostovar/WordRava-for-ChatGPT' }}
+    # WordRavaCenter's restricted 15-minute poller deploys immutable MCP
+    # GHCR images without storing a broad VPS SSH key in this PUBLIC repo.
+    # Optional direct SSH deployment stays disabled until an operator securely
+    # configures its dedicated restricted SSH secrets and explicit variable.
+    if: ${{ vars.WORDRAVA_DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-24.04
     environment: production
     permissions:
