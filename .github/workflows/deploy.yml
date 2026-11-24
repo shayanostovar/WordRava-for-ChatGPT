@@ -45,6 +45,31 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  release:
+    needs: publish
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package v0.3.0 ChatGPT review bundle
+        run: |
+          python3 tests/check_marketplace.py
+          python3 scripts/build_plugin.py
+      - name: Publish validated MCP v0.3.0 release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag=mcp-v0.3.0
+          artifact=dist/wordrava-chatgpt-plugin-0.3.0-review-draft.zip
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag exists; refusing to overwrite its immutable artifact"
+          else
+            gh release create "$tag" "$artifact" --target "$GITHUB_SHA" --title "WordRava for ChatGPT MCP v0.3.0" --notes "Passwordless WordPress-first pairing, automatic account activation, account recovery, and controlled read/draft tools. Marketplace bundle is a review draft and is not an OpenAI-approved public listing."
+          fi
+
   deploy:
     needs: publish
     # WordRavaCenter's restricted 15-minute poller deploys immutable MCP
