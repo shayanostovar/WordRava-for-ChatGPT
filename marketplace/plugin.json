@@ -1,11 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "wordrava",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Manage WordPress sites from ChatGPT with passwordless WordPress-admin-confirmed pairing, read tools and permission-gated draft edits.",
   "author": {
-    "name": "WordRava",
-    "url": "https://wordrava.shayanostovar.com"
+    "name": "ShayanOstovar",
+    "url": "https://github.com/shayanostovar"
   },
   "homepage": "https://wordrava.shayanostovar.com",
   "repository": "https://github.com/shayanostovar/WordRava-for-ChatGPT",
@@ -20,8 +20,8 @@
       "interface": {
         "displayName": "WordRava",
         "shortDescription": "Manage your WordPress sites from ChatGPT",
-        "longDescription": "Install WordRava Connector on WordPress, generate a short-lived code as a WordPress admin, paste it into ChatGPT and approve the returned link. WordRava creates your managed account automatically, with no separate user signup. Read content, site information, plugins and menus. Draft edits require separate explicit approval and WordPress administrator opt-in.",
-        "developerName": "WordRava",
+        "longDescription": "Install WordRava Connector on WordPress, generate a short-lived code as a WordPress admin, paste it into ChatGPT and approve the returned link. WordRava creates your managed account automatically, with no separate user signup. Read content, site information, plugins and menus. Draft edits require separate explicit approval and WordPress administrator opt-in. WordRava by ShayanOstovar (https://github.com/shayanostovar).",
+        "developerName": "ShayanOstovar",
         "category": "Productivity",
         "capabilities": [
           "Read",
@@ -36,7 +36,7 @@
           "Show the WordPress sites I connected.",
           "List the latest pages of my connected WordPress site."
         ],
-        "brandColor": "#2855D8",
+        "brandColor": "#6D35F5",
         "composerIcon": "./assets/icon.svg",
         "logo": "./assets/logo.svg"
       },
