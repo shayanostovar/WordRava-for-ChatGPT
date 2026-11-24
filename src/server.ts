@@ -206,6 +206,15 @@ function createServer(token: string, session: Session): McpServer {
     description: 'List the latest 50 media library attachments, including IDs, MIME types and URLs. Read-only.',
     inputSchema: { site_id: z.string().uuid() }, annotations: externalReadAnnotations, _meta: oauthContentRead,
   }, async ({ site_id }) => submit(site_id, { kind: 'list_media', contentType: 'post' }, false));
+  server.registerTool('wordrava_import_image', {
+    description: 'Import an image from an explicitly supplied public HTTPS URL into this WordPress site Media Library. Requires explicit user approval and WordPress draft-write opt-in. Only JPEG, PNG, GIF and WebP up to 8 MB are accepted; local/private network URLs are blocked. Returns a job ID.',
+    inputSchema: { site_id: z.string().uuid(), image_url: z.string().url().max(2000),
+      title: z.string().min(1).max(200), user_confirmed: z.literal(true),
+      request_id: z.string().uuid() },
+    annotations: writeAnnotations, _meta: oauthContentWrite,
+  }, async ({ site_id, image_url, title, user_confirmed, request_id }) =>
+    submit(site_id, { kind: 'import_media_url', contentType: 'post', title,
+      content: image_url, confirmChanges: user_confirmed }, true, request_id));
   server.registerTool('wordrava_publish_draft', {
     description: 'Publish an existing draft after the user explicitly confirms publication. Requires WordPress administrator publication opt-in and unchanged modified_gmt. Does not edit content or publish anything else. Publishing is irreversible to public readers.',
     inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']), item_id: z.number().int().positive(),
