@@ -20,15 +20,20 @@ const base = center.replace(/\/$/, '');
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '256kb' }));
-app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '0.1.0' }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '0.1.1' }));
 
+class CenterHttpError extends Error {
+  constructor(public readonly status: number) {
+    super(`Center returned HTTP ${status}`);
+  }
+}
 async function centerGet<T>(path: string, token: string): Promise<T> {
   const response = await fetch(base + path, {
     headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
     signal: AbortSignal.timeout(12000),
     redirect: 'error',
   });
-  if (!response.ok) throw new Error(`Center returned HTTP ${response.status}`);
+  if (!response.ok) throw new CenterHttpError(response.status);
   return await response.json() as T;
 }
 function getBearer(req: Request): string | null {
@@ -36,9 +41,9 @@ function getBearer(req: Request): string | null {
   return match?.[1] ?? null;
 }
 function makeServer(token: string): McpServer {
-  const server = new McpServer({ name: 'WordRava', version: '0.1.0' });
+  const server = new McpServer({ name: 'WordRava', version: '0.1.1' });
   server.tool('wordrava_list_sites',
-    'List only the WordPress sites connected to the signed-in WordRava account. Read-only.',
+    'List WordPress sites owned by your WordRava account, including whether each site is blocked. Read-only; blocked sites cannot perform operations.',
     {}, async () => {
       try {
         const sites = await centerGet<unknown[]>('/api/v1/sites', token);
@@ -60,13 +65,24 @@ function makeServer(token: string): McpServer {
     }
   );
   server.tool('wordrava_site_usage',
-    'Check daily site operation quota (200 successful operations per UTC day on the Free plan). Read-only.',
+    'Check the current plan-based daily operation quota of a site. Free defaults to 200 successful operations per UTC day; admins may change plan limits. Blocked sites cannot use quota. Read-only.',
     { site_id: z.string().uuid() }, async ({ site_id }) => {
       try {
         const usage = await centerGet<unknown>(`/api/v1/usage/${site_id}`, token);
         return { content: [{ type: 'text' as const, text: JSON.stringify(usage) }] };
       } catch {
-        return { isError: true, content: [{ type: 'text' as const, text: 'Site was not found or quota is unavailable.' }] };
+        return { isError: true, content: [{ type: 'text' as const, text: 'Site is blocked, unavailable, or you do not have access to its quota.' }] };
+      }
+    }
+  );
+  server.tool('wordrava_capabilities',
+    'Show the currently supported WordRava Center protocol, plan/quota capabilities and beta limitations. Read-only.',
+    {}, async () => {
+      try {
+        const capabilities = await centerGet<unknown>('/api/v1/capabilities', token);
+        return { content: [{ type: 'text' as const, text: JSON.stringify(capabilities) }] };
+      } catch {
+        return { isError: true, content: [{ type: 'text' as const, text: 'Unable to retrieve current Center capabilities.' }] };
       }
     }
   );
@@ -80,7 +96,11 @@ app.post('/mcp', async (req: Request, res: Response) => {
   if (!token) { res.status(401).json({ error: 'Bearer authentication required' }); return; }
   try {
     await centerGet('/api/v1/me', token);
-  } catch { res.status(401).json({ error: 'Invalid WordRava authentication' }); return; }
+  } catch (error) {
+    const blocked = error instanceof CenterHttpError && error.status === 403;
+    res.status(blocked ? 403 : 401).json({ error: blocked ? 'WordRava account is blocked or revoked' : 'Invalid WordRava authentication' });
+    return;
+  }
   if (!isInitializeRequest(req.body) && !req.body?.jsonrpc) {
     res.status(400).json({ error: 'Invalid MCP request' }); return;
   }
