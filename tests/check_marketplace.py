@@ -7,7 +7,7 @@ mcp = json.loads((repo / "marketplace/mcp.json").read_text())
 server = (repo / "src/server.ts").read_text()
 ext = plugin["extensions"]["com.openai"]
 assert plugin["name"] == "wordrava"
-assert plugin["version"] == "1.0.2"
+assert plugin["version"] == "1.0.3"
 assert ext["interface"]["capabilities"] == ["Read", "Write"]
 assert len(ext["review"]["test_cases"]["positive"]) == 6
 assert len(ext["review"]["test_cases"]["negative"]) == 3
@@ -30,7 +30,7 @@ assert "annotations: writeAnnotations" in create_tool
 assert "registerTool" in server
 for tool in ["list_sites", "my_account", "site_usage", "capabilities",
              "site_overview", "list_plugins", "list_menus", "list_content", "get_content",
-             "create_draft", "update_draft", "job_status"]:
+             "create_draft", "update_draft", "job_status", "plan_operation", "execute_read", "execute_write", "operation_status"]:
     assert "wordrava_" + tool in server
 for path in ["marketplace/assets/logo.svg", "marketplace/assets/icon.svg"]:
     assert (repo / path).exists()
