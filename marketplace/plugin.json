@@ -41,7 +41,7 @@
         "logo": "./assets/logo.svg"
       },
       "review": {
-        "release_notes": "WordRava 1.0.6 updates the Center/WordPress account-recovery safeguards and introduces a reversible connector pause/resume workflow. A different OAuth account cannot claim an existing site without proof of the original connector key. Private beta; no public marketplace approval. Existing WordPress operations remain limited to the published operation catalog.",
+        "release_notes": "WordRava 1.0.6 private-beta recovery hardening: reversible WordPress Connector pause/resume and retention of site key across plugin deactivation, administrator-controlled resume with write permissions reset, and original-account-only OAuth recovery. No automatic cross-account site transfer, browser-session takeover or legacy keyless account takeover. Other WordPress operations remain restricted to the advertised catalog.",
         "test_cases": {
           "positive": [
             {
