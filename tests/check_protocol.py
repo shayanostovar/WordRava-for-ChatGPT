@@ -5,7 +5,7 @@ from pathlib import Path
 root = Path(__file__).resolve().parents[1]
 c = json.loads((root / "contracts/wordrava-protocol-v1.json").read_text(encoding="utf-8"))
 assert c["schemaVersion"] == "1.2" and c["protocolVersion"] == "1.0"
-assert c["centerVersion"] == "1.0.5"
+assert c["centerVersion"] == "1.0.6"
 assert c["pairing"]["claimEndpoint"] == "POST /api/v1/connectors/claim"
 assert c["oauth"]["token"] == "POST /oauth/token"
 assert "content:write" in c["oauth"]["scopes"]
@@ -21,10 +21,10 @@ def contains(path, *values):
     for word in values:
         assert word in body, f"{path}: missing {word!r}"
 contains("src/server.ts",
-    "version: '1.0.5'", "wordrava_capabilities",
+    "version: '1.0.6'", "wordrava_capabilities",
     "wordrava_list_content", "wordrava_create_draft", "wordrava_job_status",
     "wordrava_plan_operation", "wordrava_execute_read", "wordrava_execute_write", "wordrava_operation_status",
     "securitySchemes", "content:write", "mcp/www_authenticate",
     "openai/profile", "Idempotency-Key")
 contains("marketplace/mcp.json", "https://wordrava.shayanostovar.com/mcp")
-print("ChatGPT MCP 1.0.5 / protocol 1.0 OAuth and job contract passed.")
+print("ChatGPT MCP 1.0.6 / protocol 1.0 OAuth and job contract passed.")
