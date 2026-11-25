@@ -14,7 +14,7 @@
     "connectorSecret": "per-site 256-bit random secret; SHA-256 stored at Center",
     "existingSiteUpgrade": "existingSiteId accepted for same owner and URL after new pairing code",
     "proof": "one-time user pairing code plus outbound connector key; no independent DNS ownership attestation",
-    "recoveryPolicy": "Original Center owner authenticated via OAuth can recover lost connector key through WP-admin confirmation; a different owner must possess the original connector key; no silent takeover."
+    "recoveryPolicy": "For an existing site, only the original authenticated WordRava OAuth owner plus fresh WP-admin one-time approval may rotate the local connector key. No cross-account site transfer, session reassignment or legacy keyless takeover is automatic; lost original-account identity requires a separate verified recovery process."
   },
   "capabilities": {
     "endpoint": "GET /api/v1/capabilities",
