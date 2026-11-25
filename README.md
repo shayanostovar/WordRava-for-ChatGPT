@@ -1,6 +1,6 @@
 # WordRava for ChatGPT and Codex
 
-WordRava Plugin v1.0.2 connects WordPress sites to ChatGPT through your own WordRava Center using an OAuth 2.1 authorization-code + PKCE flow and a remote Streamable HTTP MCP server.
+WordRava Plugin v1.0.3 connects WordPress sites to ChatGPT through your own WordRava Center using an OAuth 2.1 authorization-code + PKCE flow and a remote Streamable HTTP MCP server.
 
 The plugin offers tools to view account identity and sites, plan quotas, site overview, plugins, menus, posts and pages. Initial OAuth linking requests **read-only scopes**; draft-edit permission is requested only when the user elects a write action, and Center has its own separate write kill switch. **Draft-only** create/update tools use an asynchronous, outbound-only WordPress Connector job queue and require WordPress administrator opt-in and explicit user approval. No publishing, deleting or arbitrary code execution.
 
@@ -24,13 +24,13 @@ Install WordRava on WordPress, open WordRava > Quick Connect as an administrator
 
 ### Creator and visual identity
 
-WordRava 1.0.2 — **By ShayanOstovar**: https://github.com/shayanostovar. The MCP and ChatGPT marketplace metadata share the gradient W mark with WordPress Connector and Center.
+WordRava 1.0.3 — **By ShayanOstovar**: https://github.com/shayanostovar. The MCP and ChatGPT marketplace metadata share the gradient W mark with WordPress Connector and Center.
 
 
-WordRava 1.0.2 retains OAuth least-privilege scopes. WordPress administrators can grant or revoke draft-write permission without re-pairing, but ChatGPT needs content:write OAuth consent for writes.
+WordRava 1.0.3 retains OAuth least-privilege scopes. WordPress administrators can grant or revoke draft-write permission without re-pairing, but ChatGPT needs content:write OAuth consent for writes.
 
 
-## WordRava 1.0.2 — ChatGPT-only feature set
+## WordRava 1.0.3 — ChatGPT-only feature set
 Tools: `wordrava_discover_site` inventories installed plugins, active theme,
 registered WordPress Abilities with input schemas, REST namespaces, post types
 and taxonomies before creating an operation plan. `wordrava_list_media` reads
