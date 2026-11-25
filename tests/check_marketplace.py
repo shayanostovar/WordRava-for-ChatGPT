@@ -7,7 +7,7 @@ mcp = json.loads((repo / "marketplace/mcp.json").read_text())
 server = (repo / "src/server.ts").read_text()
 ext = plugin["extensions"]["com.openai"]
 assert plugin["name"] == "wordrava"
-assert plugin["version"] == "1.0.5"
+assert plugin["version"] == "1.0.6"
 assert ext["interface"]["capabilities"] == ["Read", "Write"]
 assert len(ext["review"]["test_cases"]["positive"]) == 6
 assert len(ext["review"]["test_cases"]["negative"]) == 3
