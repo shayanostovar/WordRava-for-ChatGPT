@@ -3,7 +3,7 @@
   "protocol": "wordrava",
   "protocolVersion": "1.0",
   "minimumConnectorProtocol": "1.0",
-  "centerVersion": "1.0.2",
+  "centerVersion": "1.0.3",
   "pairing": {
     "issuer": "center",
     "claimant": "wordpress-connector",
@@ -35,11 +35,15 @@
       "wordrava_list_menus",
       "wordrava_list_content",
       "wordrava_get_content",
-      "wordrava_job_status"
+      "wordrava_job_status",
+      "wordrava_plan_operation",
+      "wordrava_execute_read",
+      "wordrava_operation_status"
     ],
     "writeMcpTools": [
       "wordrava_create_draft",
-      "wordrava_update_draft"
+      "wordrava_update_draft",
+      "wordrava_execute_write"
     ]
   },
   "oauth": {
@@ -69,11 +73,17 @@
         "list_plugins",
         "list_menus",
         "list_content",
-        "get_content"
+        "get_content",
+        "discover_capabilities",
+        "list_media",
+        "run_read_ability",
+        "rest_read"
       ],
       "write": [
         "create_draft",
-        "update_draft"
+        "update_draft",
+        "publish_draft",
+        "import_media_url"
       ]
     },
     "idempotencyHeader": "Idempotency-Key",
@@ -82,13 +92,14 @@
     "chargeOn": "successful-operation",
     "blockedSite": "deny",
     "blockedUser": "deny",
-    "writes": "draft-only; requires MCP confirmation flag and WordPress admin opt-in",
+    "writes": "Explicitly approved idempotent writes, publish requires additional WordPress opt-in and revision",
     "limitations": [
       "No verified end-to-end WordPress staging acceptance yet",
       "No independent human-approval credential enforced by Center",
-      "No publish/delete or page-builder structured edits",
-      "No atomic rollback of content edits"
-    ]
+      "No atomic rollback of content edits",
+      "No deletion or native page-builder writes yet"
+    ],
+    "catalogEndpoint": "GET /api/v1/sites/{siteId}/operations"
   },
   "usage": {
     "endpoint": "GET /api/v1/usage/{siteId}",
