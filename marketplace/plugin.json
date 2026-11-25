@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.2/plugin.schema.json",
   "name": "wordrava",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Manage WordPress sites from ChatGPT with passwordless WordPress-admin-confirmed pairing, read tools and permission-gated draft edits.",
   "author": {
     "name": "ShayanOstovar",
@@ -41,7 +41,7 @@
         "logo": "./assets/logo.svg"
       },
       "review": {
-        "release_notes": "WordRava 1.0.7: secure Center-admin reset/recovery for an orphaned WordPress connection. It retires old site credentials without deleting history; new pairing requires a fresh WP-admin-approved one-time code and securely verifies the old site ID was retired. No automatic cross-account access or remote write opt-in.",
+        "release_notes": "WordRava 1.0.8: accurate per-site quota and account capacity across connected sites, successful/reserved/failed breakdown, plan source and exact next 00:00 UTC reset; new wordrava_account_usage tool. User account totals sum independent site quotas, not a pooled budget.",
         "test_cases": {
           "positive": [
             {
