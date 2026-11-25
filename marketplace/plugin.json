@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.2/plugin.schema.json",
   "name": "wordrava",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Manage WordPress sites from ChatGPT with passwordless WordPress-admin-confirmed pairing, read tools and permission-gated draft edits.",
   "author": {
     "name": "ShayanOstovar",
@@ -41,7 +41,7 @@
         "logo": "./assets/logo.svg"
       },
       "review": {
-        "release_notes": "WordRava 1.0.5 private-beta source: guarded activation of installed themes/plugins and revision-checked published-content update/trash/restore via the existing dynamic execute tools. Requires both Center 1.0.5 and WP Connector 1.0.5, explicit site-admin consent and verified staging deployment. It does not provide universal WordPress administration, installs, upgrades, backup/restore, or page-builder adapters.",
+        "release_notes": "WordRava 1.0.6 updates the Center/WordPress account-recovery safeguards and introduces a reversible connector pause/resume workflow. A different OAuth account cannot claim an existing site without proof of the original connector key. Private beta; no public marketplace approval. Existing WordPress operations remain limited to the published operation catalog.",
         "test_cases": {
           "positive": [
             {
