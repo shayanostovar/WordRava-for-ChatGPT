@@ -3,7 +3,7 @@
   "protocol": "wordrava",
   "protocolVersion": "1.0",
   "minimumConnectorProtocol": "1.0",
-  "centerVersion": "1.0.5",
+  "centerVersion": "1.0.6",
   "pairing": {
     "issuer": "center",
     "claimant": "wordpress-connector",
@@ -13,7 +13,8 @@
     "requestProtocolField": "protocolVersion",
     "connectorSecret": "per-site 256-bit random secret; SHA-256 stored at Center",
     "existingSiteUpgrade": "existingSiteId accepted for same owner and URL after new pairing code",
-    "proof": "one-time user pairing code plus outbound connector key; no independent DNS ownership attestation"
+    "proof": "one-time user pairing code plus outbound connector key; no independent DNS ownership attestation",
+    "recoveryPolicy": "Original Center owner authenticated via OAuth can recover lost connector key through WP-admin confirmation; a different owner must possess the original connector key; no silent takeover."
   },
   "capabilities": {
     "endpoint": "GET /api/v1/capabilities",
