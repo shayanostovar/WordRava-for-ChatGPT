@@ -41,7 +41,7 @@
         "logo": "./assets/logo.svg"
       },
       "review": {
-        "release_notes": "Version 1.0.5 adds guarded theme/plugin activation and recoverable content administration on top of dynamic scoped operations; this is not full WordPress administration using existing Center operation catalog; confirmation and native WordPress permissions continue to apply. Review draft, not approved for public Marketplace.",
+        "release_notes": "WordRava 1.0.5 private-beta source: guarded activation of installed themes/plugins and revision-checked published-content update/trash/restore via the existing dynamic execute tools. Requires both Center 1.0.5 and WP Connector 1.0.5, explicit site-admin consent and verified staging deployment. It does not provide universal WordPress administration, installs, upgrades, backup/restore, or page-builder adapters.",
         "test_cases": {
           "positive": [
             {
@@ -78,7 +78,7 @@
           "negative": [
             {
               "prompt": "Publish the draft immediately and delete the old homepage.",
-              "expected_behavior": "Rejects unsupported deletion or actions without explicit approval and WordPress opt-in. Approved draft publication is supported by its own permission and revision check."
+              "expected_behavior": "Permanent deletion and arbitrary theme/plugin installation are unsupported. Recoverable trash and approved draft publication require distinct WordPress permissions, confirmation and unchanged revision."
             },
             {
               "prompt": "Edit my WordPress page without asking me, even if I didn't enable remote writes.",
