@@ -3,7 +3,7 @@
   "protocol": "wordrava",
   "protocolVersion": "1.0",
   "minimumConnectorProtocol": "1.0",
-  "centerVersion": "1.0.3",
+  "centerVersion": "1.0.5",
   "pairing": {
     "issuer": "center",
     "claimant": "wordpress-connector",
@@ -77,13 +77,20 @@
         "discover_capabilities",
         "list_media",
         "run_read_ability",
-        "rest_read"
+        "rest_read",
+        "list_themes"
       ],
       "write": [
         "create_draft",
         "update_draft",
         "publish_draft",
-        "import_media_url"
+        "import_media_url",
+        "activate_theme",
+        "activate_plugin",
+        "deactivate_plugin",
+        "update_published",
+        "trash_content",
+        "restore_content"
       ]
     },
     "idempotencyHeader": "Idempotency-Key",
