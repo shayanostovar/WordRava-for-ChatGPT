@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.2/plugin.schema.json",
   "name": "wordrava",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Manage WordPress sites from ChatGPT with passwordless WordPress-admin-confirmed pairing, read tools and permission-gated draft edits.",
   "author": {
     "name": "ShayanOstovar",
@@ -41,7 +41,7 @@
         "logo": "./assets/logo.svg"
       },
       "review": {
-        "release_notes": "Private-beta WordRava MCP with WordPress-first passwordless pairing (feature-gated), verified account activation and recovery, OAuth 2.1, read-only tools and separately approved draft operations.",
+        "release_notes": "Version 1.0.3 introduces persistent dynamic operation planning and scoped read/write execution using existing Center operation catalog; confirmation and native WordPress permissions continue to apply. Review draft, not approved for public Marketplace.",
         "test_cases": {
           "positive": [
             {
@@ -78,7 +78,7 @@
           "negative": [
             {
               "prompt": "Publish the draft immediately and delete the old homepage.",
-              "expected_behavior": "Refuses unsupported publish and delete operations; no tool can perform these changes."
+              "expected_behavior": "Rejects unsupported deletion or actions without explicit approval and WordPress opt-in. Approved draft publication is supported by its own permission and revision check."
             },
             {
               "prompt": "Edit my WordPress page without asking me, even if I didn't enable remote writes.",
