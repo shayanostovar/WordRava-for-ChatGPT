@@ -3,7 +3,7 @@
   "protocol": "wordrava",
   "protocolVersion": "1.0",
   "minimumConnectorProtocol": "1.0",
-  "centerVersion": "1.0.7",
+  "centerVersion": "1.0.8",
   "pairing": {
     "issuer": "center",
     "claimant": "wordpress-connector",
@@ -40,7 +40,8 @@
       "wordrava_job_status",
       "wordrava_plan_operation",
       "wordrava_execute_read",
-      "wordrava_operation_status"
+      "wordrava_operation_status",
+      "wordrava_account_usage"
     ],
     "writeMcpTools": [
       "wordrava_create_draft",
@@ -117,7 +118,14 @@
     "freeDailyLimitDefault": 200,
     "limitSource": "center-plan",
     "blockedSiteResponse": 404,
-    "purchasedCredits": "not implemented"
+    "purchasedCredits": "not implemented",
+    "accountEndpoint": "GET /api/v1/account/usage",
+    "adminDashboardEndpoint": "GET /api/v1/admin/quota-dashboard",
+    "quotaPolicy": "per_site",
+    "used": "successful operations in UTC day",
+    "reserved": "pending and running jobs",
+    "failed": "not charged",
+    "remaining": "limit - used - reserved, floored at zero"
   },
   "access": {
     "userBlock": "deny-login-and-existing-token-at-center",
