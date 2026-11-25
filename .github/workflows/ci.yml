@@ -22,5 +22,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: wordrava-plugin-review-draft
-          path: dist/wordrava-chatgpt-plugin-1.0.5-review-draft.zip
+          path: dist/wordrava-chatgpt-plugin-1.0.6-review-draft.zip
           if-no-files-found: error
