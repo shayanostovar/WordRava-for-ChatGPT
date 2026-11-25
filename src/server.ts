@@ -27,7 +27,7 @@ const protectedResourceMetadata = publicOrigin + '/.well-known/oauth-protected-r
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '256kb' }));
-app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.0.3' }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.0.4' }));
 
 // OAuth 2.1 / RFC 9728 protected-resource metadata. Nginx routes this path to MCP.
 const metadata = {
@@ -111,7 +111,7 @@ function scopeError(scope: string) {
 }
 
 function createServer(token: string, session: Session): McpServer {
-  const server = new McpServer({ name: 'WordRava', version: '1.0.3' });
+  const server = new McpServer({ name: 'WordRava', version: '1.0.4' });
   server.registerTool('wordrava_list_sites', {
     description: 'List only the WordPress sites in the signed-in WordRava account, including whether each site is blocked. Does not query site content.',
     inputSchema: {}, annotations: readAnnotations, _meta: oauthSites,
@@ -180,7 +180,10 @@ function createServer(token: string, session: Session): McpServer {
     description: 'Read the current supported WordRava features and protocol. Use to check whether content operations are enabled before trying them.',
     inputSchema: {}, annotations: readAnnotations, _meta: oauthSites,
   }, async () => {
-    try { return good(await centerGet<unknown>('/api/v1/capabilities', token)); }
+    try {
+      const capabilities = await centerGet<Record<string, unknown>>('/api/v1/capabilities', token);
+      return good({ ...capabilities, mcp_version: '1.0.4', mcp_protocol_version: '1.0' });
+    }
     catch { return bad('Unable to retrieve current WordRava capabilities.'); }
   });
   // WordPress operations are asynchronous: the connector retrieves jobs from Center
