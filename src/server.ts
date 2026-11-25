@@ -204,7 +204,14 @@ function createServer(token: string, session: Session): McpServer {
     } catch (error) {
       if (error instanceof CenterHttpError && error.status === 503) return bad('Operations are not enabled on this WordRava Center yet.');
       if (error instanceof CenterHttpError && error.status === 409) return bad('Reconnect the WordPress Connector to enable secure operations.');
-      if (error instanceof CenterHttpError && error.status === 429) return bad('Site daily quota or pending job capacity is exhausted.');
+      if (error instanceof CenterHttpError && error.status === 429) {
+        try {
+          const q = await centerGet<{used:number;reserved:number;limit:number;remaining:number;resets_at_utc:string;plan:string}>(`/api/v1/usage/${site_id}`, token);
+          return bad(`Daily WordRava quota exhausted for ${q.plan}: ${q.used} successful + ${q.reserved} reserved / ${q.limit}. Remaining: ${q.remaining}. Resets at ${q.resets_at_utc} (UTC). No new operation was queued.`);
+        } catch {
+          return bad('Site daily quota and pending reservations are exhausted. Use wordrava_site_usage to see the exact reset time.');
+        }
+      }
       return bad('WordRava rejected the request; verify your site ownership, scope and operation arguments.');
     }
   };
