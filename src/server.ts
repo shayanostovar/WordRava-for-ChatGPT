@@ -27,7 +27,7 @@ const protectedResourceMetadata = publicOrigin + '/.well-known/oauth-protected-r
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '256kb' }));
-app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.0.2' }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.0.3' }));
 
 // OAuth 2.1 / RFC 9728 protected-resource metadata. Nginx routes this path to MCP.
 const metadata = {
@@ -111,7 +111,7 @@ function scopeError(scope: string) {
 }
 
 function createServer(token: string, session: Session): McpServer {
-  const server = new McpServer({ name: 'WordRava', version: '1.0.2' });
+  const server = new McpServer({ name: 'WordRava', version: '1.0.3' });
   server.registerTool('wordrava_list_sites', {
     description: 'List only the WordPress sites in the signed-in WordRava account, including whether each site is blocked. Does not query site content.',
     inputSchema: {}, annotations: readAnnotations, _meta: oauthSites,
@@ -243,6 +243,58 @@ function createServer(token: string, session: Session): McpServer {
   }, async ({ site_id, content_type, item_id, expected_modified_gmt, user_confirmed, request_id }) =>
     submit(site_id, { kind: 'publish_draft', contentType: content_type, itemId: item_id,
       expectedModifiedGmt: expected_modified_gmt, confirmChanges: user_confirmed }, true, request_id));
+
+  // Stable tools: Center and WordPress Connector validate operation kinds.
+  // Adding supported operations later does not require a new MCP tool name.
+  const parseOperationPayload = (input_json: string): Record<string, unknown> | null => {
+    try {
+      const value: unknown = JSON.parse(input_json);
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+      const params = value as Record<string, unknown>;
+      const keys = Object.keys(params);
+      if (keys.length > 24 || keys.some(k => !/^[a-zA-Z][a-zA-Z0-9]{0,63}$/.test(k) ||
+        ['kind', 'confirmChanges', 'siteId', 'connectorKey', 'requestId', 'ownerId'].includes(k))) return null;
+      return params;
+    } catch { return null; }
+  };
+  server.registerTool('wordrava_plan_operation', {
+    description: 'List supported WordPress operation kinds, scopes and risk for a connected site. Planning never modifies WordPress. Inspect site capabilities before planning; new operation kinds are discoverable without adding MCP tools.',
+    inputSchema: { site_id: z.string().uuid() }, annotations: readAnnotations, _meta: oauthContentRead,
+  }, async ({ site_id }) => {
+    if (!can('content:read')) return scopeError('content:read');
+    try { return good(await centerGet<unknown>(`/api/v1/sites/${site_id}/operations`, token)); }
+    catch { return bad('Cannot inspect operation catalog or ownership.'); }
+  });
+  server.registerTool('wordrava_execute_read', {
+    description: 'Queue an allowlisted READ-ONLY WordPress operation by its discovered kind. Center and WP validate the kind and privileges, rejecting writes. Poll job status for the result.',
+    inputSchema: { site_id: z.string().uuid(), operation: z.string().regex(/^[a-z][a-z0-9_]{1,63}$/),
+      input_json: z.string().max(120000).default('{}') },
+    annotations: externalReadAnnotations, _meta: oauthContentRead,
+  }, async ({ site_id, operation, input_json }) => {
+    const params = parseOperationPayload(input_json);
+    if (!params) return bad('Provide a JSON object of arguments with no reserved fields.');
+    return submit(site_id, { ...params, kind: operation, confirmChanges: false }, false);
+  });
+  server.registerTool('wordrava_execute_write', {
+    description: 'Queue one approved WRITE operation by its allowlisted kind. Requires exact user approval, WP opt-in, content:write OAuth scope, stable idempotency UUID and WP native permissions. Publishing has separate local opt-in. Unsupported kinds fail closed.',
+    inputSchema: { site_id: z.string().uuid(), operation: z.string().regex(/^[a-z][a-z0-9_]{1,63}$/),
+      input_json: z.string().max(120000), user_confirmed: z.literal(true),
+      request_id: z.string().uuid() },
+    annotations: { ...writeAnnotations, destructiveHint: true }, _meta: oauthContentWrite,
+  }, async ({ site_id, operation, input_json, user_confirmed, request_id }) => {
+    const params = parseOperationPayload(input_json);
+    if (!params) return bad('Provide a JSON object containing only approved operation arguments.');
+    return submit(site_id, { ...params, kind: operation, confirmChanges: user_confirmed }, true, request_id);
+  });
+  server.registerTool('wordrava_operation_status', {
+    description: 'Poll an asynchronous operation by job ID. Check the result before retrying any write.',
+    inputSchema: { site_id: z.string().uuid(), job_id: z.string().uuid() },
+    annotations: readAnnotations, _meta: oauthContentRead,
+  }, async ({ site_id, job_id }) => {
+    if (!can('content:read')) return scopeError('content:read');
+    try { return good(await centerGet<unknown>(`/api/v1/sites/${site_id}/jobs/${job_id}`, token)); }
+    catch { return bad('Job is unavailable or site is not owned by this account.'); }
+  });
   server.registerTool('wordrava_site_overview', {
     description: 'Queue a read-only WordPress site overview (site name, WordPress version and active theme). Returns an asynchronous job ID.',
     inputSchema: { site_id: z.string().uuid() }, annotations: externalReadAnnotations, _meta: oauthContentRead,
