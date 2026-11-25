@@ -13,7 +13,7 @@ assert c["capabilities"]["enabledByDefault"] is False
 assert c["operation"]["status"] == "implemented-feature-flagged-beta"
 assert c["operation"]["endpoint"] == "POST /api/v1/sites/{siteId}/jobs"
 assert c["operation"]["connectorPoll"] == "POST /api/v1/connector-jobs/poll"
-assert set(c["operation"]["types"]["write"]) == {"create_draft", "update_draft", "publish_draft", "import_media_url"}
+assert set(c["operation"]["types"]["write"]) == {"create_draft", "update_draft", "publish_draft", "import_media_url", "activate_theme", "activate_plugin", "deactivate_plugin", "update_published", "trash_content", "restore_content"}
 assert c["usage"]["limitSource"] == "center-plan"
 
 def contains(path, *values):
