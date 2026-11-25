@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.2/plugin.schema.json",
   "name": "wordrava",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Manage WordPress sites from ChatGPT with passwordless WordPress-admin-confirmed pairing, read tools and permission-gated draft edits.",
   "author": {
     "name": "ShayanOstovar",
@@ -41,7 +41,7 @@
         "logo": "./assets/logo.svg"
       },
       "review": {
-        "release_notes": "Version 1.0.3 introduces persistent dynamic operation planning and scoped read/write execution using existing Center operation catalog; confirmation and native WordPress permissions continue to apply. Review draft, not approved for public Marketplace.",
+        "release_notes": "Version 1.0.4 introduces persistent dynamic operation planning and scoped read/write execution using existing Center operation catalog; confirmation and native WordPress permissions continue to apply. Review draft, not approved for public Marketplace.",
         "test_cases": {
           "positive": [
             {
