@@ -27,7 +27,7 @@ const protectedResourceMetadata = publicOrigin + '/.well-known/oauth-protected-r
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '256kb' }));
-app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.0.7' }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.0.8' }));
 
 // OAuth 2.1 / RFC 9728 protected-resource metadata. Nginx routes this path to MCP.
 const metadata = {
@@ -111,7 +111,7 @@ function scopeError(scope: string) {
 }
 
 function createServer(token: string, session: Session): McpServer {
-  const server = new McpServer({ name: 'WordRava', version: '1.0.7' });
+  const server = new McpServer({ name: 'WordRava', version: '1.0.8' });
   server.registerTool('wordrava_list_sites', {
     description: 'List only the WordPress sites in the signed-in WordRava account, including whether each site is blocked. Does not query site content.',
     inputSchema: {}, annotations: readAnnotations, _meta: oauthSites,
@@ -170,11 +170,18 @@ function createServer(token: string, session: Session): McpServer {
     catch { return bad('Pairing request is expired, unavailable or belongs to a different connection.'); }
   });
   server.registerTool('wordrava_site_usage', {
-    description: 'Read the current UTC-day quota of a WordRava site (limit set by its plan). A blocked site is unavailable.',
+    description: 'Read exact current UTC-day per-site quota: effective plan and override source, successful operations, pending/running reservations, failed jobs (not charged), remaining, daily limit and next 00:00 UTC reset time. Use this whenever the user asks about capacity of a site.',
     inputSchema: { site_id: z.string().uuid() }, annotations: readAnnotations, _meta: oauthSites,
   }, async ({ site_id }) => {
     try { return good(await centerGet<unknown>(`/api/v1/usage/${site_id}`, token)); }
     catch { return bad('Site is blocked, unavailable, or not owned by your WordRava account.'); }
+  });
+  server.registerTool('wordrava_account_usage', {
+    description: 'Read the current WordRava user account capacity across all active connected sites: each site effective plan, usage, reserved operations, failed jobs, remaining units and exact next reset at 00:00 UTC. Quotas are independent PER SITE; account totals are a sum, not a shared account-wide pool. Use when asked about my quota, my plan or remaining capacity.',
+    inputSchema: {}, annotations: readAnnotations, _meta: oauthSites,
+  }, async () => {
+    try { return good(await centerGet<unknown>('/api/v1/account/usage', token)); }
+    catch { return bad('Unable to retrieve usage for the current WordRava account.'); }
   });
   server.registerTool('wordrava_capabilities', {
     description: 'Read the current supported WordRava features and protocol. Use to check whether content operations are enabled before trying them.',
@@ -182,7 +189,7 @@ function createServer(token: string, session: Session): McpServer {
   }, async () => {
     try {
       const capabilities = await centerGet<Record<string, unknown>>('/api/v1/capabilities', token);
-      return good({ ...capabilities, mcp_version: '1.0.7', mcp_protocol_version: '1.0' });
+      return good({ ...capabilities, mcp_version: '1.0.8', mcp_protocol_version: '1.0' });
     }
     catch { return bad('Unable to retrieve current WordRava capabilities.'); }
   });
@@ -248,7 +255,7 @@ function createServer(token: string, session: Session): McpServer {
       expectedModifiedGmt: expected_modified_gmt, confirmChanges: user_confirmed }, true, request_id));
 
   // Stable tools: Center and WordPress Connector validate operation kinds.
-  // New 1.0.7 operations require planning, site-admin opt-in, exact previous-state checks and per-item approval; do not imply unsupported operations work.
+  // New 1.0.8 operations require planning, site-admin opt-in, exact previous-state checks and per-item approval; do not imply unsupported operations work.
   const parseOperationPayload = (input_json: string): Record<string, unknown> | null => {
     try {
       const value: unknown = JSON.parse(input_json);
