@@ -27,7 +27,7 @@ const protectedResourceMetadata = publicOrigin + '/.well-known/oauth-protected-r
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '256kb' }));
-app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.0.4' }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.0.5' }));
 
 // OAuth 2.1 / RFC 9728 protected-resource metadata. Nginx routes this path to MCP.
 const metadata = {
@@ -111,7 +111,7 @@ function scopeError(scope: string) {
 }
 
 function createServer(token: string, session: Session): McpServer {
-  const server = new McpServer({ name: 'WordRava', version: '1.0.4' });
+  const server = new McpServer({ name: 'WordRava', version: '1.0.5' });
   server.registerTool('wordrava_list_sites', {
     description: 'List only the WordPress sites in the signed-in WordRava account, including whether each site is blocked. Does not query site content.',
     inputSchema: {}, annotations: readAnnotations, _meta: oauthSites,
@@ -182,7 +182,7 @@ function createServer(token: string, session: Session): McpServer {
   }, async () => {
     try {
       const capabilities = await centerGet<Record<string, unknown>>('/api/v1/capabilities', token);
-      return good({ ...capabilities, mcp_version: '1.0.4', mcp_protocol_version: '1.0' });
+      return good({ ...capabilities, mcp_version: '1.0.5', mcp_protocol_version: '1.0' });
     }
     catch { return bad('Unable to retrieve current WordRava capabilities.'); }
   });
@@ -248,7 +248,7 @@ function createServer(token: string, session: Session): McpServer {
       expectedModifiedGmt: expected_modified_gmt, confirmChanges: user_confirmed }, true, request_id));
 
   // Stable tools: Center and WordPress Connector validate operation kinds.
-  // Adding supported operations later does not require a new MCP tool name.
+  // New 1.0.5 operations require planning, site-admin opt-in, exact previous-state checks and per-item approval; do not imply unsupported operations work.
   const parseOperationPayload = (input_json: string): Record<string, unknown> | null => {
     try {
       const value: unknown = JSON.parse(input_json);
@@ -279,7 +279,7 @@ function createServer(token: string, session: Session): McpServer {
     return submit(site_id, { ...params, kind: operation, confirmChanges: false }, false);
   });
   server.registerTool('wordrava_execute_write', {
-    description: 'Queue one approved WRITE operation by its allowlisted kind. Requires exact user approval, WP opt-in, content:write OAuth scope, stable idempotency UUID and WP native permissions. Publishing has separate local opt-in. Unsupported kinds fail closed.',
+    description: 'Queue one approved WRITE operation by its allowlisted kind. Requires exact user approval, WP opt-in, content:write OAuth scope, stable idempotency UUID and WP native permissions. Theme/plugin management and recoverable trash need a separate WordPress site-admin opt-in and exact state precondition. Publishing has separate local opt-in. Unsupported kinds fail closed.',
     inputSchema: { site_id: z.string().uuid(), operation: z.string().regex(/^[a-z][a-z0-9_]{1,63}$/),
       input_json: z.string().max(120000), user_confirmed: z.literal(true),
       request_id: z.string().uuid() },
