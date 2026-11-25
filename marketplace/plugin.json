@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.2/plugin.schema.json",
   "name": "wordrava",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Manage WordPress sites from ChatGPT with passwordless WordPress-admin-confirmed pairing, read tools and permission-gated draft edits.",
   "author": {
     "name": "ShayanOstovar",
@@ -41,7 +41,7 @@
         "logo": "./assets/logo.svg"
       },
       "review": {
-        "release_notes": "WordRava 1.0.6 private-beta recovery hardening: reversible WordPress Connector pause/resume and retention of site key across plugin deactivation, administrator-controlled resume with write permissions reset, and original-account-only OAuth recovery. No automatic cross-account site transfer, browser-session takeover or legacy keyless account takeover. Other WordPress operations remain restricted to the advertised catalog.",
+        "release_notes": "WordRava 1.0.7: secure Center-admin reset/recovery for an orphaned WordPress connection. It retires old site credentials without deleting history; new pairing requires a fresh WP-admin-approved one-time code and securely verifies the old site ID was retired. No automatic cross-account access or remote write opt-in.",
         "test_cases": {
           "positive": [
             {
