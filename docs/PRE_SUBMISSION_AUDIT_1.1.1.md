@@ -29,6 +29,18 @@ claim that owner-specific submission materials have been supplied.
 
 ## Local verification
 
+### Personal import compatibility correction
+
+The original 1.1.1 package declared an unsupported `1.0.2` plugin schema and
+was rejected by the Personal importer. Both portable manifests now explicitly
+declare the supported Agent Plugins `1.0.0` schema. The product version remains
+`1.1.1`; OAuth and the tool contract are unchanged. Metadata checks and the ZIP
+builder enforce exact supported schema IDs, including inside the built archive.
+`tests/check_package_schema.py` reproduces rejection of unsupported and missing
+schema declarations with Python assertions disabled, then verifies a valid ZIP
+and preserved authentication metadata. Actual Personal account installation is
+separate from these package compatibility checks.
+
 `npm run build` type-checks the server and operation schemas. `npm test` runs
 eight integration scenarios plus their parent suite (Node reports 9 tests),
 using the real MCP SDK and a disposable HTTPS mock Center with a trusted local

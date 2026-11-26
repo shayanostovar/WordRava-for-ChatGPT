@@ -1,5 +1,5 @@
 {
-  "$schema": "https://agent-plugins.org/schemas/1.0.2/plugin.schema.json",
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "wordrava",
   "version": "1.1.1",
   "description": "Manage connected WordPress sites, content, supported SEO fields and approved ZIP installations through WordRava.",

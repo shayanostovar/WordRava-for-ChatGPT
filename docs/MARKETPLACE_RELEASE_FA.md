@@ -2,6 +2,13 @@
 
 این راهنما در ۲۰۲۶/۱۱/۲۶ با مستندات رسمی OpenAI بررسی شده است. [English guide](MARKETPLACE_RELEASE.md).
 
+**اصلاح سازگاری با Personal:** بستهٔ اصلاح‌شدهٔ ۱.۱.۱ را از
+[صفحهٔ دانلود](https://wordrava.shayanostovar.com/download) یا
+[انتشار اصلاح قالب بسته](https://github.com/shayanostovar/WordRava-for-ChatGPT/releases/tag/mcp-v1.1.1-schema-1.0.0)
+دریافت کنید. schema هر دو فایل manifest برابر `1.0.0` است؛ این شماره مستقل از
+نسخهٔ محصول `1.1.1` است. ZIP اولیهٔ `mcp-v1.1.1` به‌دلیل اعلام schema پشتیبانی‌نشدهٔ
+`1.0.2` در Personal رد می‌شد و بستهٔ اصلاح‌شده جایگزین آن برای نصب است.
+
 ## دقیقاً چه چیزی آماده شده است؟
 
 بسته WordRava یک **Agent Plugin** با فایل‌های `plugin.json` و `mcp.json` و همان لوگوی اصلی ارسالی است. این بسته به سرویس MCP عمومی WordRava وصل می‌شود. طبق [راهنمای ساخت بسته](https://developers.openai.com/plugins/build/plugins)، قالب فعلی برای فهرست عمومی مشترک ChatGPT و Codex معتبر است. نصب محلی یا مارکت‌پلیس یک مخزن، مسیر جداگانه‌ای برای توسعه و توزیع تیمی است.

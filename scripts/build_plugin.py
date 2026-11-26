@@ -4,10 +4,19 @@ import json
 import pathlib
 import zipfile
 
+def check_schema(manifest, kind):
+    # The Personal importer accepts Agent Plugins 1.0.0. Product versioning is
+    # independent of this format; newer schema URLs are not forwards-compatible.
+    expected = f"https://agent-plugins.org/schemas/1.0.0/{kind}.schema.json"
+    if not isinstance(manifest, dict) or manifest.get("$schema") != expected:
+        raise ValueError(f"Unsupported {kind} manifest schema; expected {expected}")
+
 root = pathlib.Path(__file__).resolve().parents[1]
 source = root / "marketplace"
 manifest = json.loads((source / "plugin.json").read_text())
 auth = json.loads((source / "mcp.json").read_text())
+check_schema(manifest, "plugin")
+check_schema(auth, "mcp")
 version = json.loads((root / "package.json").read_text())["version"]
 assert manifest["name"] == "wordrava" and manifest["version"] == version
 assert auth["mcpServers"]["wordrava"]["type"] == "streamable-http"
@@ -26,5 +35,7 @@ with zipfile.ZipFile(dest, "w", zipfile.ZIP_DEFLATED) as z:
 with zipfile.ZipFile(dest) as z:
     assert z.testzip() is None
     assert "plugin.json" in z.namelist() and "mcp.json" in z.namelist()
+    check_schema(json.loads(z.read("plugin.json")), "plugin")
+    check_schema(json.loads(z.read("mcp.json")), "mcp")
 print(f"Review draft ZIP: {dest}")
 

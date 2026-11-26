@@ -2,6 +2,13 @@
 
 Reviewed against official OpenAI documentation on 2026-11-26. [راهنمای فارسی](MARKETPLACE_RELEASE_FA.md).
 
+**Personal import compatibility:** use the corrected 1.1.1 package from the
+[download page](https://wordrava.shayanostovar.com/download) or
+[schema compatibility release](https://github.com/shayanostovar/WordRava-for-ChatGPT/releases/tag/mcp-v1.1.1-schema-1.0.0).
+Both portable manifests declare Agent Plugins schema `1.0.0`, which is separate
+from product version `1.1.1`. The original `mcp-v1.1.1` archive declared an
+unsupported `1.0.2` plugin schema and is superseded by this corrected package.
+
 ## What this release provides
 
 The public package is a portable **Agent Plugin** with `plugin.json`, `mcp.json` and the original WordRava PNG assets. It connects to one hosted MCP service. OpenAI’s current public directory is shared by ChatGPT and Codex; local or repository marketplaces are separate development/distribution mechanisms. The portable format is documented in [Package your plugin](https://developers.openai.com/plugins/build/plugins).
