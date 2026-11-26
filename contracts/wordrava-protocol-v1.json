@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "1.2",
+  "schemaVersion": "1.3",
   "protocol": "wordrava",
   "protocolVersion": "1.0",
   "minimumConnectorProtocol": "1.0",
-  "centerVersion": "1.1.0",
+  "centerVersion": "1.1.1",
   "pairing": {
     "issuer": "center",
     "claimant": "wordpress-connector",
@@ -15,7 +15,7 @@
     "existingSiteUpgrade": "existingSiteId accepted for same owner and URL after new pairing code",
     "proof": "one-time user pairing code plus outbound connector key; no independent DNS ownership attestation",
     "recoveryPolicy": "For an existing site, only the original authenticated WordRava OAuth owner plus fresh WP-admin one-time approval may rotate the local connector key. No cross-account site transfer, session reassignment or legacy keyless takeover is automatic; lost original-account identity requires a separate verified recovery process.",
-    "adminRecoveryPolicy": "Admin-only retirement of existing connection requires exact site URL, explicit confirm and reason; all subsequent pairing requires fresh WP-admin one-time approval, and only a once-retired exact Site ID can be replaced. No browser session or account ownership transfer."
+    "adminRecoveryPolicy": "An authorized Center administrator may retire a named site connection after exact-URL confirmation and an audited reason. Old site and history remain archived; connector key revoked; pending jobs cancelled. New pairing requires a fresh 10-minute code, intended OAuth account and WordPress administrator nonce. Each retired site can be replaced at most once."
   },
   "capabilities": {
     "endpoint": "GET /api/v1/capabilities",
@@ -23,38 +23,53 @@
     "operationsFeatureFlag": "WORDRAVA_OPERATIONS_ENABLED",
     "enabledByDefault": false,
     "publicOAuthAvailableWhenEnabled": true,
-    "remoteWriteAvailableWhenEnabled": "both operations and writes feature flags; corresponding WordPress administrator opt-in",
+    "remoteWriteAvailableWhenEnabled": "both operations and writes feature flags; WordPress admin opt-in",
     "siteBlocking": true,
     "userBlocking": true,
     "planDrivenQuota": true,
     "readOnlyMcpTools": [
       "wordrava_list_sites",
       "wordrava_my_account",
+      "wordrava_connection_help",
+      "wordrava_pairing_status",
       "wordrava_site_usage",
+      "wordrava_account_usage",
       "wordrava_capabilities",
+      "wordrava_plan_operation",
+      "wordrava_operation_status",
+      "wordrava_job_status"
+    ],
+    "writeMcpTools": [
+      "wordrava_stage_package",
+      "wordrava_discover_site",
+      "wordrava_list_media",
+      "wordrava_import_image",
+      "wordrava_publish_draft",
       "wordrava_site_overview",
       "wordrava_list_plugins",
       "wordrava_list_menus",
       "wordrava_list_content",
       "wordrava_get_content",
-      "wordrava_job_status",
-      "wordrava_plan_operation",
-      "wordrava_execute_read",
-      "wordrava_operation_status",
-      "wordrava_account_usage",
-      "wordrava_discover_site",
-      "wordrava_list_media",
-      "wordrava_read_rest_route",
-      "wordrava_run_read_ability"
-    ],
-    "writeMcpTools": [
       "wordrava_create_draft",
       "wordrava_update_draft",
-      "wordrava_execute_write",
-      "wordrava_import_image",
-      "wordrava_publish_draft"
+      "wordrava_list_themes",
+      "wordrava_activate_theme",
+      "wordrava_activate_plugin",
+      "wordrava_deactivate_plugin",
+      "wordrava_update_published",
+      "wordrava_trash_content",
+      "wordrava_restore_content",
+      "wordrava_get_seo",
+      "wordrava_update_seo",
+      "wordrava_inspect_plugin_zip",
+      "wordrava_inspect_theme_zip",
+      "wordrava_install_plugin_zip",
+      "wordrava_install_theme_zip"
     ],
-    "writeFeatureFlag": "WORDRAVA_WRITES_ENABLED"
+    "writeFeatureFlag": "WORDRAVA_WRITES_ENABLED",
+    "mcpToolCount": 35,
+    "toolReviewPolicy": "Named, individually described tools only. Generic future-operation, arbitrary REST and arbitrary ability dispatch are not exposed to models.",
+    "readOnlyAnnotation": "Submitting a read job or staging a file changes server state and is annotated readOnlyHint=false."
   },
   "oauth": {
     "authorizationServerMetadata": "GET /.well-known/oauth-authorization-server",
@@ -69,10 +84,11 @@
       "content:read",
       "content:write"
     ],
-    "publicByDefault": false
+    "publicByDefault": false,
+    "browserCsrf": "Same-origin form confirmation with a secure HttpOnly SameSite=Strict CSRF cookie; PKCE and exact client/redirect/resource checks preserved."
   },
   "operation": {
-    "status": "implemented-feature-flagged-beta",
+    "status": "implemented-controlled-public-release",
     "endpoint": "POST /api/v1/sites/{siteId}/jobs",
     "resultEndpoint": "GET /api/v1/sites/{siteId}/jobs/{jobId}",
     "connectorPoll": "POST /api/v1/connector-jobs/poll",
@@ -88,7 +104,10 @@
         "list_media",
         "run_read_ability",
         "rest_read",
-        "list_themes"
+        "list_themes",
+        "seo_read",
+        "inspect_plugin_zip",
+        "inspect_theme_zip"
       ],
       "write": [
         "create_draft",
@@ -100,7 +119,10 @@
         "deactivate_plugin",
         "update_published",
         "trash_content",
-        "restore_content"
+        "restore_content",
+        "seo_update",
+        "install_plugin_zip",
+        "install_theme_zip"
       ]
     },
     "idempotencyHeader": "Idempotency-Key",
@@ -109,15 +131,28 @@
     "chargeOn": "successful-operation",
     "blockedSite": "deny",
     "blockedUser": "deny",
-    "writes": "Confirmed idempotent writes with corresponding local opt-in; publication and site administration require separate permission and revision or prior-state checks",
+    "writes": "Idempotent confirmed writes only; publication additionally requires WordPress administrator opt-in and revision match",
     "limitations": [
-      "No verified end-to-end WordPress staging acceptance recorded in this contract",
-      "No independent human-approval credential enforced by Center",
-      "No atomic rollback of content edits",
-      "Permanent deletion, arbitrary theme/plugin installation and native page-builder editing are not implemented",
-      "Jobs require the outbound WordPress worker; execution is not cron-free"
+      "No atomic rollback of content edits; use current revisions and a separate site backup.",
+      "Permanent deletion and native Elementor/Divi/Bricks/WPBakery editing are not implemented.",
+      "SEO adapters cover11 normalized post/page metadata fields; global SEO settings, sitemap configuration and arbitrary schema templates are not exposed.",
+      "Package installation adds executable code, requires separate WordPress installation consent and capabilities, never overwrites an installed slug and never auto-activates.",
+      "Operations use outbound WordPress polling; a working WordPress cron or administrative poll is required.",
+      "Marketplace review and publisher/domain verification are independent of server deployment."
     ],
-    "catalogEndpoint": "GET /api/v1/sites/{siteId}/operations"
+    "catalogEndpoint": "GET /api/v1/sites/{siteId}/operations",
+    "internalCompatibilityOnly": [
+      "rest_read",
+      "run_read_ability"
+    ],
+    "packageLimits": {
+      "zipBytes": 52428800,
+      "expandedBytes": 262144000,
+      "entries": 10000,
+      "overwrite": false,
+      "autoActivate": false
+    },
+    "seoRevision": "Both expectedModifiedGmt and exact64-hex expected_seo_revision required for updates; published content also requires publish permission."
   },
   "usage": {
     "endpoint": "GET /api/v1/usage/{siteId}",
@@ -130,10 +165,18 @@
     "accountEndpoint": "GET /api/v1/account/usage",
     "adminDashboardEndpoint": "GET /api/v1/admin/quota-dashboard",
     "quotaPolicy": "per_site",
-    "used": "successful operations in UTC day",
-    "reserved": "pending and running jobs",
-    "failed": "not charged",
-    "remaining": "limit - used - reserved, floored at zero"
+    "precedence": [
+      "site subscription",
+      "account subscription",
+      "default plan"
+    ],
+    "used": "Successful completed operations counted once using SiteOperations within current UTC day",
+    "reserved": "Pending/running jobs reserve capacity immediately (including jobs queued on prior days)",
+    "failed": "Failed jobs count toward diagnostics but not charged",
+    "remaining": "max(0, limit - used - reserved)",
+    "accountRollup": "sum of independent active-site quotas, not shared per-account enforcement",
+    "idempotency": "successful completion counts once even if connector callbacks are retried",
+    "connectorEndpoint": "POST /api/v1/connector-usage (site ID and secret authenticated; no browser exposure of connector key)"
   },
   "access": {
     "userBlock": "deny-login-and-existing-token-at-center",
@@ -147,23 +190,49 @@
   },
   "quickPairing": {
     "mode": "wordpress-first",
-    "version": 1,
+    "version": 2,
     "featureFlag": "WORDRAVA_QUICK_PAIRING_ENABLED",
     "passwordlessOAuthFlag": "WORDRAVA_PASSWORDLESS_OAUTH_ENABLED",
     "generateCode": "WordPress admin-only: 256-bit random hex, 600 seconds",
-    "start": "POST /api/v1/pairing/start (OAuth authenticated)",
+    "start": "GET+POST /oauth/connect-wordpress (browser account session and CSRF confirmation)",
     "confirm": "POST /api/v1/pairing/confirm (WP outbound, exact code+request ID+URL, one-use)",
     "status": "GET /api/v1/pairing/status/{requestId} (OAuth authenticated)",
-    "identity": "Provisional OAuth principal activates only after WordPress administrator confirmation",
+    "identity": "The existing /oauth HttpOnly browser session preserves the OAuth account. Provisional identity activates only after WordPress administrator approval.",
     "accountPlan": "Free default; Admin account plan overrides default; explicit per-site plan overrides account plan",
     "limits": "No automatic takeover of an already paired site; recovery requires a separately verified account-linking workflow",
-    "writes": "Disabled until explicit administrator and user approvals"
+    "writes": "Disabled until explicit administrator and user approvals",
+    "legacyStart": "POST /api/v1/pairing/start retained for existing clients; not exposed by public MCP tools",
+    "secretHandling": "WordPress generates the one-time secret; browser continuation carries it only in URL fragment, clears the fragment before same-origin form submission. Never paste it in chat."
   },
   "releaseComponents": {
-    "center": "0.2.x auto-patch",
-    "wordpressConnector": "0.3.0",
-    "chatgptMcp": "0.3.0",
+    "center": "1.1.1",
+    "wordpressConnector": "1.1.1",
+    "chatgptMcp": "1.1.1",
     "protocol": "1.0",
-    "writes": "feature-gated and disabled until explicit approval"
+    "writes": "feature-gated; site owner WordPress opt-in, native capabilities and explicit user approval"
+  },
+  "packageStaging": {
+    "endpoint": "POST /api/v1/sites/{siteId}/packages/stage",
+    "scope": "content:write",
+    "source": "native ChatGPT file descriptor; explicit user file",
+    "ttlSeconds": 1800,
+    "maxBytes": 52428800,
+    "maxActivePerOwner": 3,
+    "maxTotalStoredBytes": 536870912,
+    "fetch": "public HTTPS only; validate all DNS addresses and redirects; pin connection IP; no ambient credentials or cookies",
+    "cleanup": "expired download denied immediately; database bytes removed on upload or within 5 minutes while service is running",
+    "installsCode": false,
+    "downloadEndpoint": "GET /api/v1/packages/{id}/file",
+    "downloadAuthorization": "X-WordRava-Connector-Key for the exact package-owning site; expiry and blocked owner/site enforced. No credential in source URL. WordPress sends header only to its configured Center origin and exact staged-file path; private redirects denied."
+  },
+  "distribution": {
+    "wordpressLocales": [
+      "en",
+      "fa"
+    ],
+    "samePluginSlug": true,
+    "publicEndpoint": "GET /api/v1/downloads/wordpress?locale=en|fa",
+    "adminEndpoint": "/api/v1/admin/plugin-release?locale=en|fa",
+    "directUploadMaxBytes": 2000000
   }
 }

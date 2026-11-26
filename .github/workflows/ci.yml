@@ -11,8 +11,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install
+      - run: npm ci --no-audit --no-fund
       - run: npm run build
+      - name: Exercise MCP transport, schemas and scope boundaries
+        run: npm test
       - name: Validate shared WordRava protocol
         run: python3 tests/check_protocol.py
       - name: Check marketplace metadata, tool annotations and OAuth
@@ -22,6 +24,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: wordrava-plugin-review-draft
-          path: dist/wordrava-chatgpt-plugin-1.1.0-review-draft.zip
+          path: dist/wordrava-chatgpt-plugin-1.1.1-review-draft.zip
           if-no-files-found: error
 

@@ -58,10 +58,11 @@ jobs:
           version="$(python3 -c 'import json; print(json.load(open("package.json"))["version"])')"
           tag="mcp-v$version"
           artifact="dist/wordrava-chatgpt-plugin-$version-review-draft.zip"
+          python3 -c 'import json; print(json.load(open("marketplace/plugin.json"))["extensions"]["com.openai"]["review"]["release_notes"])' > dist/release-notes.md
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release $tag exists; refusing to overwrite its immutable artifact"
           else
-            gh release create "$tag" "$artifact" --target "$GITHUB_SHA" --title "WordRava for ChatGPT MCP v$version" --notes "Coordinated WordRava release with supplied ribbon branding, accurate capability metadata and existing permission-gated operations. Marketplace bundle is a review draft and is not an OpenAI-approved public listing."
+            gh release create "$tag" "$artifact" docs/MARKETPLACE_RELEASE.md docs/MARKETPLACE_RELEASE_FA.md --target "$GITHUB_SHA" --title "WordRava for ChatGPT MCP v$version" --notes-file dist/release-notes.md
           fi
 
   deploy:

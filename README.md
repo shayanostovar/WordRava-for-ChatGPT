@@ -1,52 +1,69 @@
-# WordRava for ChatGPT v1.1.0
+# WordRava for ChatGPT v1.1.1
 
-WordRava connects WordPress to ChatGPT through WordRava Center, OAuth authorization code + PKCE and a remote Streamable HTTP MCP server. **By ShayanOstovar**.
+WordRava connects WordPress to ChatGPT and Codex through WordRava Center, OAuth authorization code + PKCE and a remote Streamable HTTP MCP server. **By ShayanOstovar**.
 
-## Implemented tools
+## Implemented workflows
 
-- Account identity, connected sites, effective per-site plans and live usage, including successful/reserved/failed counts and the next 00:00 UTC reset.
-- Discovery of a site's plugins, theme, post types, taxonomies, REST namespaces, abilities and permission levels.
-- Read posts/pages, media, menus, installed plugins/themes and site information.
-- Read discovered WordPress REST routes and run explicitly read-only, non-destructive registered abilities through their native permission checks.
-- Create/update drafts, import an approved HTTPS image, publish an approved unchanged draft, update published content and use recoverable trash/restore.
-- Activate an already-installed theme or plugin, or deactivate an installed plugin, after site-administration opt-in and expected-state checks.
-- Plan supported operations and inspect asynchronous operation results.
+- Read connected sites, stable account identity and independent per-site capacity, including successful/reserved/failed counts and the next 00:00 UTC reset.
+- Discover a site's installed plugins, active theme, post types, taxonomies and available WordRava permissions. Discovery does not grant access to arbitrary plugin operations.
+- Read posts/pages, media, menus and installed themes/plugins.
+- Create/update drafts, import an approved HTTPS image, explicitly publish an unchanged draft, update published content and recoverably trash/restore.
+- Activate an installed theme/plugin or deactivate an eligible plugin after local administration opt-in and expected-state checks.
+- Read and update supported per-post Yoast SEO or All in One SEO fields. Updates bind both the WordPress content revision and an adapter-specific SEO revision.
+- Stage a ZIP attached through ChatGPT, inspect plugin/theme metadata and SHA-256, then explicitly approve installation of those exact bytes. Installation refuses overwrite and never activates the package automatically.
+- Plan supported operations and poll asynchronous jobs to a verified result.
 
-Initial OAuth linking requests read-only scopes. Writes require `content:write`, explicit approval and the corresponding WordPress administrator opt-in. Publication and site administration are distinct permissions. Center feature flags and tenant authorization are enforced on each call.
+The public catalog contains **35 named tools**. Initial OAuth linking requests read access. Writes require `content:write`, explicit approval and the matching WordPress administrator opt-in. SEO, publication, site administration and code installation have separate local controls. Center feature flags, account/site ownership and native WordPress capabilities are enforced on each operation.
 
-Dedicated Elementor/Divi/Bricks/WPBakery document editing adapters, native Yoast saves, arbitrary plugin/theme installation, PHP/shell/SQL execution, direct image bytes from ChatGPT and full-site snapshot rollback are not implemented. Discovery of a plugin does not imply editing support.
+The connector executes jobs by outbound WordPress polling. WP-Cron or manual administration sync must run; queueing is not immediate execution. Read jobs reserve quota and are correctly annotated as stateful even though they do not edit WordPress.
 
-## WordPress-first onboarding
+## Scope and limitations
 
-Install [WordRava Connector](https://wordrava.shayanostovar.com/download), open **WordRava → Quick Connect** as a WordPress administrator and generate the short-lived code. After connecting the MCP server, paste the displayed command into ChatGPT. Open the returned administrator-only confirmation link and approve. Pairing status confirms completion; the Center account activates with its assigned plan.
+The SEO adapter covers supported post/page metadata; use the returned `supported_fields` before writing. It does not expose global SEO options, sitemaps, arbitrary schema templates or every premium feature. Native Elementor/Divi/Bricks/WPBakery document editing, arbitrary REST/ability dispatch, PHP/shell/SQL execution, permanent deletion and full-site snapshot rollback are not public tools.
 
-Existing-key recovery is ownership-checked. Pausing the connector or disabling remote writes does not silently grant a new OAuth scope. No WordPress password is sent to ChatGPT.
+ZIP structural inspection is not a malware or licensing guarantee. Package installation adds executable code, requires a separate local opt-in and explicit approval, rechecks the inspected digest/slug/version, refuses existing slugs and leaves the active theme/plugin state unchanged. Staged attachments are site-scoped, limited to 50 MiB and expire after 30 minutes.
+
+## WordPress connection
+
+A published Directory installation already declares the MCP server and OAuth configuration. End users select **Connect**; they do not type a server URL, client ID or scopes.
+
+Install [WordRava Connector](https://wordrava.shayanostovar.com/download), open **WordRava → Quick Connect** as a WordPress administrator, and choose **Continue in browser**. Review the site in Center and explicitly approve the returned request in WordPress administration. Return to ChatGPT and list connected sites to verify completion. Keep the one-time code in that browser flow; never paste it into chat.
+
+Existing-site recovery is ownership-checked. Disabling remote writes or pausing the connector cannot silently grant a new OAuth scope. WordPress credentials and pairing secrets are not inputs to any public tool.
 
 ## Build, validate and package
 
 ```sh
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund
 npm run build
+npm test
 python3 tests/check_protocol.py
 python3 tests/check_marketplace.py
+python3 scripts/build_review_fixtures.py
 python3 scripts/build_plugin.py
 ```
 
-The review bundle is `dist/wordrava-chatgpt-plugin-1.1.0-review-draft.zip`, with both manifests at its root. The supplied WordRava PNG mark is used in the marketplace assets. Do not include credentials or reviewer secrets.
+The reproducible review bundle is `dist/wordrava-chatgpt-plugin-1.1.1-review-draft.zip`, with both manifests at the archive root and the supplied original ribbon PNG assets. `npm test` exercises actual MCP transport and schemas against a disposable HTTPS Center mock. Connector and Center integration checks cover their corresponding live implementations separately.
 
-This is a private-beta integration. A successful repository release or deployment does not constitute OpenAI review or approval.
+Repository release and deployment are separate from OpenAI review and Directory publication. Owner identity, domain verification, reviewer access, a real demo video and the portal's scan remain required. No credentials or review secrets belong in the ZIP.
 
-## Deployment
+## Deployment and documentation
 
-Main-branch CI validates source and publishes immutable SHA-tagged GHCR images. Center's existing restricted deployment workflow synchronizes the approved MCP image. Release tags and review-bundle filenames derive from the package version. The public readiness script checks the current coordinated version and OAuth metadata after rollout.
+Main-branch workflows validate source and publish immutable SHA-tagged GHCR images. Center's restricted deployment workflow selects the approved MCP image. The coordinated application release is 1.1.1; the wire protocol remains 1.0 with shared schema1.3.
 
-- [MCP implementation](src/server.ts)
+- [Runtime integration contract](docs/INTEGRATION.md)
+- [English submission guide](docs/MARKETPLACE_RELEASE.md)
+- [راهنمای فارسی انتشار](docs/MARKETPLACE_RELEASE_FA.md)
+- [v1.1.1 pre-submission audit](docs/PRE_SUBMISSION_AUDIT_1.1.1.md)
 - [Plugin metadata](marketplace/plugin.json)
 - [MCP and OAuth declaration](marketplace/mcp.json)
-- [Submission runbook](docs/MARKETPLACE_RELEASE.md)
 - [Center](https://github.com/shayanostovar/WordRavaCenter)
 - [WordPress Connector](https://github.com/shayanostovar/WordRava-WordPress-Connector)
 
+## Release 1.1.1
+
+Adds concrete SEO adapters and attached ZIP inspection/installation tools; replaces generic public executors with individually reviewed named tools; moves pairing secrets into the browser-only flow; corrects job/upload annotations; declares structured success outputs and machine-readable safe errors; adds a real MCP protocol test suite, exact five-positive/three-negative review scenarios, deterministic review fixtures and bilingual publication guidance.
+
 ## Release 1.1.0
 
-Coordinated Center/Connector/MCP version; supplied ribbon branding across marketplace assets; corrected capability metadata and stale release paths. Existing account quotas, permissions, confirmation gates and operation behavior are preserved.
+Coordinated Center/Connector/MCP version; supplied ribbon branding across marketplace assets; refreshed bilingual Center and administrator-managed WordPress download packages.

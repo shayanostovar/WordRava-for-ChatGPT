@@ -21,8 +21,9 @@ jobs:
       - name: Validate source and protocol
         run: |
           set -euo pipefail
-          npm install --no-audit --no-fund
+          npm ci --no-audit --no-fund
           npm run build
+          npm test
           python3 tests/check_protocol.py
           python3 tests/check_marketplace.py
       - name: Configure Docker Buildx
@@ -49,3 +50,4 @@ jobs:
           SHA: ${{ github.sha }}
         run: |
           docker buildx imagetools inspect "ghcr.io/shayanostovar/wordrava-for-chatgpt:$SHA"
+

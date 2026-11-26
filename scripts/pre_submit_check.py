@@ -40,15 +40,15 @@ def assert_json(path, validator):
 
 def check_center():
     assert_json("/health", lambda x: (
-        (_ for _ in ()).throw(AssertionError("Center not 1.1.0"))
-        if x.get("component") != "center" or x.get("version") != "1.1.0"
+        (_ for _ in ()).throw(AssertionError("Center not 1.1.1"))
+        if x.get("component") != "center" or x.get("version") != "1.1.1"
         else None))
 
 
 def check_mcp():
     assert_json("/mcp/health", lambda x: (
-        (_ for _ in ()).throw(AssertionError("MCP not 1.1.0"))
-        if x.get("component") != "mcp" or x.get("version") != "1.1.0"
+        (_ for _ in ()).throw(AssertionError("MCP not 1.1.1"))
+        if x.get("component") != "mcp" or x.get("version") != "1.1.1"
         else None))
 
 
@@ -85,8 +85,8 @@ def check_legal(path, keywords):
     assert any(k in lowered for k in keywords), "Expected document content missing"
 
 
-check("Center 1.1.0", check_center)
-check("MCP 1.1.0", check_mcp)
+check("Center 1.1.1", check_center)
+check("MCP 1.1.1", check_mcp)
 check("Authorization server OAuth/PKCE", check_auth_metadata)
 check("MCP protected resource discovery", check_resource_metadata)
 check("Unauthenticated MCP login challenge", check_unauthenticated_mcp)

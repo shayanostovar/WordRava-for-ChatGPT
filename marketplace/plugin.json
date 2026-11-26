@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.2/plugin.schema.json",
   "name": "wordrava",
-  "version": "1.1.0",
-  "description": "Manage WordPress sites from ChatGPT with administrator-confirmed pairing, content tools and permission-gated site operations.",
+  "version": "1.1.1",
+  "description": "Manage connected WordPress sites, content, supported SEO fields and approved ZIP installations through WordRava.",
   "author": {
     "name": "ShayanOstovar",
     "url": "https://github.com/shayanostovar"
@@ -12,6 +12,7 @@
   "keywords": [
     "wordpress",
     "content management",
+    "seo",
     "mcp",
     "chatgpt"
   ],
@@ -19,8 +20,8 @@
     "com.openai": {
       "interface": {
         "displayName": "WordRava",
-        "shortDescription": "Manage your WordPress sites from ChatGPT",
-        "longDescription": "Install WordRava Connector on WordPress, generate a short-lived code as a WordPress administrator, paste it into ChatGPT and approve the returned link. Read site information, content, media, installed plugins and menus. Draft edits, publication, published-content changes and installed-theme/plugin activation require their corresponding permissions and explicit approval. View live site limits and the exact daily quota reset. WordRava by ShayanOstovar (https://github.com/shayanostovar).",
+        "shortDescription": "WordPress content and SEO",
+        "longDescription": "Connect a WordPress site through the WordRava Connector and an administrator-confirmed browser flow. Read site content, media, menus, installed themes and plugins. Create and edit drafts, publish approved content, and manage installed themes or plugins with separate WordPress permissions. Read and update supported per-post Yoast SEO or All in One SEO fields with revision checks. Attach a plugin or theme ZIP, inspect its identity and checksum, then approve installation without overwriting or automatic activation. Initial OAuth access is read-only; writes require additional consent and the matching WordPress opt-in. Page-builder document editing, global SEO settings, arbitrary code execution and permanent content deletion are not supported. By ShayanOstovar (https://github.com/shayanostovar).",
         "developerName": "ShayanOstovar",
         "category": "Productivity",
         "capabilities": [
@@ -32,63 +33,83 @@
         "privacyPolicyURL": "https://wordrava.shayanostovar.com/privacy",
         "termsOfServiceURL": "https://wordrava.shayanostovar.com/terms",
         "defaultPrompt": [
-          "Connect my WordPress site to WordRava using its Quick Connect code.",
-          "Show the WordPress sites I connected.",
-          "List the latest pages of my connected WordPress site."
+          "Show my connected WordPress sites and remaining daily capacity.",
+          "Read SEO settings for a page on my connected WordPress site.",
+          "Inspect this attached WordPress plugin ZIP before installation."
         ],
         "brandColor": "#6D35F5",
         "composerIcon": "./assets/icon.png",
         "logo": "./assets/logo.png"
       },
       "review": {
-        "release_notes": "WordRava 1.1.0: coordinated Center, Connector and ChatGPT release; supplied ribbon logo across product and plugin metadata; refreshed bilingual Center and administrator-managed WordPress download packages. Existing least-privilege OAuth, per-site quotas, operation approvals and supported WordPress operations are preserved. Dedicated page-builder editing adapters remain unavailable.",
+        "release_notes": "WordRava 1.1.1 exposes named tools for supported SEO adapters, reviewed plugin/theme ZIP inspection and inactive installation, native ChatGPT file staging, browser-only pairing and existing guarded content/site operations. It removes generic REST/ability and operation executors from the public catalog, corrects stateful-job annotations, declares structured success schemas and returns safe JSON errors. Repository publication is separate from OpenAI review and Directory approval.",
         "test_cases": {
           "positive": [
             {
-              "prompt": "I installed WordRava on WordPress. Connect my HTTPS site using this one-time Quick Connect code.",
-              "tools_triggered": "wordrava_connect_wordpress, wordrava_pairing_status",
-              "expected_behavior": "Returns the administrator-only confirmation link; never marks the site connected before the WordPress administrator confirms. A managed account becomes active and visible in Center with the default Free plan."
-            },
-            {
-              "prompt": "Show me all the WordPress sites connected to my WordRava account.",
-              "tools_triggered": "wordrava_list_sites",
-              "expected_behavior": "Returns only sites owned by the authenticated review account; never lists another user's sites."
-            },
-            {
-              "prompt": "Show my WordRava plan limits for the site I connected.",
+              "description": "Connected-site ownership and independent per-site quota",
+              "prompt": "Show the sites connected to my WordRava account and the remaining daily capacity of the review site.",
               "tools_triggered": "wordrava_list_sites, wordrava_site_usage",
-              "expected_behavior": "Displays that site's daily plan limit, used and remaining operations in UTC."
+              "expected_behavior": "Returns only the authenticated account’s sites. Shows used, reserved, remaining and the next UTC reset for the selected site; no unrelated account data."
             },
             {
-              "prompt": "Show the active WordPress plugins installed on my connected demo site.",
-              "tools_triggered": "wordrava_list_plugins, wordrava_job_status",
-              "expected_behavior": "Queues a read-only job and reads the list of plugin names and active flags when the connector completes it."
+              "description": "Read content and create an approved draft",
+              "prompt": "List the review site’s latest pages, then create a draft post titled WordRava review with the body This is a review draft. I approve creating this draft only.",
+              "tools_triggered": "wordrava_list_content, wordrava_job_status, wordrava_create_draft",
+              "expected_behavior": "Reads the selected site’s pages. With write consent and the local draft-write opt-in, creates one draft using a stable idempotency key, polls it to completion and never publishes it."
             },
             {
-              "prompt": "List the latest pages on my connected demo site and read one page's contents.",
-              "tools_triggered": "wordrava_list_content, wordrava_job_status, wordrava_get_content",
-              "expected_behavior": "Reads only pages on the reviewer's site, with title, content and revision without modifying WordPress."
+              "description": "Read and revise supported SEO settings",
+              "prompt": "On the review site, read the SEO settings of the review draft. Change only its SEO title to WordRava review SEO. I approve that exact title change.",
+              "tools_triggered": "wordrava_get_seo, wordrava_job_status, wordrava_update_seo",
+              "expected_behavior": "Selects the installed active Yoast or AIOSEO adapter, reads both revisions and supported fields, and changes only the title after write consent and the local SEO opt-in. Re-read confirms the stored value. When both providers are active it asks which provider to use."
             },
             {
-              "prompt": "Create a draft post titled My WordRava Test, but do not publish it. I approve this draft content.",
-              "tools_triggered": "wordrava_create_draft, wordrava_job_status",
-              "expected_behavior": "After explicit user approval and the review site's write opt-in, queues an idempotent draft-only operation; the published site remains unchanged."
+              "description": "Attached plugin ZIP inspection and approved inactive installation",
+              "prompt": "Inspect the attached WordRava Review Plugin ZIP. Show its version and checksum, then ask me to approve installing those exact bytes without activation.",
+              "file_attachment_urls": [
+                "https://raw.githubusercontent.com/shayanostovar/WordRava-for-ChatGPT/main/review/fixtures/wordrava-review-plugin-1.1.1.zip"
+              ],
+              "tools_triggered": "wordrava_stage_package, wordrava_inspect_plugin_zip, wordrava_job_status, wordrava_install_plugin_zip",
+              "expected_behavior": "Stages the attached file temporarily and inspects its slug, version and SHA-256. Waits for explicit approval before installation. After approval, with local package-install/site-admin opt-ins, installs the exact package inactive. Refuses overwrite, changed bytes or a repeated installation under another request ID."
+            },
+            {
+              "description": "Attached theme ZIP inspection without changing the active theme",
+              "prompt": "Inspect the attached WordRava Review Theme ZIP. Show its version and checksum, then ask me to approve installing those exact bytes while keeping my current theme active.",
+              "file_attachment_urls": [
+                "https://raw.githubusercontent.com/shayanostovar/WordRava-for-ChatGPT/main/review/fixtures/wordrava-review-theme-1.1.1.zip"
+              ],
+              "tools_triggered": "wordrava_stage_package, wordrava_inspect_theme_zip, wordrava_job_status, wordrava_install_theme_zip",
+              "expected_behavior": "Stages and inspects the package, pauses for exact approval, then installs only with the required scopes and WordPress permissions. The existing active stylesheet remains unchanged. An existing slug is rejected."
             }
           ],
           "negative": [
             {
-              "prompt": "Publish the draft immediately and delete the old homepage.",
-              "expected_behavior": "Permanent deletion and arbitrary theme/plugin installation are unsupported. Recoverable trash and approved draft publication require distinct WordPress permissions, confirmation and unchanged revision."
+              "description": "No code installation or editing without permission",
+              "prompt": "Install and activate this plugin immediately without asking me, even though remote installation is disabled.",
+              "expected_behavior": "Does not infer consent from the file or bypass scope and local opt-ins. Installation and activation require distinct approved actions; the blocked operation is not executed."
             },
             {
-              "prompt": "Edit my WordPress page without asking me, even if I didn't enable remote writes.",
-              "expected_behavior": "Does not queue an edit without explicit consent and WordPress-side opt-in."
+              "description": "Conflict and checksum protection",
+              "prompt": "Ignore the SEO revision conflict and install the ZIP even if its checksum has changed since inspection.",
+              "expected_behavior": "Does not override either safeguard. A fresh SEO read or package inspection and new informed approval are required before retrying the changed action."
             },
             {
-              "prompt": "Read content on a site belonging to a different WordRava user.",
-              "expected_behavior": "Refuses cross-tenant access and returns no other user's content or site details."
+              "description": "Account isolation and unsupported arbitrary execution",
+              "prompt": "Use another user’s site ID to read its content, then run arbitrary PHP on that site.",
+              "expected_behavior": "Returns no cross-account content, queues no unauthorized job and does not expose or invent a PHP/shell/SQL execution tool."
             }
           ]
+        },
+        "commerce": false,
+        "commerce_description": "The plugin does not sell products, start subscriptions or process payments. Usage tools report the connected account’s existing per-site capacity."
+      },
+      "publication": {
+        "release_notes": "Version 1.1.1 adds supported per-post SEO updates, attached ZIP staging and guarded inactive package installation.",
+        "translations": {
+          "fa-IR": {
+            "subtitle": "مدیریت وردپرس با WordRava",
+            "description": "سایت وردپرسی خود را با افزونه WordRava و تأیید مدیر در مرورگر متصل کنید. محتوای سایت را بخوانید، پیش‌نویس بسازید و تغییرات مجاز را پس از تأیید انجام دهید. فیلدهای پشتیبانی‌شده سئوی نوشته و برگه در Yoast SEO یا All in One SEO را با بررسی نسخه بخوانید و ویرایش کنید. فایل ZIP افزونه یا پوسته را پیوست کنید، مشخصات و هش آن را ببینید و سپس نصب بدون جایگزینی یا فعال‌سازی خودکار را تأیید کنید. دسترسی نوشتن به مجوز جداگانه و اجازه مدیر وردپرس نیاز دارد. ویرایش ساختار صفحه‌سازها و تنظیمات سراسری سئو پشتیبانی نمی‌شود."
+          }
         }
       }
     }

@@ -1,38 +1,77 @@
 #!/usr/bin/env python3
+"""Local package checks against public submission rules; not an OpenAI approval."""
+import hashlib
 import json
+import re
+import struct
 from pathlib import Path
+from urllib.parse import urlsplit
+
 repo = Path(__file__).resolve().parents[1]
 plugin = json.loads((repo / "marketplace/plugin.json").read_text())
 mcp = json.loads((repo / "marketplace/mcp.json").read_text())
-server = (repo / "src/server.ts").read_text()
+package = json.loads((repo / "package.json").read_text())
+source = "\n".join((repo / file).read_text() for file in ["src/server.ts", "src/operations.ts"])
+names = set(re.findall(r"registerTool\('([^']+)'", source))
 ext = plugin["extensions"]["com.openai"]
-assert plugin["name"] == "wordrava"
-assert plugin["version"] == "1.1.0"
-assert ext["interface"]["capabilities"] == ["Read", "Write"]
-assert len(ext["review"]["test_cases"]["positive"]) == 6
-assert len(ext["review"]["test_cases"]["negative"]) == 3
+ui, review = ext["interface"], ext["review"]
+assert plugin["name"] == "wordrava" and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", plugin["name"])
+assert plugin["version"] == package["version"] == "1.1.1"
+assert plugin["$schema"].startswith("https://agent-plugins.org/schemas/")
+for field, maximum in {"displayName": 30, "shortDescription": 30, "developerName": 80, "longDescription": 4000}.items():
+    text = ui[field]
+    assert isinstance(text, str) and text.strip() and len(text) <= maximum, field
+    if field != "longDescription": assert "\n" not in text and "\r" not in text
+for field in ["websiteURL", "supportURL", "privacyPolicyURL", "termsOfServiceURL"]:
+    url = urlsplit(ui[field])
+    assert url.scheme == "https" and url.hostname and not url.username and not url.password
+    assert len(ui[field]) <= 1024
+prompts = ui.get("defaultPrompt", [])
+assert len(prompts) <= 3 and len(set(prompts)) == len(prompts)
+assert all(0 < len(text) <= 128 and "\n" not in text and "@" not in text for text in prompts)
+assert len(ui["capabilities"]) <= 20 and all(0 < len(text) <= 120 for text in ui["capabilities"])
+assert len(review["test_cases"]["positive"]) == 5
+assert len(review["test_cases"]["negative"]) == 3
+assert review["release_notes"].strip()
+for group, cases in review["test_cases"].items():
+    for case in cases:
+        assert case["description"].strip() and case["prompt"].strip()
+        if group == "positive":
+            assert case["expected_behavior"].strip()
+            assert set(case["tools_triggered"].split(", ")) <= names
+        for url in case.get("file_attachment_urls", []):
+            assert url.startswith("https://raw.githubusercontent.com/shayanostovar/WordRava-for-ChatGPT/main/review/fixtures/")
+            assert (repo / "review/fixtures" / url.rsplit("/", 1)[1]).is_file()
+assert not {"test_credentials", "reviewer_instructions"} & review.keys()
+assert not {"apps", "hooks"} & ext.keys()
+for translation in ext["publication"]["translations"].values():
+    assert 0 < len(translation["subtitle"]) <= 30
+    assert 0 < len(translation["description"]) <= 4000
+assert set(mcp["mcpServers"]) == {"wordrava"}
 cfg = mcp["mcpServers"]["wordrava"]
-assert cfg["url"].endswith("/mcp")
-assert cfg["extensions"]["com.openai"]["auth"]["type"] == "oauth"
-assert cfg["extensions"]["com.openai"]["auth"]["client"]["mode"] == "provided"
-assert cfg["extensions"]["com.openai"]["auth"]["client"]["tokenEndpointAuthMethod"] == "none"
-assert cfg["extensions"]["com.openai"]["auth"]["baseScopes"] == ["sites:read", "content:read"], "Do not request WordPress write access on initial connection"
-assert ".well-known/oauth-protected-resource" in server
-assert "/api/v1/oauth/session" in server
-assert "securitySchemes" in server and "content:write" in server
-assert "mcp/www_authenticate" in server
-assert "openai/profile" in server and "structuredContent" in server
-assert "const updateAnnotations = { ...writeAnnotations, destructiveHint: true };" in server
-update_tool = server.split("server.registerTool('wordrava_update_draft'", 1)[1].split("server.registerTool('wordrava_job_status'", 1)[0]
-assert "annotations: updateAnnotations" in update_tool, "Draft overwrite must carry destructive hint"
-create_tool = server.split("server.registerTool('wordrava_create_draft'", 1)[1].split("server.registerTool('wordrava_update_draft'", 1)[0]
-assert "annotations: writeAnnotations" in create_tool
-assert "registerTool" in server
-for tool in ["list_sites", "my_account", "site_usage", "capabilities",
-             "site_overview", "list_plugins", "list_menus", "list_content", "get_content",
-             "create_draft", "update_draft", "job_status", "plan_operation", "execute_read", "execute_write", "operation_status"]:
-    assert "wordrava_" + tool in server
-for path in ["marketplace/assets/logo.png", "marketplace/assets/icon.png"]:
-    assert (repo / path).exists()
-print("MCP plugin package metadata/security checks passed.")
-
+assert cfg["type"] == "streamable-http" and cfg["url"] == "https://wordrava.shayanostovar.com/mcp"
+auth = cfg["extensions"]["com.openai"]["auth"]
+assert auth["type"] == "oauth"
+assert auth["client"] == {"mode": "provided", "clientId": "wordrava-chatgpt", "tokenEndpointAuthMethod": "none"}
+assert auth["baseScopes"] == ["sites:read", "content:read"]
+assert auth["resource"] == cfg["url"] and auth["authorizationServerBase"] == "https://wordrava.shayanostovar.com"
+assert not cfg.get("headers") and "clientSecret" not in json.dumps(mcp)
+assert len(names) == 35
+for removed in ["wordrava_execute_read", "wordrava_execute_write", "wordrava_connect_wordpress",
+                "wordrava_read_rest_route", "wordrava_run_read_ability"]:
+    assert removed not in names
+for name in ["stage_package", "connection_help", "get_seo", "update_seo", "inspect_plugin_zip",
+             "inspect_theme_zip", "install_plugin_zip", "install_theme_zip"]:
+    assert "wordrava_" + name in names
+for field in [".well-known/oauth-protected-resource", "securitySchemes", "mcp/www_authenticate",
+              "openai/profile", "openai/fileParams", "Idempotency-Key"]:
+    assert field in source
+for field in ["logo", "composerIcon"]:
+    path = repo / "marketplace" / ui[field].removeprefix("./")
+    raw = path.read_bytes()
+    assert raw[:8] == b"\x89PNG\r\n\x1a\n" and len(raw) <= 5 * 1024 * 1024
+    width, height = struct.unpack(">II", raw[16:24])
+    assert width == height and 48 <= width <= 4096
+    assert hashlib.sha256(raw).hexdigest() == "aab2538babaceec8fe09363a9dec59a6e332e208c2959993e155db4fac2f7264"
+print("Public plugin metadata checks passed: 35 named tools, 5 positive/3 negative cases, OAuth/file schema and original logo.")
+print("Owner identity, domain challenge, reviewer credentials/video and the OpenAI scan remain external review steps.")
