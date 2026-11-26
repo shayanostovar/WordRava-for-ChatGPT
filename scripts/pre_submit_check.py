@@ -40,15 +40,15 @@ def assert_json(path, validator):
 
 def check_center():
     assert_json("/health", lambda x: (
-        (_ for _ in ()).throw(AssertionError("Center not 0.2.0"))
-        if x.get("component") != "center" or x.get("version") != "0.2.0"
+        (_ for _ in ()).throw(AssertionError("Center not 1.1.0"))
+        if x.get("component") != "center" or x.get("version") != "1.1.0"
         else None))
 
 
 def check_mcp():
     assert_json("/mcp/health", lambda x: (
-        (_ for _ in ()).throw(AssertionError("MCP not 0.2.0"))
-        if x.get("component") != "mcp" or x.get("version") != "0.2.0"
+        (_ for _ in ()).throw(AssertionError("MCP not 1.1.0"))
+        if x.get("component") != "mcp" or x.get("version") != "1.1.0"
         else None))
 
 
@@ -85,14 +85,14 @@ def check_legal(path, keywords):
     assert any(k in lowered for k in keywords), "Expected document content missing"
 
 
-check("Center 0.2.0", check_center)
-check("MCP 0.2.0", check_mcp)
+check("Center 1.1.0", check_center)
+check("MCP 1.1.0", check_mcp)
 check("Authorization server OAuth/PKCE", check_auth_metadata)
 check("MCP protected resource discovery", check_resource_metadata)
 check("Unauthenticated MCP login challenge", check_unauthenticated_mcp)
-check("Public privacy policy", lambda: check_legal("/privacy.html", ["privacy", "datenschutz"]))
-check("Public terms", lambda: check_legal("/terms.html", ["terms", "nutzungsbedingungen"]))
-check("Public support", lambda: check_legal("/support.html", ["support", "hilfe", "contact"]))
+check("Public privacy policy", lambda: check_legal("/privacy", ["privacy", "datenschutz"]))
+check("Public terms", lambda: check_legal("/terms", ["terms", "nutzungsbedingungen"]))
+check("Public support", lambda: check_legal("/support", ["support", "hilfe", "contact"]))
 
 for name, ok, detail in checks:
     print(("PASS" if ok else "FAIL") + ": " + name + ("" if ok else " — " + detail))

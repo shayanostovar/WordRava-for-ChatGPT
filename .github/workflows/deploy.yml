@@ -46,21 +46,22 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Package v1.0.3 ChatGPT review bundle
+      - name: Package ChatGPT review bundle
         run: |
           python3 tests/check_marketplace.py
           python3 scripts/build_plugin.py
-      - name: Publish validated MCP v1.0.3 release
+      - name: Publish validated MCP release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          tag=mcp-v1.0.3
-          artifact=dist/wordrava-chatgpt-plugin-1.0.3-review-draft.zip
+          version="$(python3 -c 'import json; print(json.load(open("package.json"))["version"])')"
+          tag="mcp-v$version"
+          artifact="dist/wordrava-chatgpt-plugin-$version-review-draft.zip"
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release $tag exists; refusing to overwrite its immutable artifact"
           else
-            gh release create "$tag" "$artifact" --target "$GITHUB_SHA" --title "WordRava for ChatGPT MCP v1.0.3" --notes "Passwordless WordPress-first pairing, automatic account activation, account recovery, and controlled read/draft tools. Marketplace bundle is a review draft and is not an OpenAI-approved public listing."
+            gh release create "$tag" "$artifact" --target "$GITHUB_SHA" --title "WordRava for ChatGPT MCP v$version" --notes "Coordinated WordRava release with supplied ribbon branding, accurate capability metadata and existing permission-gated operations. Marketplace bundle is a review draft and is not an OpenAI-approved public listing."
           fi
 
   deploy:
@@ -97,3 +98,4 @@ jobs:
             -i ~/.ssh/wordrava_deploy -p "$DEPLOY_PORT" \
             "$DEPLOY_USER@$DEPLOY_HOST" \
             wordrava-deploy mcp "$GITHUB_SHA"
+

@@ -24,4 +24,5 @@ No arbitrary URLs, administrative commands, SQL, shell execution or write tools 
 
 ## Versions
 
-MCP 0.1.1 is independently versioned from Center API 0.1.1 and WordPress Connector 0.1.1. The wire protocol remains 1.0, with an additive schema 1.1 contract. JWTs are revalidated by Center for each MCP call; blocked users are rejected and blocked sites cannot retrieve usage.
+MCP, Center API and WordPress Connector use the coordinated 1.1.0 release version. The wire protocol remains 1.0, with an additive schema 1.1 contract. JWTs are revalidated by Center for each MCP call; blocked users are rejected and blocked sites cannot retrieve usage.
+

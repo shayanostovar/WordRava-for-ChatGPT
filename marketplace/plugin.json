@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.2/plugin.schema.json",
   "name": "wordrava",
-  "version": "1.0.8",
-  "description": "Manage WordPress sites from ChatGPT with passwordless WordPress-admin-confirmed pairing, read tools and permission-gated draft edits.",
+  "version": "1.1.0",
+  "description": "Manage WordPress sites from ChatGPT with administrator-confirmed pairing, content tools and permission-gated site operations.",
   "author": {
     "name": "ShayanOstovar",
     "url": "https://github.com/shayanostovar"
@@ -20,7 +20,7 @@
       "interface": {
         "displayName": "WordRava",
         "shortDescription": "Manage your WordPress sites from ChatGPT",
-        "longDescription": "Install WordRava Connector on WordPress, generate a short-lived code as a WordPress admin, paste it into ChatGPT and approve the returned link. WordRava creates your managed account automatically, with no separate user signup. Read content, site information, plugins and menus. Draft edits require separate explicit approval and WordPress administrator opt-in. WordRava by ShayanOstovar (https://github.com/shayanostovar).",
+        "longDescription": "Install WordRava Connector on WordPress, generate a short-lived code as a WordPress administrator, paste it into ChatGPT and approve the returned link. Read site information, content, media, installed plugins and menus. Draft edits, publication, published-content changes and installed-theme/plugin activation require their corresponding permissions and explicit approval. View live site limits and the exact daily quota reset. WordRava by ShayanOstovar (https://github.com/shayanostovar).",
         "developerName": "ShayanOstovar",
         "category": "Productivity",
         "capabilities": [
@@ -28,20 +28,20 @@
           "Write"
         ],
         "websiteURL": "https://wordrava.shayanostovar.com",
-        "supportURL": "https://wordrava.shayanostovar.com/support.html",
-        "privacyPolicyURL": "https://wordrava.shayanostovar.com/privacy.html",
-        "termsOfServiceURL": "https://wordrava.shayanostovar.com/terms.html",
+        "supportURL": "https://wordrava.shayanostovar.com/support",
+        "privacyPolicyURL": "https://wordrava.shayanostovar.com/privacy",
+        "termsOfServiceURL": "https://wordrava.shayanostovar.com/terms",
         "defaultPrompt": [
           "Connect my WordPress site to WordRava using its Quick Connect code.",
           "Show the WordPress sites I connected.",
           "List the latest pages of my connected WordPress site."
         ],
         "brandColor": "#6D35F5",
-        "composerIcon": "./assets/icon.svg",
-        "logo": "./assets/logo.svg"
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/logo.png"
       },
       "review": {
-        "release_notes": "WordRava 1.0.8: accurate per-site quota and account capacity across connected sites, successful/reserved/failed breakdown, plan source and exact next 00:00 UTC reset; new wordrava_account_usage tool. User account totals sum independent site quotas, not a pooled budget.",
+        "release_notes": "WordRava 1.1.0: coordinated Center, Connector and ChatGPT release; supplied ribbon logo across product and plugin metadata; refreshed bilingual Center and administrator-managed WordPress download packages. Existing least-privilege OAuth, per-site quotas, operation approvals and supported WordPress operations are preserved. Dedicated page-builder editing adapters remain unavailable.",
         "test_cases": {
           "positive": [
             {

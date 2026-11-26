@@ -3,7 +3,7 @@
   "protocol": "wordrava",
   "protocolVersion": "1.0",
   "minimumConnectorProtocol": "1.0",
-  "centerVersion": "1.0.8",
+  "centerVersion": "1.1.0",
   "pairing": {
     "issuer": "center",
     "claimant": "wordpress-connector",
@@ -23,7 +23,7 @@
     "operationsFeatureFlag": "WORDRAVA_OPERATIONS_ENABLED",
     "enabledByDefault": false,
     "publicOAuthAvailableWhenEnabled": true,
-    "remoteWriteAvailableWhenEnabled": "draft-only and WordPress-admin-opt-in",
+    "remoteWriteAvailableWhenEnabled": "both operations and writes feature flags; corresponding WordPress administrator opt-in",
     "siteBlocking": true,
     "userBlocking": true,
     "planDrivenQuota": true,
@@ -41,13 +41,20 @@
       "wordrava_plan_operation",
       "wordrava_execute_read",
       "wordrava_operation_status",
-      "wordrava_account_usage"
+      "wordrava_account_usage",
+      "wordrava_discover_site",
+      "wordrava_list_media",
+      "wordrava_read_rest_route",
+      "wordrava_run_read_ability"
     ],
     "writeMcpTools": [
       "wordrava_create_draft",
       "wordrava_update_draft",
-      "wordrava_execute_write"
-    ]
+      "wordrava_execute_write",
+      "wordrava_import_image",
+      "wordrava_publish_draft"
+    ],
+    "writeFeatureFlag": "WORDRAVA_WRITES_ENABLED"
   },
   "oauth": {
     "authorizationServerMetadata": "GET /.well-known/oauth-authorization-server",
@@ -102,12 +109,13 @@
     "chargeOn": "successful-operation",
     "blockedSite": "deny",
     "blockedUser": "deny",
-    "writes": "Explicitly approved idempotent writes, publish requires additional WordPress opt-in and revision",
+    "writes": "Confirmed idempotent writes with corresponding local opt-in; publication and site administration require separate permission and revision or prior-state checks",
     "limitations": [
-      "No verified end-to-end WordPress staging acceptance yet",
+      "No verified end-to-end WordPress staging acceptance recorded in this contract",
       "No independent human-approval credential enforced by Center",
       "No atomic rollback of content edits",
-      "No deletion or native page-builder writes yet"
+      "Permanent deletion, arbitrary theme/plugin installation and native page-builder editing are not implemented",
+      "Jobs require the outbound WordPress worker; execution is not cron-free"
     ],
     "catalogEndpoint": "GET /api/v1/sites/{siteId}/operations"
   },

@@ -7,7 +7,7 @@ mcp = json.loads((repo / "marketplace/mcp.json").read_text())
 server = (repo / "src/server.ts").read_text()
 ext = plugin["extensions"]["com.openai"]
 assert plugin["name"] == "wordrava"
-assert plugin["version"] == "1.0.8"
+assert plugin["version"] == "1.1.0"
 assert ext["interface"]["capabilities"] == ["Read", "Write"]
 assert len(ext["review"]["test_cases"]["positive"]) == 6
 assert len(ext["review"]["test_cases"]["negative"]) == 3
@@ -32,6 +32,7 @@ for tool in ["list_sites", "my_account", "site_usage", "capabilities",
              "site_overview", "list_plugins", "list_menus", "list_content", "get_content",
              "create_draft", "update_draft", "job_status", "plan_operation", "execute_read", "execute_write", "operation_status"]:
     assert "wordrava_" + tool in server
-for path in ["marketplace/assets/logo.svg", "marketplace/assets/icon.svg"]:
+for path in ["marketplace/assets/logo.png", "marketplace/assets/icon.png"]:
     assert (repo / path).exists()
 print("MCP plugin package metadata/security checks passed.")
+
