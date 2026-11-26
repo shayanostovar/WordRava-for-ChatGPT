@@ -4,10 +4,14 @@ Reviewed against official OpenAI documentation on 2026-11-26. [راهنمای ف
 
 **Personal import compatibility:** use the corrected 1.1.1 package from the
 [download page](https://wordrava.shayanostovar.com/download) or
-[schema compatibility release](https://github.com/shayanostovar/WordRava-for-ChatGPT/releases/tag/mcp-v1.1.1-schema-1.0.0).
+[validated import release](https://github.com/shayanostovar/WordRava-for-ChatGPT/releases/tag/mcp-v1.1.1-import-validated).
 Both portable manifests declare Agent Plugins schema `1.0.0`, which is separate
-from product version `1.1.1`. The original `mcp-v1.1.1` archive declared an
-unsupported `1.0.2` plugin schema and is superseded by this corrected package.
+from product version `1.1.1`. Release notes belong only in
+`extensions.com.openai.publication`. The original archive declared an unsupported
+`1.0.2` schema; its first repair still contained the unsupported
+`review.release_notes` field. Both are superseded by this package, which was
+accepted by the real private-plugin importer and read back successfully. OAuth
+account connection and public review remain separate.
 
 ## What this release provides
 

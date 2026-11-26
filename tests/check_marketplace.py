@@ -4,13 +4,17 @@ import hashlib
 import json
 import re
 import struct
+import sys
 from pathlib import Path
 from urllib.parse import urlsplit
 
 repo = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(repo / "scripts"))
+from validate_package import PACKAGE_PATHS, validate_package
 plugin = json.loads((repo / "marketplace/plugin.json").read_text())
 mcp = json.loads((repo / "marketplace/mcp.json").read_text())
 package = json.loads((repo / "package.json").read_text())
+validate_package({name: (repo / "marketplace" / name).read_bytes() for name in PACKAGE_PATHS}, package["version"])
 source = "\n".join((repo / file).read_text() for file in ["src/server.ts", "src/operations.ts"])
 names = set(re.findall(r"registerTool\('([^']+)'", source))
 ext = plugin["extensions"]["com.openai"]
@@ -33,7 +37,7 @@ assert all(0 < len(text) <= 128 and "\n" not in text and "@" not in text for tex
 assert len(ui["capabilities"]) <= 20 and all(0 < len(text) <= 120 for text in ui["capabilities"])
 assert len(review["test_cases"]["positive"]) == 5
 assert len(review["test_cases"]["negative"]) == 3
-assert review["release_notes"].strip()
+assert ext["publication"]["release_notes"].strip()
 for group, cases in review["test_cases"].items():
     for case in cases:
         assert case["description"].strip() and case["prompt"].strip()

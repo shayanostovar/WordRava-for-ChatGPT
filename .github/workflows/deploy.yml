@@ -58,13 +58,12 @@ jobs:
           version="$(python3 -c 'import json; print(json.load(open("package.json"))["version"])')"
           tag="mcp-v$version"
           artifact="dist/wordrava-chatgpt-plugin-$version-review-draft.zip"
-          python3 -c 'import json; print(json.load(open("marketplace/plugin.json"))["extensions"]["com.openai"]["review"]["release_notes"])' > dist/release-notes.md
-          # Preserve the original immutable 1.1.1 release. Its plugin manifest
-          # declared unsupported schema 1.0.2; publish the package-only repair
-          # separately without changing the product/runtime version.
+          python3 -c 'import json; print(json.load(open("marketplace/plugin.json"))["extensions"]["com.openai"]["publication"]["release_notes"])' > dist/release-notes.md
+          # Preserve earlier immutable 1.1.1 packages. Publish the archive
+          # accepted by the real importer without changing the runtime version.
           if [ "$version" = "1.1.1" ]; then
-            tag="$tag-schema-1.0.0"
-            printf '\nPersonal import compatibility repair: both portable manifests use the supported Agent Plugins 1.0.0 schema. This archive supersedes the original mcp-v1.1.1 package; product version and OAuth settings remain unchanged.\n' >> dist/release-notes.md
+            tag="$tag-import-validated"
+            printf '\nImport compatibility repair: Agent Plugins 1.0.0 with release notes under publication, strict nested metadata validation, and successful real private-plugin ingestion/readback. This archive supersedes both earlier 1.1.1 packages. Product version and OAuth settings remain unchanged; account authorization and marketplace review are separate steps.\n' >> dist/release-notes.md
           fi
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release $tag exists; refusing to overwrite its immutable artifact"

@@ -54,6 +54,23 @@ These tests establish the MCP contract. Actual WordPress/provider saves and
 installations, deployed Center integration and production OAuth are verified in
 the coordinated release workflow and must not be inferred from this mock.
 
+## Complete overlay and real ingestion correction
+
+The first schema repair did not validate the OpenAI overlay and still included
+the unsupported `review.release_notes` property. Release notes now live only in
+`publication.release_notes`; the release workflow reads the same supported field.
+All supplied metadata is checked recursively, including review cases, publication
+translations, interface fields, and MCP OAuth. Unknown fields and wrong types
+are rejected by the actual package builder and targeted regression cases.
+
+On 2026-11-26, the complete corrected 1.1.1 archive was accepted by the actual
+Plugin Creator ingestion backend as a private workspace plugin. Readback of its
+portable and generated compatibility manifests confirmed preserved identity,
+version, review cases, release notes, Persian metadata, MCP endpoint and OAuth
+configuration. The backend normalized publisher identity to the authenticated
+account. This is package acceptance, not an OAuth authorization or a public
+marketplace approval. No private account details are included in this report.
+
 ## Owner-dependent review gates
 
 The following cannot be fabricated by a code release: verified publishing

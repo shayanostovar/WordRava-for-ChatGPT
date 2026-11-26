@@ -4,10 +4,13 @@
 
 **اصلاح سازگاری با Personal:** بستهٔ اصلاح‌شدهٔ ۱.۱.۱ را از
 [صفحهٔ دانلود](https://wordrava.shayanostovar.com/download) یا
-[انتشار اصلاح قالب بسته](https://github.com/shayanostovar/WordRava-for-ChatGPT/releases/tag/mcp-v1.1.1-schema-1.0.0)
+[انتشار تأییدشده در واردکننده](https://github.com/shayanostovar/WordRava-for-ChatGPT/releases/tag/mcp-v1.1.1-import-validated)
 دریافت کنید. schema هر دو فایل manifest برابر `1.0.0` است؛ این شماره مستقل از
-نسخهٔ محصول `1.1.1` است. ZIP اولیهٔ `mcp-v1.1.1` به‌دلیل اعلام schema پشتیبانی‌نشدهٔ
-`1.0.2` در Personal رد می‌شد و بستهٔ اصلاح‌شده جایگزین آن برای نصب است.
+نسخهٔ محصول `1.1.1` است. یادداشت انتشار فقط در `extensions.com.openai.publication` قرار می‌گیرد.
+بستهٔ اولیه schema نامعتبر `1.0.2` داشت و اصلاح اول هنوز شامل فیلد نامعتبر
+`review.release_notes` بود. این بسته جایگزین هر دو شده، در واردکنندهٔ واقعی افزونهٔ
+خصوصی پذیرفته شده و فایل‌های ذخیره‌شدهٔ آن دوباره بررسی شده‌اند. اتصال حساب از طریق
+OAuth و داوری انتشار عمومی، مراحل جداگانه‌اند.
 
 ## دقیقاً چه چیزی آماده شده است؟
 

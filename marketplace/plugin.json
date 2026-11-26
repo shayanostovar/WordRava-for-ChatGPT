@@ -42,7 +42,6 @@
         "logo": "./assets/logo.png"
       },
       "review": {
-        "release_notes": "WordRava 1.1.1 exposes named tools for supported SEO adapters, reviewed plugin/theme ZIP inspection and inactive installation, native ChatGPT file staging, browser-only pairing and existing guarded content/site operations. It removes generic REST/ability and operation executors from the public catalog, corrects stateful-job annotations, declares structured success schemas and returns safe JSON errors. Repository publication is separate from OpenAI review and Directory approval.",
         "test_cases": {
           "positive": [
             {
@@ -104,7 +103,7 @@
         "commerce_description": "The plugin does not sell products, start subscriptions or process payments. Usage tools report the connected account’s existing per-site capacity."
       },
       "publication": {
-        "release_notes": "Version 1.1.1 adds supported per-post SEO updates, attached ZIP staging and guarded inactive package installation.",
+        "release_notes": "WordRava 1.1.1 exposes named tools for supported SEO adapters, reviewed plugin/theme ZIP inspection and inactive installation, native ChatGPT file staging, browser-only pairing and existing guarded content/site operations. It removes generic REST/ability and operation executors from the public catalog, corrects stateful-job annotations, declares structured success schemas and returns safe JSON errors. Repository publication is separate from OpenAI review and Directory approval. The portable package uses the supported Agent Plugins 1.0.0 schema and places release notes only in publication metadata.",
         "translations": {
           "fa-IR": {
             "subtitle": "مدیریت وردپرس با WordRava",
