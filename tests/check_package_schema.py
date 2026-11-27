@@ -51,6 +51,11 @@ with tempfile.TemporaryDirectory(prefix="wordrava-package-schema-") as directory
     shutil.copy2(repo / "scripts/validate_package.py", fixture / "scripts/validate_package.py")
     shutil.copy2(repo / "package.json", fixture / "package.json")
     shutil.copytree(repo / "marketplace", fixture / "marketplace")
+    # Include the actual release gate and shared manifests; test the complete
+    # package builder rather than bypassing the newly required gate.
+    (fixture / "tests").mkdir()
+    shutil.copy2(repo / "tests/check_compatibility_gate.py", fixture / "tests/check_compatibility_gate.py")
+    shutil.copytree(repo / "contracts", fixture / "contracts")
     originals = {kind: json.loads((fixture / "marketplace" / f"{kind}.json").read_text())
                  for kind in ("plugin", "mcp")}
     # -O ensures unsupported formats cannot bypass the production builder by
