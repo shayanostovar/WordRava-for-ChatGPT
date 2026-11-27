@@ -230,8 +230,11 @@ function createServer(token: string, session: Session): McpServer {
         if (error.code === 'builder_preview_disabled') return bad('Native page-builder operations are disabled by the Center administrator.', error.code, { http_status: 503 });
         if (error.code === 'operations_disabled') return bad('Remote operations are disabled by the Center administrator.', error.code, { http_status: 503 });
         if (error.code === 'writes_disabled') return bad('Remote write operations are disabled by the Center administrator.', error.code, { http_status: 503 });
+        if (error.code === 'universal_discovery_disabled') return bad('Universal capability discovery is not enabled on this Center.', error.code, { http_status: 503 });
         return bad('WordRava Center is temporarily unavailable or a feature is disabled. Check capabilities before retrying.', error.code, { http_status: 503 });
       }
+      if (error instanceof CenterHttpError && error.code === 'universal_connector_upgrade_required') return bad('Universal discovery requires a compatible Connector 1.4.0 or newer; do not use a production site for this development capability.', error.code, { http_status: 409 });
+      if (error instanceof CenterHttpError && error.code === 'capability_not_registered_or_stale') return bad('Complete a fresh discovery scan and re-read the capability catalog before retrying.', error.code, { http_status: 409 });
       if (error instanceof CenterHttpError && error.code === 'human_approval_connector_upgrade_required') return bad('Sensitive changes require Connector 1.3.0 or newer with site-local human approval. Upgrade from an authorized release when available; do not bypass the approval.', error.code, { http_status: 409 });
       if (error instanceof CenterHttpError && error.code === 'compatibility_connector_upgrade_required') return bad('Native appearance and Polylang operations require WordPress Connector 1.2.3 or newer.', error.code, { http_status: 409 });
       if (error instanceof CenterHttpError && error.code === 'inventory_connector_upgrade_required') return bad('Paginated and language-filtered inventory requires WordPress Connector 1.2.3 or newer. An older connector cannot establish a complete inventory.', error.code, { http_status: 409 });
