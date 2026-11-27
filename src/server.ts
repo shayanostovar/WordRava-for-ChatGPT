@@ -227,6 +227,7 @@ function createServer(token: string, session: Session): McpServer {
         if (error.code === 'writes_disabled') return bad('Remote write operations are disabled by the Center administrator.', error.code, { http_status: 503 });
         return bad('WordRava Center is temporarily unavailable or a feature is disabled. Check capabilities before retrying.', error.code, { http_status: 503 });
       }
+      if (error instanceof CenterHttpError && error.code === 'compatibility_connector_upgrade_required') return bad('Native appearance and Polylang operations require WordPress Connector 1.2.3 or newer.', error.code, { http_status: 409 });
       if (error instanceof CenterHttpError && error.code === 'inventory_connector_upgrade_required') return bad('Paginated and language-filtered inventory requires WordPress Connector 1.2.3 or newer. An older connector cannot establish a complete inventory.', error.code, { http_status: 409 });
       if (error instanceof CenterHttpError && error.code === 'builder_connector_upgrade_required') return bad('Native builder operations require WordPress Connector 1.2.0 or newer.', error.code, { http_status: 409 });
       if (error instanceof CenterHttpError && error.status === 401) return { ...bad('The WordRava connection expired. Reauthorize before retrying.', 'invalid_token'), _meta: { 'mcp/www_authenticate': [`Bearer resource_metadata="${protectedResourceMetadata}", error="invalid_token"`] } };

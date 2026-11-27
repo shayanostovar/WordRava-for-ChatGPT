@@ -202,6 +202,36 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
     }
     assert.equal(postCount(), before);
   });
+  await t.test('native appearance and Polylang tools use typed jobs, revisions and explicit scope', async () => {
+    const theme={site_id:siteId,stylesheet:'child-theme'};
+    const approved={expected_revision:digest,user_confirmed:true,request_id:requestId};
+    const css={...theme,...approved,css:'.site { color: red; }'};
+    const denied=await call('wordrava_update_custom_css',css,read);
+    assert.equal(errorOf(denied).code,'insufficient_scope');
+    const readResult=await call('wordrava_read_theme_appearance',{site_id:siteId},read);
+    assert.equal(readResult.structuredContent.job_id,jobId);
+    assert.equal(requests.findLast(r=>r.method==='POST').body.kind,'theme_read');
+    const result=await call('wordrava_update_custom_css',css);
+    assert.equal(result.structuredContent.job_id,jobId);
+    let request=requests.findLast(r=>r.method==='POST');
+    assert.equal(request.idempotency,requestId);
+    assert.equal(request.body.kind,'theme_css_update');
+    assert.deepEqual(JSON.parse(request.body.content),{stylesheet:'child-theme',expected_revision:digest,css:css.css});
+    const poly={site_id:siteId,content_type:'page',item_id:12,target_id:13,
+      ...approved,expected_target_revision:digest};
+    await call('wordrava_link_polylang_translations',poly);
+    request=requests.findLast(r=>r.method==='POST');
+    assert.equal(request.body.kind,'polylang_link');
+    assert.equal(request.body.itemId,12);
+    assert.deepEqual(JSON.parse(request.body.content),{target_id:13,expected_revision:digest,expected_target_revision:digest});
+    const before=postCount();
+    assert.equal((await call('wordrava_update_custom_css',{...css,css:'</style><script>x</script>'})).isError,true);
+    assert.equal((await call('wordrava_update_custom_css',{...css,stylesheet:'../other'})).isError,true);
+    assert.equal((await call('wordrava_update_theme_identity',{...theme,...approved,field:'admin_email',value:'x'})).isError,true);
+    assert.equal((await call('wordrava_update_theme_part',{...theme,...approved,slug:'header',markup:'<?php echo 1; ?>'})).isError,true);
+    assert.equal((await call('wordrava_link_polylang_translations',{...poly,target_id:12})).isError,true);
+    assert.equal(postCount(),before);
+  });
   await t.test('SEO writes preserve revisions and idempotency; malformed/unknown fields fail closed', async () => {
     const args = { site_id: siteId, content_type: 'post', item_id: 12, provider: 'yoast',
       fields: { title: 'Reviewed title', canonical: '', robots_noindex: false }, expected_modified_gmt: revision,

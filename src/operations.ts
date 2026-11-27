@@ -60,6 +60,96 @@ export function registerDedicatedOperations(server: McpServer, submit: Submit, a
   const builderMeta=(write:boolean,label:string)=>({... (write ? auth.oauthContentWrite : auth.oauthContentRead),
     'openai/toolInvocation/invoking':'WordRava: '+label+'…','openai/toolInvocation/invoked':'WordRava: Request submitted'});
   const invalidBuilderInput=()=>({isError:true as const,content:[{type:'text' as const,text:'Invalid builder arguments. Use a fresh native builder read and the exact supported operation.'}]});
+  // Explicit native operations. The connector must also validate the installed
+  // theme/plugin, native capabilities, unified local permission profile and revisions.
+  const compatTheme = z.string().max(200).regex(/^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)?(?![\s\S])/)
+    .refine(value => !value.includes('..'), 'Use the exact active stylesheet identifier.');
+  const compatSlug = z.string().regex(/^[A-Za-z0-9_-]{1,100}(?![\s\S])/);
+  const compatRevision = z.string().regex(/^[a-f0-9]{64}(?![\s\S])/);
+  const compatApproval = { expected_revision: compatRevision, user_confirmed: approved, request_id: requestId };
+  const siteIdentity = { site_id: z.string().uuid() };
+  const themeIdentity = { ...siteIdentity, stylesheet: compatTheme };
+  const partIdentity = { ...themeIdentity, slug: compatSlug };
+  const compatPoly = { ...siteIdentity, content_type: contentType, item_id: z.number().int().positive() };
+  const boundedCss = z.string().max(45000).refine(value => Buffer.byteLength(value,'utf8') <= 45000 &&
+    !/<\/style/i.test(value) && !/<(?:\/(?:s(?:t(?:y(?:l(?:e)?)?)?)?)?)?$/i.test(value), 'Invalid or oversized CSS.');
+  const boundedMarkup = z.string().min(1).max(45000).refine(value => Buffer.byteLength(value,'utf8') <= 45000 &&
+    value.trim().length > 0 && !value.includes('<?'), 'Use bounded native block markup, not PHP.');
+  const appearanceRead = (label:string) => ({ outputSchema:queuedJobSchema, annotations:queuedRead, _meta:builderMeta(false,label) });
+  const appearanceWrite = (label:string) => ({ outputSchema:queuedJobSchema, annotations:sensitiveWrite, _meta:builderMeta(true,label) });
+  const compatibilityRead = (site_id:string,kind:string,payload:object={},content_type='post',item_id?:number) =>
+    submit(site_id,{kind,contentType:content_type,...(item_id===undefined?{}:{itemId:item_id}),content:JSON.stringify(payload)},false);
+  const compatibilityWrite = (site_id:string,kind:string,payload:object,user_confirmed:true,request_id:string,content_type='post',item_id?:number) =>
+    submit(site_id,{kind,contentType:content_type,...(item_id===undefined?{}:{itemId:item_id}),content:JSON.stringify(payload),confirmChanges:user_confirmed},true,request_id);
+
+  server.registerTool('wordrava_read_theme_appearance', {
+    ...appearanceRead('Read theme appearance'), title:'Read WordPress appearance',
+    description:'Inspect the active theme, core site title/tagline/logo/icon, exact native Custom CSS and its revision/snapshot. Reports block theme and preprocessing limitations. Requires Connector 1.2.3+. Does not read arbitrary theme options or third-party CSS fields.',
+    inputSchema:siteIdentity,
+  }, async ({site_id}) => compatibilityRead(site_id,'theme_read'));
+  server.registerTool('wordrava_update_theme_identity', {
+    ...appearanceWrite('Update theme identity'), title:'Update site identity',
+    description:'Change exactly one core site title, tagline, logo attachment or site icon. Requires the active stylesheet, identity_revision from a fresh read, Read & Write profile, native capabilities and user approval of that exact change. Does not accept arbitrary option keys.',
+    inputSchema:{...themeIdentity,...compatApproval,field:z.enum(['site_title','tagline','custom_logo','site_icon']),
+      value:z.union([z.string().max(200),z.number().int().nonnegative()])},
+  }, async ({site_id,stylesheet,expected_revision,field,value,user_confirmed,request_id}) => {
+    if ((field==='site_title'||field==='tagline') ? typeof value!=='string' || (field==='site_title' && !value.trim()) : typeof value!=='number')
+      return invalidBuilderInput();
+    return compatibilityWrite(site_id,'theme_identity_update',{stylesheet,expected_revision,field,value},user_confirmed,request_id);
+  });
+  server.registerTool('wordrava_update_custom_css', {
+    ...appearanceWrite('Update Custom CSS'), title:'Update native Custom CSS',
+    description:'Replace only the active theme’s native Additional CSS with the exact approved CSS. First read existing CSS and css_revision; preserve unrelated rules. Requires full Read & Write profile and native edit_css capability. Stores a bounded local previous snapshot and verifies read-back; does not edit theme files or CSS from other plugins.',
+    inputSchema:{...themeIdentity,...compatApproval,css:boundedCss},
+  }, async ({site_id,stylesheet,expected_revision,css,user_confirmed,request_id}) =>
+    compatibilityWrite(site_id,'theme_css_update',{stylesheet,expected_revision,css},user_confirmed,request_id));
+  server.registerTool('wordrava_restore_custom_css', {
+    ...appearanceWrite('Restore Custom CSS'), title:'Restore native Custom CSS snapshot',
+    description:'Restore the latest WordRava CSS snapshot for the active theme only. Requires current css_revision, exact css_snapshot_revision and explicit approval. Restores CSS text, not files or all theme settings.',
+    inputSchema:{...themeIdentity,...compatApproval,snapshot_revision:compatRevision},
+  }, async ({site_id,stylesheet,expected_revision,snapshot_revision,user_confirmed,request_id}) =>
+    compatibilityWrite(site_id,'theme_css_restore',{stylesheet,expected_revision,snapshot_revision},user_confirmed,request_id));
+  server.registerTool('wordrava_list_theme_parts', {
+    ...appearanceRead('List header and footer'), title:'List native header/footer template parts',
+    description:'List existing native header and footer block template parts for the active block theme. Not classic PHP templates or Elementor/Divi/theme-specific header builders. Check truncated before claiming a complete inventory.',
+    inputSchema:siteIdentity,
+  }, async ({site_id}) => compatibilityRead(site_id,'theme_parts_list'));
+  server.registerTool('wordrava_read_theme_part', {
+    ...appearanceRead('Read header or footer'), title:'Read native header/footer',
+    description:'Read one existing native header/footer block template part, its exact block markup, area, revision and latest snapshot revision. Use the stylesheet and slug returned by wordrava_list_theme_parts.',
+    inputSchema:partIdentity,
+  }, async ({site_id,stylesheet,slug}) => compatibilityRead(site_id,'theme_part_read',{stylesheet,slug}));
+  server.registerTool('wordrava_update_theme_part', {
+    ...appearanceWrite('Update header or footer'), title:'Update native header/footer',
+    description:'Replace one existing active block-theme header/footer with explicitly approved, sanitized native block markup and unchanged revision. Creates a WordPress database override if the part was theme-supplied. Does not edit PHP/files, arbitrary templates or third-party header builders. Stores a bounded local snapshot and verifies the result.',
+    inputSchema:{...partIdentity,...compatApproval,markup:boundedMarkup},
+  }, async ({site_id,stylesheet,slug,expected_revision,markup,user_confirmed,request_id}) =>
+    compatibilityWrite(site_id,'theme_part_update',{stylesheet,slug,expected_revision,markup},user_confirmed,request_id));
+  server.registerTool('wordrava_restore_theme_part', {
+    ...appearanceWrite('Restore header or footer'), title:'Restore native header/footer snapshot',
+    description:'Restore the previous WordRava block markup snapshot of exactly one active-theme header/footer. Requires current and snapshot revision plus explicit approval. Retains the database override instead of deleting it or changing theme files.',
+    inputSchema:{...partIdentity,...compatApproval,snapshot_revision:compatRevision},
+  }, async ({site_id,stylesheet,slug,expected_revision,snapshot_revision,user_confirmed,request_id}) =>
+    compatibilityWrite(site_id,'theme_part_restore',{stylesheet,slug,expected_revision,snapshot_revision},user_confirmed,request_id));
+  server.registerTool('wordrava_read_polylang_translation', {
+    ...appearanceRead('Read Polylang translation'), title:'Read Polylang translation group',
+    description:'Inspect a post/page language, complete accessible linked translation IDs, configured languages and revision using active Polylang. Does not change content or translate text. Requires Connector 1.2.3+.',
+    inputSchema:compatPoly,
+  }, async ({site_id,content_type,item_id}) => compatibilityRead(site_id,'polylang_read',{},content_type,item_id));
+  server.registerTool('wordrava_set_polylang_language', {
+    ...appearanceWrite('Set Polylang language'), title:'Set language of unlinked content',
+    description:'Assign a configured Polylang language to one unlinked post/page after approval and revision validation. Refuses a page already linked to other translations; never removes links silently or translates content.',
+    inputSchema:{...compatPoly,...compatApproval,language:z.string().regex(/^[A-Za-z0-9_-]{1,32}(?![\s\S])/ )},
+  }, async ({site_id,content_type,item_id,expected_revision,language,user_confirmed,request_id}) =>
+    compatibilityWrite(site_id,'polylang_set_language',{language,expected_revision},user_confirmed,request_id,content_type,item_id));
+  server.registerTool('wordrava_link_polylang_translations', {
+    ...appearanceWrite('Link Polylang translations'), title:'Link existing translated pages',
+    description:'Link two existing same-type posts/pages or nonconflicting Polylang translation groups. Inspect each group separately; supply both exact revisions and obtain approval of the merged language mapping. Refuses same-language conflicts and never removes or replaces existing links.',
+    inputSchema:{...compatPoly,...compatApproval,target_id:z.number().int().positive(),expected_target_revision:compatRevision},
+  }, async ({site_id,content_type,item_id,target_id,expected_revision,expected_target_revision,user_confirmed,request_id}) => {
+    if(item_id===target_id) return invalidBuilderInput();
+    return compatibilityWrite(site_id,'polylang_link',{target_id,expected_revision,expected_target_revision},user_confirmed,request_id,content_type,item_id);
+  });
   server.registerTool('wordrava_read_builder', {
     outputSchema:queuedJobSchema,title:'Read native page builder',
     description:'Preview: inspect native Elementor or Gutenberg node inventory, parent IDs, supported fields/controls, document and latest snapshot revisions. Read a page of nodes, or one field/control with its exact node ID. Requires Center preview enabled and Connector 1.2.0. Not a generic page source replacement.',
