@@ -20,7 +20,7 @@
     "com.openai": {
       "interface": {
         "displayName": "WordRava",
-        "shortDescription": "WordPress content, SEO and more",
+        "shortDescription": "WordPress content and SEO",
         "longDescription": "Connect a WordPress site through the WordRava Connector and an administrator-confirmed browser flow. Read site content, media, menus, installed themes and plugins. Create and edit drafts, publish approved content, and manage installed themes or plugins with separate WordPress permissions. Read and update supported per-post Yoast SEO or All in One SEO fields with revision checks. Attach a plugin or theme ZIP, inspect its identity and checksum, then approve installation without overwriting or automatic activation. Initial OAuth access is read-only; writes require additional consent and the matching WordPress opt-in. A separately enabled, tested preview offers targeted Elementor and Gutenberg document changes and last-snapshot restore. Other builders, universal design, global SEO settings, arbitrary code execution and permanent deletion are not supported. By ShayanOstovar (https://github.com/shayanostovar).",
         "developerName": "ShayanOstovar",
         "category": "Productivity",
