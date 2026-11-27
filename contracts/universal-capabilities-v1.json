@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "target_release": "1.4.0",
+  "status": "development_not_production_approved",
+  "minimum_connector_version": "1.4.0",
+  "operation_kinds": {
+    "inventory": "capability_inventory",
+    "list": "capability_resource_list"
+  },
+  "inventory_categories": [
+    "plugins",
+    "themes",
+    "post_types",
+    "taxonomies",
+    "rest",
+    "abilities",
+    "settings",
+    "metadata",
+    "blocks",
+    "shortcodes",
+    "widgets"
+  ],
+  "pagination": {
+    "max_page": 10000,
+    "max_per_page": 25,
+    "default_per_page": 20,
+    "revision_required_after_first_page": true
+  },
+  "id": {
+    "algorithm": "sha256",
+    "input": "category + ':' + identifier"
+  },
+  "execution": {
+    "scope": "content:read",
+    "mechanism": "native_public_cpt_metadata_list",
+    "local_opt_in_filter": "wordrava_public_resource_types",
+    "requires_local_read_profile": true,
+    "requires_capability_revision": true,
+    "raw_rest_or_ability_execution": false,
+    "write_enabled": false
+  },
+  "privacy": {
+    "no_setting_values": true,
+    "no_callback_names": true,
+    "no_schema_defaults_or_examples": true,
+    "no_private_post_content": true
+  },
+  "release_requirements": [
+    "real_wordpress_unknown_plugin_e2e",
+    "tenant_scope_and_permission_tests",
+    "full_contract_and_security_tests",
+    "directory_review_decision",
+    "verified_production_authorization"
+  ]
+}

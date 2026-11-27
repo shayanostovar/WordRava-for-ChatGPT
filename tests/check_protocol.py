@@ -23,7 +23,9 @@ assert c['usage']['limitSource'] == 'center-plan'
 source = '\n'.join((root / file).read_text() for file in ['src/server.ts', 'src/operations.ts'])
 names = set(re.findall(r"registerTool\('([^']+)'", source))
 expected = set(c['capabilities']['readOnlyMcpTools'] + c['capabilities']['writeMcpTools'])
-assert names == expected and len(names) == c['capabilities']['mcpToolCount'] == 46
+universal_names = {'wordrava_deep_discover','wordrava_capability_catalog','wordrava_capability_details','wordrava_list_resources'}
+assert names == expected | universal_names and len(expected) == c['capabilities']['mcpToolCount'] == 46
+assert "WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED === 'true'" in source
 assert "version: '1.3.1'" in source
 for value in ['securitySchemes', 'content:write', 'mcp/www_authenticate', 'openai/profile', 'Idempotency-Key']:
     assert value in source
