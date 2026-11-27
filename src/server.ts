@@ -227,6 +227,7 @@ function createServer(token: string, session: Session): McpServer {
         if (error.code === 'writes_disabled') return bad('Remote write operations are disabled by the Center administrator.', error.code, { http_status: 503 });
         return bad('WordRava Center is temporarily unavailable or a feature is disabled. Check capabilities before retrying.', error.code, { http_status: 503 });
       }
+      if (error instanceof CenterHttpError && error.code === 'inventory_connector_upgrade_required') return bad('Paginated and language-filtered inventory requires WordPress Connector 1.2.3 or newer. An older connector cannot establish a complete inventory.', error.code, { http_status: 409 });
       if (error instanceof CenterHttpError && error.code === 'builder_connector_upgrade_required') return bad('Native builder operations require WordPress Connector 1.2.0 or newer.', error.code, { http_status: 409 });
       if (error instanceof CenterHttpError && error.status === 401) return { ...bad('The WordRava connection expired. Reauthorize before retrying.', 'invalid_token'), _meta: { 'mcp/www_authenticate': [`Bearer resource_metadata="${protectedResourceMetadata}", error="invalid_token"`] } };
       if (error instanceof CenterHttpError && error.status === 403) return bad('The account, site or operation permission does not allow this action.', error.code, { http_status: 403 });
@@ -288,11 +289,23 @@ function createServer(token: string, session: Session): McpServer {
     description: 'Discover this WordPress installation before planning any changes: installed plugin slugs and versions, active theme, custom post types, taxonomies, REST namespaces, installed adapters and available permission levels. Discovery does not imply automatic support for unknown plugins.',
     inputSchema: { site_id: z.string().uuid() }, annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: Discover site…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
   }, async ({ site_id }) => submit(site_id, { kind: 'discover_capabilities', contentType: 'post' }, false));
+  // Optional pagination stays backward-compatible with older connectors only for
+  // a legacy call without any parameters. Explicit page/language never silently
+  // falls back to the first page: Center checks the connector version.
+  const inventoryOptions = {
+    page: z.number().int().min(1).max(10000).optional(),
+    per_page: z.number().int().min(1).max(50).optional(),
+    language: z.string().regex(/^[A-Za-z0-9_-]{1,32}(?![\s\S])/).optional()
+      .describe('Polylang language slug, or all. Omit to use the connector default.'),
+  };
+  const inventoryPayload = (page?: number, per_page?: number, language?: string) =>
+    page === undefined && per_page === undefined && language === undefined ? {} :
+      { content: JSON.stringify({ page, per_page, language }) };
   server.registerTool('wordrava_list_media', {
     outputSchema: queuedJobSchema,
-    description: 'List the latest 50 media library attachments, including IDs, MIME types and URLs. Read-only.',
-    inputSchema: { site_id: z.string().uuid() }, annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: List media…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
-  }, async ({ site_id }) => submit(site_id, { kind: 'list_media', contentType: 'post' }, false));
+    description: 'List media attachments with IDs, MIME types and URLs. With Connector 1.2.3 or newer, request page/per_page and optional Polylang language; poll the job and follow pagination.next_page until null. Older connectors return only the latest 50 without pagination. Read-only.',
+    inputSchema: { site_id: z.string().uuid(), ...inventoryOptions }, annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: List media…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
+  }, async ({ site_id, page, per_page, language }) => submit(site_id, { kind: 'list_media', contentType: 'post', ...inventoryPayload(page, per_page, language) }, false));
   server.registerTool('wordrava_import_image', {
     outputSchema: queuedJobSchema,
     description: 'Import an image from an explicitly supplied public HTTPS URL into this WordPress site Media Library. Requires explicit user approval and WordPress draft-write opt-in. Only JPEG, PNG, GIF and WebP up to 8 MB are accepted; local/private network URLs are blocked. Returns a job ID.',
@@ -353,9 +366,9 @@ function createServer(token: string, session: Session): McpServer {
   }, async ({ site_id }) => submit(site_id, { kind: 'list_menus', contentType: 'post' }, false));
   server.registerTool('wordrava_list_content', {
     outputSchema: queuedJobSchema,
-    description: 'Queue read-only listing of the latest 20 WordPress posts or pages. No content edits. Returns an asynchronous job ID.',
-    inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']) }, annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: List content…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
-  }, async ({ site_id, content_type }) => submit(site_id, { kind: 'list_content', contentType: content_type }, false));
+    description: 'Read WordPress posts or pages. With Connector 1.2.3 or newer, use page, per_page and Polylang language (all or an installed language slug). Poll the job; follow pagination.next_page until null and inspect language and translation IDs. Older connectors return only the latest 20. Do not claim a complete inventory without pagination metadata.',
+    inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']), ...inventoryOptions }, annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: List content…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
+  }, async ({ site_id, content_type, page, per_page, language }) => submit(site_id, { kind: 'list_content', contentType: content_type, ...inventoryPayload(page, per_page, language) }, false));
   server.registerTool('wordrava_get_content', {
     outputSchema: queuedJobSchema,
     description: 'Queue a read-only fetch of one WordPress post/page, including its modified_gmt revision and, with Connector 1.2.0, detected builder type. Use wordrava_read_builder for supported native documents. Returns an asynchronous job ID.',

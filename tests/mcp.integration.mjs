@@ -185,6 +185,23 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
       { kind: 'seo_read', contentType: 'post', itemId: 12, title: 'auto', content: '{}' });
     assert.equal((await call('wordrava_plan_operation', { site_id: siteId })).structuredContent.write[0].kind, 'seo_update');
   });
+  await t.test('content and media pagination forward exact bounded parameters', async () => {
+    const result = await call('wordrava_list_content', { site_id: siteId, content_type: 'page', page: 2, per_page: 24, language: 'en' }, read);
+    assert.equal(result.structuredContent.job_id, jobId);
+    let request = requests.findLast(r => r.method === 'POST');
+    assert.equal(request.body.kind, 'list_content');
+    assert.deepEqual(JSON.parse(request.body.content), { page: 2, per_page: 24, language: 'en' });
+    await call('wordrava_list_media', { site_id: siteId, page: 2 }, read);
+    request = requests.findLast(r => r.method === 'POST');
+    assert.equal(request.body.kind, 'list_media');
+    assert.deepEqual(JSON.parse(request.body.content), { page: 2 });
+    const before = postCount();
+    for (const invalid of [{ page: 0 }, { per_page: 51 }, { language: '../de' }, { page: 1.5 }]) {
+      const bad = await call('wordrava_list_content', { site_id: siteId, content_type: 'page', ...invalid }, read);
+      assert.equal(bad.isError, true);
+    }
+    assert.equal(postCount(), before);
+  });
   await t.test('SEO writes preserve revisions and idempotency; malformed/unknown fields fail closed', async () => {
     const args = { site_id: siteId, content_type: 'post', item_id: 12, provider: 'yoast',
       fields: { title: 'Reviewed title', canonical: '', robots_noindex: false }, expected_modified_gmt: revision,
