@@ -31,7 +31,7 @@ The software release and its review ZIP do not establish OpenAI approval. The ow
 | Installed administration | Separate approved tools activate installed themes/plugins or deactivate eligible plugins. Installation does not imply activation. |
 | Visibility | Read current per-site capacity, reservations, results and connection status. |
 
-There are 35 individually named public tools. Generic operation executors, arbitrary REST/ability dispatch, PHP/shell/SQL execution, permanent deletion and native page-builder document editing are absent. Queueing a WordPress read changes Center state and reserves quota, so these tools correctly advertise `readOnlyHint:false`. A structural ZIP check is not a malware or licensing assessment.
+The released catalog has 35 individually named public tools. The development branch adds two beta-only builder tools (37 total); deployment and marketplace review are still required. Generic operation executors, arbitrary REST/ability dispatch, PHP/shell/SQL execution, permanent deletion and full native page-builder document editing are absent. Targeted Elementor/Gutenberg field patching in the development branch is gated off at Center by default. Queueing a WordPress read changes Center state and reserves quota, so these tools correctly advertise `readOnlyHint:false`. A structural ZIP check is not a malware or licensing assessment.
 
 ## Package and local evidence
 

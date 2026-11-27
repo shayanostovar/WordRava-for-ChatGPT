@@ -352,7 +352,7 @@ function createServer(token: string, session: Session): McpServer {
   }, async ({ site_id, content_type }) => submit(site_id, { kind: 'list_content', contentType: content_type }, false));
   server.registerTool('wordrava_get_content', {
     outputSchema: queuedJobSchema,
-    description: 'Queue a read-only fetch of one WordPress post/page, including its modified_gmt revision. Returns an asynchronous job ID.',
+    description: 'Queue a read-only fetch of one WordPress post/page, including its modified_gmt revision and (with a compatible connector) builder type. For Elementor or Gutenberg use wordrava_read_builder to inspect the native structure. Returns an asynchronous job ID.',
     inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']), item_id: z.number().int().positive() }, annotations: queuedReadAnnotations, _meta: oauthContentRead,
   }, async ({ site_id, content_type, item_id }) => submit(site_id, { kind: 'get_content', contentType: content_type, itemId: item_id }, false));
   server.registerTool('wordrava_create_draft', {

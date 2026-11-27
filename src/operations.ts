@@ -44,6 +44,35 @@ const seoFields = z.object({
 export function registerDedicatedOperations(server: McpServer, submit: Submit, auth: {
   oauthContentRead: AuthMetadata; oauthContentWrite: AuthMetadata;
 }) {
+  const builder = z.enum(['elementor', 'gutenberg']);
+  const nodeId = z.string().regex(/^[A-Za-z0-9_.-]{1,120}(?![\s\S])/);
+  const builderField = z.enum(['title', 'editor', 'html', 'text', 'inner_html']);
+  server.registerTool('wordrava_read_builder', {
+    outputSchema: queuedJobSchema,
+    title: 'Read native page builder structure',
+    description: 'Beta: inspect the native Elementor or Gutenberg tree of one existing post/page. Read the paginated node inventory or a single allowlisted field using both node_id and field. Returns a document revision with the current value for a targeted patch. Other builders and unsupported fields are not writable. Queueing reserves site quota.',
+    inputSchema: { site_id: z.string().uuid(), content_type: contentType, item_id: z.number().int().positive(),
+      builder: z.enum(['auto', 'elementor', 'gutenberg']), offset: z.number().int().min(0).max(5000).optional(),
+      node_id: nodeId.optional(), field: builderField.optional() },
+    annotations: queuedRead, _meta: auth.oauthContentRead,
+  }, async ({site_id, content_type, item_id, builder, offset, node_id, field}) => {
+    if ((node_id === undefined) !== (field === undefined) || (node_id !== undefined && offset !== undefined))
+      return {isError:true, content:[{type:'text', text:'Provide either offset, or both node_id and field.'}]};
+    return submit(site_id, {kind:'builder_read', contentType:content_type, itemId:item_id, title:builder,
+      content: JSON.stringify(node_id === undefined ? {offset:offset ?? 0} : {node_id,field})}, false);
+  });
+  server.registerTool('wordrava_patch_builder', {
+    outputSchema: queuedJobSchema,
+    title: 'Patch one native page builder field',
+    description: 'Beta: change one exact, uniquely matching literal fragment in one supported Elementor/Gutenberg field, after reading its current value and obtaining the user’s approval of the exact change. Requires exact document SHA-256 and modified_gmt, WordPress write opt-in and publication permission when public. HTML/CSS repair is limited to supported HTML fields; executable markup and arbitrary metadata are not supported. Other nodes must not be rewritten by generic content tools. Poll and verify; never claim a queued change succeeded.',
+    inputSchema: { site_id: z.string().uuid(), content_type: contentType, item_id: z.number().int().positive(),
+      builder, node_id: nodeId, field: builderField, find: z.string().min(1).max(40000), replace: z.string().max(40000),
+      expected_revision: sha256, expected_modified_gmt: revision, user_confirmed: approved, request_id: requestId },
+    annotations: sensitiveWrite, _meta: auth.oauthContentWrite,
+  }, async ({site_id,content_type,item_id,builder,node_id,field,find,replace,expected_revision,expected_modified_gmt,user_confirmed,request_id}) =>
+    submit(site_id, {kind:'builder_patch',contentType:content_type,itemId:item_id,title:builder,
+      content:JSON.stringify({node_id,field,find,replace,expected_revision}),expectedModifiedGmt:expected_modified_gmt,
+      confirmChanges:user_confirmed},true,request_id));
   server.registerTool('wordrava_list_themes', {
     outputSchema: queuedJobSchema,
     title: 'List installed themes',
@@ -83,7 +112,7 @@ export function registerDedicatedOperations(server: McpServer, submit: Submit, a
   server.registerTool('wordrava_update_published', {
     outputSchema: queuedJobSchema,
     title: 'Update published content',
-    description: 'Replace the title and body of one already-published WordPress post/page after approval. The change becomes public. Requires draft-write and publication opt-ins, native publication permission and the latest content revision. Does not edit page-builder structures or arbitrary metadata.',
+    description: 'Replace the title and body of one already-published classic WordPress post/page after approval. For a page-builder document use the native builder tools, never replace its entire body. The change becomes public. Requires draft-write and publication opt-ins, native publication permission and the latest content revision. Does not edit page-builder structures or arbitrary metadata.',
     inputSchema: { site_id: z.string().uuid(), content_type: contentType, item_id: z.number().int().positive(),
       title: z.string().min(1).max(200), content: z.string().max(100000), expected_modified_gmt: revision,
       user_confirmed: approved, request_id: requestId },

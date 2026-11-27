@@ -64,10 +64,12 @@
       "wordrava_inspect_plugin_zip",
       "wordrava_inspect_theme_zip",
       "wordrava_install_plugin_zip",
-      "wordrava_install_theme_zip"
+      "wordrava_install_theme_zip",
+      "wordrava_read_builder",
+      "wordrava_patch_builder"
     ],
     "writeFeatureFlag": "WORDRAVA_WRITES_ENABLED",
-    "mcpToolCount": 35,
+    "mcpToolCount": 37,
     "toolReviewPolicy": "Named, individually described tools only. Generic future-operation, arbitrary REST and arbitrary ability dispatch are not exposed to models.",
     "readOnlyAnnotation": "Submitting a read job or staging a file changes server state and is annotated readOnlyHint=false."
   },
@@ -107,7 +109,8 @@
         "list_themes",
         "seo_read",
         "inspect_plugin_zip",
-        "inspect_theme_zip"
+        "inspect_theme_zip",
+        "builder_read"
       ],
       "write": [
         "create_draft",
@@ -122,7 +125,8 @@
         "restore_content",
         "seo_update",
         "install_plugin_zip",
-        "install_theme_zip"
+        "install_theme_zip",
+        "builder_patch"
       ]
     },
     "idempotencyHeader": "Idempotency-Key",
@@ -134,7 +138,7 @@
     "writes": "Idempotent confirmed writes only; publication additionally requires WordPress administrator opt-in and revision match",
     "limitations": [
       "No atomic rollback of content edits; use current revisions and a separate site backup.",
-      "Permanent deletion and native Elementor/Divi/Bricks/WPBakery editing are not implemented.",
+      "Permanent deletion, arbitrary builder operations, Divi/Bricks/WPBakery edits, complete layout editing and automatic snapshot restore are not implemented. Elementor and Gutenberg beta support is limited to targeted text/HTML fields.",
       "SEO adapters cover11 normalized post/page metadata fields; global SEO settings, sitemap configuration and arbitrary schema templates are not exposed.",
       "Package installation adds executable code, requires separate WordPress installation consent and capabilities, never overwrites an installed slug and never auto-activates.",
       "Operations use outbound WordPress polling; a working WordPress cron or administrative poll is required.",
@@ -152,7 +156,18 @@
       "overwrite": false,
       "autoActivate": false
     },
-    "seoRevision": "Both expectedModifiedGmt and exact64-hex expected_seo_revision required for updates; published content also requires publish permission."
+    "seoRevision": "Both expectedModifiedGmt and exact64-hex expected_seo_revision required for updates; published content also requires publish permission.",
+    "builderBeta": {
+      "adapters": [
+        "elementor",
+        "gutenberg"
+      ],
+      "read": "Paginated node inventory or one allowlisted field",
+      "patch": "Exact unique literal replacement in a single field, with native save and readback, current document SHA-256 and modified_gmt, WordPress draft-write and published-page permission",
+      "unsupported": "Fail closed; no generic post-content overwrite",
+      "snapshot": "One protected local pre-edit snapshot; no remote restore",
+      "status": "development; staging integration required before publication"
+    }
   },
   "usage": {
     "endpoint": "GET /api/v1/usage/{siteId}",
