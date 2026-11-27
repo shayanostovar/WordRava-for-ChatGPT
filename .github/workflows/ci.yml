@@ -23,7 +23,13 @@ jobs:
         run: python3 tests/check_package_schema.py
       - name: Package review-draft Plugin ZIP
         run: python3 scripts/build_plugin.py
+      - name: Check release readiness for main review package artifact
+        if: github.ref == 'refs/heads/main'
+        id: release_gate
+        run: |
+          if python3 tests/check_compatibility_gate.py --require-ready; then echo "ready=true" >> "$GITHUB_OUTPUT"; else echo "ready=false" >> "$GITHUB_OUTPUT"; fi
       - uses: actions/upload-artifact@v4
+        if: github.ref != 'refs/heads/main' || steps.release_gate.outputs.ready == 'true'
         with:
           name: wordrava-plugin-review-draft
           path: dist/wordrava-chatgpt-plugin-1.2.0-review-draft.zip

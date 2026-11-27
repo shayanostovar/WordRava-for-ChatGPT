@@ -1,6 +1,6 @@
 # WordRava 1.2.3 compatibility release gate (development)
 
-**Not released.** Production version identifiers remain 1.2.0. Do not merge this work to main or deploy while the acceptance matrix is incomplete.
+**Not released.** Production version identifiers remain 1.2.0. Source integration on main was requested by the owner; do not publish or deploy while the acceptance matrix is incomplete.
 
 The 101 submitted list entries represent 98 unique targets; the repeated Polylang, WPForms and ElementsKit names are aliases. The authoritative exact scope is `contracts/plugin-compatibility-targets.json`. The unqualified name "Image Optimizer" needs the actual plugin file/vendor to distinguish it from similarly named products.
 
@@ -10,4 +10,4 @@ Each target must identify the exact plugin file and installed edition, enumerate
 
 Run `python3 tests/check_compatibility_gate.py --require-ready` to enforce release readiness. The gate rejects incomplete 1.2.3+ builds; it is called by the existing protocol checks. The version fields and package files must not be bumped until the real gate is green. Review integration run links and exact supported operation lists before setting a target to verified. A static evidence manifest is not a substitute for inspecting the real integration results.
 
-Deployment: first obtain passing CI on development branches, then coordinate version and packaged EN/FA connector assets, Center and MCP. Main-branch automation deploys the current main SHA, so do not merge incomplete branches as a shortcut. Confirm exact release SHAs and production health, test on disposable staging, and separately complete ChatGPT marketplace review.
+Deployment: first obtain passing CI on development branches, then coordinate version and packaged EN/FA connector assets, Center and MCP. Production release workflows independently enforce the compatibility gate on main. Source integration is not release acceptance. Confirm exact release SHAs and production health, test on disposable staging, and separately complete ChatGPT marketplace review.

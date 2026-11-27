@@ -51,6 +51,8 @@ def validate(root, version=None, require_ready=False):
     actual = version or contract["centerVersion"]
     if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", actual):
         raise SystemExit("Invalid release version: " + actual)
+    if require_ready and actual != matrix["target_release"] and not failures:
+        raise SystemExit("Release version must match the verified compatibility target.")
     if require_ready or tuple(map(int, actual.split("."))) >= (1, 2, 3):
         if failures:
             for name, missing in failures:
