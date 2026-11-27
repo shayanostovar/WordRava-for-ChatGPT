@@ -1,8 +1,8 @@
 {
-  "target_release": "1.2.3",
+  "target_release": "1.3.0",
   "requested_entries": 101,
   "unique_plugin_targets": 98,
-  "note": "Acceptance scope, not a support claim. Each feature needs named typed operations, compatible edition/version, real disposable WordPress integration tests, permission-denial and error verification. The existing 1.2.0 release remains unchanged. Premium features require legitimate licensed staging installations. No unsafe arbitrary PHP, SQL, REST, secret export, provider authorization bypass, or permanent deletion is implied by Read & Write.",
+  "note": "Acceptance scope, not a support claim. Each feature needs named typed operations, compatible edition/version, real disposable WordPress integration tests, permission-denial and error verification. The existing 1.2.0 release remains unchanged. Premium features require legitimate licensed staging installations. No unsafe arbitrary PHP, SQL, REST, secret export, provider authorization bypass, or permanent deletion is implied by Read & Write. Original scope preserved; supplemental targets from the directory-readiness brief are additional, not replacements.",
   "plugin_targets": [
     {
       "id": "wp-001",
@@ -2059,6 +2059,172 @@
         "security_tests"
       ],
       "status": "partial_unverified",
+      "tested_versions": [],
+      "evidence": {}
+    }
+  ],
+  "supplemental_targets": [
+    {
+      "id": "extra-001",
+      "name": "Advanced Custom Fields",
+      "category": "custom-fields",
+      "required_features": [
+        "field_groups",
+        "typed_fields",
+        "post_object_relationships",
+        "validation"
+      ],
+      "status": "not_implemented",
+      "notes": [
+        "No support claim. No credentials, unsafe code or licensing bypass."
+      ],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "extra-002",
+      "name": "Advanced Custom Fields Pro",
+      "category": "custom-fields",
+      "required_features": [
+        "licensed_pro_fields",
+        "repeater",
+        "flexible_content",
+        "options_pages",
+        "validation"
+      ],
+      "status": "not_implemented",
+      "notes": [
+        "No support claim. No credentials, unsafe code or licensing bypass."
+      ],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "extra-003",
+      "name": "Divi",
+      "category": "builder",
+      "required_features": [
+        "native_layout",
+        "modules",
+        "responsive_controls",
+        "templates",
+        "safe_snapshot_restore"
+      ],
+      "status": "not_implemented",
+      "notes": [
+        "No support claim. No credentials, unsafe code or licensing bypass."
+      ],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "extra-004",
+      "name": "Bricks",
+      "category": "builder",
+      "required_features": [
+        "native_layout",
+        "elements",
+        "responsive_controls",
+        "templates",
+        "safe_snapshot_restore"
+      ],
+      "status": "not_implemented",
+      "notes": [
+        "No support claim. No credentials, unsafe code or licensing bypass."
+      ],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "extra-005",
+      "name": "Breakdance",
+      "category": "builder",
+      "required_features": [
+        "native_layout",
+        "elements",
+        "responsive_controls",
+        "templates",
+        "safe_snapshot_restore"
+      ],
+      "status": "not_implemented",
+      "notes": [
+        "No support claim. No credentials, unsafe code or licensing bypass."
+      ],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "extra-006",
+      "name": "SeedProd",
+      "category": "builder",
+      "required_features": [
+        "native_layout",
+        "blocks",
+        "templates",
+        "responsive_controls",
+        "safe_snapshot_restore"
+      ],
+      "status": "not_implemented",
+      "notes": [
+        "No support claim. No credentials, unsafe code or licensing bypass."
+      ],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "extra-007",
+      "name": "W3 Total Cache",
+      "category": "performance",
+      "required_features": [
+        "cache_status",
+        "typed_cache_settings",
+        "scoped_purge"
+      ],
+      "status": "not_implemented",
+      "notes": [
+        "No support claim. No credentials, unsafe code or licensing bypass."
+      ],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "extra-008",
+      "name": "WP Mail SMTP",
+      "category": "email",
+      "required_features": [
+        "transport_status",
+        "nonsecret_settings",
+        "approved_test_email"
+      ],
+      "status": "not_implemented",
+      "notes": [
+        "No support claim. No credentials, unsafe code or licensing bypass."
+      ],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "extra-009",
+      "name": "UpdraftPlus",
+      "category": "backup",
+      "required_features": [
+        "backup_inventory",
+        "approved_backup",
+        "verified_restore_and_recovery"
+      ],
+      "status": "not_implemented",
+      "notes": [
+        "No support claim. No credentials, unsafe code or licensing bypass."
+      ],
+      "supported_plugin_files": [],
       "tested_versions": [],
       "evidence": {}
     }

@@ -1,0 +1,233 @@
+{
+  "target_release": "1.3.0",
+  "status": "blocked_pending_evidence",
+  "official_sources": [
+    "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+    "https://developer.wordpress.org/plugins/wordpress-org/plugin-developer-faq/",
+    "https://developer.wordpress.org/plugins/wordpress-org/common-issues/",
+    "https://wordpress.org/plugins/plugin-check/",
+    "https://wordpress.org/plugins/developers/readme-validator/",
+    "https://developer.wordpress.org/plugins/wordpress-org/how-to-use-subversion/"
+  ],
+  "guidelines": [
+    {
+      "id": 1,
+      "title": "GPL compatibility",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "Main plugin header; readme.txt; assets/fonts/*-LICENSE.txt; dependency and artwork inventory",
+      "assessment": "GPL header and font notices exist; all bundled code, logos and dependencies require provenance/license confirmation.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 2,
+      "title": "Developer responsibility",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "All three repositories; security documentation; ownership and reviewer account",
+      "assessment": "Maintainer must confirm rights, accountability, support and contact details.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 3,
+      "title": "Stable version",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "package.json; main plugin header; Git tags; Center deployment",
+      "assessment": "1.2.0 is the existing release; 1.3.0 remains gated. Test stable build.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 4,
+      "title": "Human-readable source",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "assets/admin.tailwind.css; assets/admin.ui.css; package.json and build scripts",
+      "assessment": "Provide accessible corresponding source and reproducible build instructions; verify source availability to reviewers.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 5,
+      "title": "No trialware",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "Center quota policy; connector local behavior",
+      "assessment": "Free cloud operations and genuine SaaS subscriptions; verify no local code locks or artificial service checks.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 6,
+      "title": "Serviceware",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "OAuth, Center job queue, site ownership, quotas, cloud audit",
+      "assessment": "Document substantive externally hosted services, terms and privacy; validate service function and endpoint ownership.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 7,
+      "title": "Consent to contact external services",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "Quick Connect; Cron scheduling; readme.txt; approval flow",
+      "assessment": "Pairing initiator binding and explicit consent; verify fresh install has no unsolicited calls, and document all outbound data.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 8,
+      "title": "Executable code",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "Connector bootstrap and operation dispatcher; Center job allowlist; MCP registry",
+      "assessment": "Removed arbitrary execution and executable ZIP routes. Review remaining HTML/CSS and installed-plugin activation boundaries; no exception claimed.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 9,
+      "title": "Legal, honest and appropriate conduct",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "readme and marketplace claims; operation schemas",
+      "assessment": "No universal compatibility, invented endorsements or malicious execution; review trademarks, legal rights and actual claims.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 10,
+      "title": "No unwanted public-facing links",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "WordPress render hooks; theme/content adapters",
+      "assessment": "Verify no inserted credits or promotional links without user consent.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 11,
+      "title": "No dashboard hijacking",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "Admin UI; enqueue hooks; notices",
+      "assessment": "Check scoped CSS, navigation, dismissibility, accessibility and admin-only notices on real installations.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 12,
+      "title": "Non-spam public directory pages",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "readme.txt; description, keywords, assets",
+      "assessment": "Review exact directory listing, contributor identity, non-spam text and accurate external links.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 13,
+      "title": "Use WordPress default libraries",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "Admin UI scripts; package.json; enqueued assets",
+      "assessment": "Audit bundled libraries and ensure core-provided alternatives are used where required.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 14,
+      "title": "Reasonable commit frequency",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "Release workflows; repository history",
+      "assessment": "Use controlled SVN release updates after approval, not every Git commit.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 15,
+      "title": "Increment releases",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "Git tags, package.json, WordPress header, Stable tag, protocol",
+      "assessment": "Coordinate exact release versions and upgrade/migration tests.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 16,
+      "title": "Complete submission",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "scripts/package.py; plugin artifact; test reports",
+      "assessment": "No submission until stable working package, full required functionality, clean Plugin Check, PHPCS and test evidence.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 17,
+      "title": "Respect trademarks and names",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "WordRava branding; marketplace descriptions; third-party plugin references",
+      "assessment": "Confirm author/brand rights, slug availability, no implied endorsement and appropriate third-party naming.",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": 18,
+      "title": "Directory review discretion",
+      "official_reference": "https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/",
+      "source_locations": "Review request; acceptance records; release gate",
+      "assessment": "Obtain required reviewer clarification and follow review decisions; no automatic approval assertion.",
+      "status": "unverified",
+      "evidence": []
+    }
+  ],
+  "release_checks": [
+    {
+      "id": "plugin_check",
+      "title": "Official Plugin Check output for actual release ZIP",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": "phpcs",
+      "title": "WordPress Coding Standards and PHPCompatibility findings resolved",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": "runtime_security",
+      "title": "Disposable WordPress real auth, data, SSRF, approval, replay, permissions and cross-site tests",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": "compatibility",
+      "title": "All original plus supplemental adapters and theme requirements verified on actual versions",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": "source_licenses",
+      "title": "GPL-compatible package, public corresponding source, font/artwork rights and dependency inventory",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": "privacy_legal",
+      "title": "Owner-approved terms, privacy, retention/deletion and monitored contact; external service disclosure",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": "release_staging",
+      "title": "All three CI builds and end-to-end staging, migration, rollback and health checks",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": "directory_package",
+      "title": "Validated readme, slug/name, version, ZIP size, checksum and reviewer installation instructions",
+      "status": "unverified",
+      "evidence": []
+    },
+    {
+      "id": "reviewer_clarification",
+      "title": "Record reviewer response for any remaining ambiguous capability or documented complete exclusion",
+      "status": "unverified",
+      "evidence": []
+    }
+  ],
+  "notes": "Initial source audit and acceptance plan, not completed compliance. All evidence must be verified by a maintainer against the final artifact. Do not mark requirements passed on mocked or static results alone."
+}

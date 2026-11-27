@@ -40,7 +40,6 @@
       "wordrava_job_status"
     ],
     "writeMcpTools": [
-      "wordrava_stage_package",
       "wordrava_discover_site",
       "wordrava_list_media",
       "wordrava_import_image",
@@ -61,10 +60,6 @@
       "wordrava_restore_content",
       "wordrava_get_seo",
       "wordrava_update_seo",
-      "wordrava_inspect_plugin_zip",
-      "wordrava_inspect_theme_zip",
-      "wordrava_install_plugin_zip",
-      "wordrava_install_theme_zip",
       "wordrava_read_builder",
       "wordrava_patch_builder",
       "wordrava_set_builder_control",
@@ -83,9 +78,9 @@
       "wordrava_link_polylang_translations"
     ],
     "writeFeatureFlag": "WORDRAVA_WRITES_ENABLED",
-    "mcpToolCount": 51,
+    "mcpToolCount": 46,
     "toolReviewPolicy": "Named, individually described tools only. Generic future-operation, arbitrary REST and arbitrary ability dispatch are not exposed to models.",
-    "readOnlyAnnotation": "Submitting a read job or staging a file changes server state and is annotated readOnlyHint=false."
+    "readOnlyAnnotation": "Submitting a read job changes server state and is annotated readOnlyHint=false."
   },
   "oauth": {
     "authorizationServerMetadata": "GET /.well-known/oauth-authorization-server",
@@ -118,12 +113,8 @@
         "get_content",
         "discover_capabilities",
         "list_media",
-        "run_read_ability",
-        "rest_read",
         "list_themes",
         "seo_read",
-        "inspect_plugin_zip",
-        "inspect_theme_zip",
         "builder_read",
         "theme_read",
         "theme_parts_list",
@@ -142,8 +133,6 @@
         "trash_content",
         "restore_content",
         "seo_update",
-        "install_plugin_zip",
-        "install_theme_zip",
         "builder_patch",
         "builder_control",
         "builder_structure",
@@ -163,27 +152,17 @@
     "chargeOn": "successful-operation",
     "blockedSite": "deny",
     "blockedUser": "deny",
-    "writes": "Idempotent confirmed writes only; publication additionally requires WordPress administrator opt-in and revision match",
+    "writes": "Idempotent, scope-checked and locally permitted writes. Sensitive jobs additionally require an exact site-local one-time human decision; Connector >=1.3.0 required.",
     "limitations": [
       "No atomic rollback of content edits; use current revisions and a separate site backup.",
       "Native builder preview supports bounded Elementor text, registered controls and flexbox structure changes, Gutenberg text and top-level block operations, and a single local snapshot restore. Divi/Bricks/WPBakery and other builder edits, full responsive/theme/template design, and arbitrary builder operations are not implemented.",
       "SEO adapters cover11 normalized post/page metadata fields; global SEO settings, sitemap configuration and arbitrary schema templates are not exposed.",
-      "Package installation adds executable code, requires separate WordPress installation consent and capabilities, never overwrites an installed slug and never auto-activates.",
       "Operations use outbound WordPress polling; a working WordPress cron or administrative poll is required.",
-      "Marketplace review and publisher/domain verification are independent of server deployment."
+      "Marketplace review and publisher/domain verification are independent of server deployment.",
+      "Arbitrary REST/ability execution and executable ZIP installation/staging are removed from the development target. Use WordPress's native installer. No reviewer exception is assumed."
     ],
     "catalogEndpoint": "GET /api/v1/sites/{siteId}/operations",
-    "internalCompatibilityOnly": [
-      "rest_read",
-      "run_read_ability"
-    ],
-    "packageLimits": {
-      "zipBytes": 52428800,
-      "expandedBytes": 262144000,
-      "entries": 10000,
-      "overwrite": false,
-      "autoActivate": false
-    },
+    "internalCompatibilityOnly": [],
     "seoRevision": "Both expectedModifiedGmt and exact64-hex expected_seo_revision required for updates; published content also requires publish permission.",
     "builderBeta": {
       "adapters": [
@@ -204,7 +183,7 @@
       "status": "preview; actual builder and production integration required before enabling"
     },
     "compatibilityDevelopment": {
-      "targetRelease": "1.2.3",
+      "targetRelease": "1.3.0",
       "status": "development-unreleased",
       "minimumConnectorVersion": "1.2.3",
       "inventory": {
@@ -250,7 +229,14 @@
         ],
         "unimplemented": "Language administration, term translations, translated menus, Pro-specific functionality and unlink/replacement require separate adapters"
       },
-      "releaseGate": "Every compatibility target and required theme operation must have real versioned integration evidence before 1.2.3 is published."
+      "releaseGate": "All original and supplemental compatibility targets, required theme features, security, directory compliance and staging acceptance must have verified evidence before 1.3.0 is published."
+    },
+    "humanApproval": {
+      "minimumConnectorVersion": "1.3.0",
+      "noticeEndpoint": "POST /api/v1/connector-jobs/await-approval",
+      "lifetimeSeconds": 900,
+      "binding": "site, connector key digest, paired administrator, permission revision, job ID, kind, exact payload and deadline",
+      "status": "implemented-unverified"
     }
   },
   "usage": {
@@ -301,7 +287,8 @@
     "limits": "No automatic takeover of an already paired site; recovery requires a separately verified account-linking workflow",
     "writes": "Disabled until explicit administrator and user approvals",
     "legacyStart": "POST /api/v1/pairing/start retained for existing clients; not exposed by public MCP tools",
-    "secretHandling": "WordPress generates the one-time secret; browser continuation carries it only in URL fragment, clears the fragment before same-origin form submission. Never paste it in chat."
+    "secretHandling": "WordPress generates the one-time secret; browser continuation carries it only in URL fragment, clears the fragment before same-origin form submission. Never paste it in chat.",
+    "chatgptSetupPrompt": "Static public MCP URL, OAuth setup and discovery instructions. Never contains a pairing secret. Plugin Creator availability depends on the account."
   },
   "releaseComponents": {
     "center": "1.2.0",
@@ -311,18 +298,8 @@
     "writes": "feature-gated; site owner WordPress opt-in, native capabilities and explicit user approval"
   },
   "packageStaging": {
-    "endpoint": "POST /api/v1/sites/{siteId}/packages/stage",
-    "scope": "content:write",
-    "source": "native ChatGPT file descriptor; explicit user file",
-    "ttlSeconds": 1800,
-    "maxBytes": 52428800,
-    "maxActivePerOwner": 3,
-    "maxTotalStoredBytes": 536870912,
-    "fetch": "public HTTPS only; validate all DNS addresses and redirects; pin connection IP; no ambient credentials or cookies",
-    "cleanup": "expired download denied immediately; database bytes removed on upload or within 5 minutes while service is running",
-    "installsCode": false,
-    "downloadEndpoint": "GET /api/v1/packages/{id}/file",
-    "downloadAuthorization": "X-WordRava-Connector-Key for the exact package-owning site; expiry and blocked owner/site enforced. No credential in source URL. WordPress sends header only to its configured Center origin and exact staged-file path; private redirects denied."
+    "status": "retired",
+    "note": "Legacy storage cleanup only; no staging or package-download API is mapped in the development target."
   },
   "distribution": {
     "wordpressLocales": [

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""1.2.3 compatibility release gate. Evidence is not fabricated by CI.
+"""1.3.0 compatibility and WordPress.org release gate. Evidence is not fabricated by CI.
 
 This validates the review manifest and blocks packaging an incomplete release.
 A real integration reviewer must verify the referenced runs and licensed
@@ -14,8 +14,10 @@ def validate(root, version=None, require_ready=False):
     matrix = json.loads((root / "contracts/plugin-compatibility-targets.json").read_text(encoding="utf-8"))
     contract = json.loads((root / "contracts/wordrava-protocol-v1.json").read_text(encoding="utf-8"))
     targets = matrix["plugin_targets"]
-    extra = matrix["appearance_targets"]
-    assert matrix["target_release"] == "1.2.3"
+    extra = matrix["appearance_targets"] + matrix["supplemental_targets"]
+    if len(matrix["supplemental_targets"]) != 9:
+        raise SystemExit("Supplemental compatibility scope missing")
+    assert matrix["target_release"] == "1.3.0"
     assert matrix["requested_entries"] == 101 and matrix["unique_plugin_targets"] == 98
     assert len(targets) == 98
     requested = [t["requested_index"] for t in targets] + [a["requested_index"] for t in targets for a in t["aliases"]]
@@ -54,10 +56,19 @@ def validate(root, version=None, require_ready=False):
     if require_ready and actual != matrix["target_release"] and not failures:
         raise SystemExit("Release version must match the verified compatibility target.")
     if require_ready or tuple(map(int, actual.split("."))) >= (1, 2, 3):
+        audit = json.loads((root / "contracts/wordpress-org-review.json").read_text(encoding="utf-8"))
+        required_checks = {"plugin_check","phpcs","runtime_security","compatibility","source_licenses","privacy_legal","release_staging","directory_package","reviewer_clarification"}
+        if audit.get("target_release") != "1.3.0" or {r.get("id") for r in audit.get("guidelines", [])} != set(range(1,19)) or {r.get("id") for r in audit.get("release_checks", [])} != required_checks:
+            raise SystemExit("Incomplete WordPress.org review manifest")
+        for item in audit["guidelines"] + audit["release_checks"]:
+            if item.get("status") != "verified" or not item.get("evidence"):
+                failures.append((str(item["id"]), ["directory/security acceptance evidence"]))
+        if audit.get("status") != "verified":
+            failures.append(("WordPress.org review", ["maintainer verification"]))
         if failures:
             for name, missing in failures:
                 print(f"BLOCKED {name}: {', '.join(missing)}")
-            raise SystemExit("WordRava 1.2.3 release blocked: real compatibility acceptance is incomplete.")
+            raise SystemExit("WordRava 1.3.0 release blocked: compatibility and WordPress.org acceptance are incomplete.")
     return not failures
 
 if __name__ == "__main__":
