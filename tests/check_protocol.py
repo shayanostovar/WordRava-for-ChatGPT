@@ -40,3 +40,5 @@ validate_compatibility(root)
 assert c['packageStaging']['status'] == 'retired'
 assert c['operation']['humanApproval']['minimumConnectorVersion'] == '1.3.0'
 assert not {'rest_read','run_read_ability','install_plugin_zip','install_theme_zip','inspect_plugin_zip','inspect_theme_zip'}.intersection(c['operation']['types']['read'] + c['operation']['types']['write'])
+
+assert c['usage']['freeDailyLimitDefault'] == 120

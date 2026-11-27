@@ -20,7 +20,7 @@ const source = 'https://packages.example.test/review.zip';
 const quota = {
   site_id: siteId, site_name: 'Review site', site_url: 'https://example.test',
   plan_id: requestId, plan: 'Free', plan_source: 'default', used: 2, reserved: 1,
-  failed: 0, effective_used: 3, limit: 200, remaining: 197,
+  failed: 0, effective_used: 3, limit: 120, remaining: 117,
   resets_at_utc: '2026-11-27T00:00:00Z', measured_at_utc: '2026-11-26T12:00:00Z',
   timezone: 'UTC', quota_policy: 'per_site', accounting: 'Success counts; pending reserves.',
 };
@@ -160,7 +160,8 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
     const account = await call('wordrava_account_usage');
     assert.equal(account.structuredContent.owner_id, undefined);
     assert.equal(account.structuredContent.sites[0].plan_id, undefined);
-    assert.equal(account.structuredContent.remaining, 197);
+    assert.equal(account.structuredContent.remaining, 117);
+    assert.equal(account.structuredContent.limit, 120);
     const profile = await call('wordrava_my_account');
     assert.equal(profile.structuredContent.id, requestId); assert.equal(profile.structuredContent.role, undefined);
     const job = await call('wordrava_job_status', { site_id: siteId, job_id: jobId });

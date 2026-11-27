@@ -4,7 +4,7 @@ WordRava connects WordPress to ChatGPT and Codex through WordRava Center, OAuth 
 
 ## Implemented workflows
 
-- Read connected sites, stable account identity and independent per-site capacity, including successful/reserved/failed counts and the next 00:00 UTC reset.
+- Read connected sites, stable account identity and independent per-site capacity, including successful/reserved/failed counts and the next 00:00 UTC reset. The standard Free plan for the development target is 120 operations per site/day. Always report the actual effective plan and limits returned by Center.
 - Discover a site's installed plugins, active theme, post types, taxonomies and available WordRava permissions. Discovery does not grant access to arbitrary plugin operations.
 - Read posts/pages, media, menus and installed themes/plugins.
 - Create/update drafts, import an approved HTTPS image, explicitly publish an unchanged draft, update published content and recoverably trash/restore.

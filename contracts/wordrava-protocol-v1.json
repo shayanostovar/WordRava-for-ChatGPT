@@ -243,7 +243,7 @@
     "endpoint": "GET /api/v1/usage/{siteId}",
     "timezone": "UTC",
     "reset": "00:00",
-    "freeDailyLimitDefault": 200,
+    "freeDailyLimitDefault": 120,
     "limitSource": "center-plan",
     "blockedSiteResponse": 404,
     "purchasedCredits": "not implemented",

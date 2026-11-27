@@ -187,7 +187,7 @@ function createServer(token: string, session: Session): McpServer {
   });
   server.registerTool('wordrava_site_usage', {
     outputSchema: quotaSchema,
-    description: 'Read exact current UTC-day per-site quota: effective plan and override source, successful operations, pending/running reservations, failed jobs (not charged), remaining, daily limit and next 00:00 UTC reset time. Use this whenever the user asks about capacity of a site.',
+    description: 'Read exact current UTC-day per-site quota: effective plan and override source, successful operations, pending/running reservations, failed jobs (not charged), remaining, daily limit and next 00:00 UTC reset time. The standard Free allowance in this development target is 120 operations per site per day; the effective limit and remaining capacity must always come from this live response, never from a hardcoded estimate. Use this whenever the user asks about capacity of a site.',
     inputSchema: { site_id: z.string().uuid() }, annotations: readAnnotations, _meta: { ...oauthSites, 'openai/toolInvocation/invoking': "WordRava: Site usage…", 'openai/toolInvocation/invoked': "WordRava: Request finished" },
   }, async ({ site_id }) => {
     try { return good(await centerGet<unknown>(`/api/v1/usage/${site_id}`, token), quotaSchema); }
