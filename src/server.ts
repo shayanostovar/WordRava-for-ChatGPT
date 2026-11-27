@@ -221,7 +221,13 @@ function createServer(token: string, session: Session): McpServer {
       const job = await centerPost<unknown>(`/api/v1/sites/${site_id}/jobs`, token, input, request_id);
       return good({ operation: 'queued', ...(job as object), next_step: 'Use wordrava_job_status with the returned job_id. The WordPress connector runs by WP-Cron or manual sync.' }, queuedJobSchema);
     } catch (error) {
-      if (error instanceof CenterHttpError && error.status === 503) return bad('Operations are not enabled on this WordRava Center yet.');
+      if (error instanceof CenterHttpError && error.status === 503) {
+        if (error.code === 'builder_preview_disabled') return bad('Native page-builder operations are disabled by the Center administrator.', error.code, { http_status: 503 });
+        if (error.code === 'operations_disabled') return bad('Remote operations are disabled by the Center administrator.', error.code, { http_status: 503 });
+        if (error.code === 'writes_disabled') return bad('Remote write operations are disabled by the Center administrator.', error.code, { http_status: 503 });
+        return bad('WordRava Center is temporarily unavailable or a feature is disabled. Check capabilities before retrying.', error.code, { http_status: 503 });
+      }
+      if (error instanceof CenterHttpError && error.code === 'builder_connector_upgrade_required') return bad('Native builder operations require WordPress Connector 1.2.0 or newer.', error.code, { http_status: 409 });
       if (error instanceof CenterHttpError && error.status === 401) return { ...bad('The WordRava connection expired. Reauthorize before retrying.', 'invalid_token'), _meta: { 'mcp/www_authenticate': [`Bearer resource_metadata="${protectedResourceMetadata}", error="invalid_token"`] } };
       if (error instanceof CenterHttpError && error.status === 403) return bad('The account, site or operation permission does not allow this action.', error.code, { http_status: 403 });
       if (error instanceof CenterHttpError && error.status === 409) return bad('The current state or approval conflicts with this request. Read the latest state and resolve the reported conflict before retrying.', error.code, { http_status: 409 });

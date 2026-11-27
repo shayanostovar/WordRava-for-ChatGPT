@@ -34,7 +34,8 @@ export const accountUsageSchema = z.object({
 export const capabilitySchema = z.object({
   center_version: z.string(), protocol_version: z.string(),
   quota_source: z.string(), site_blocking: z.boolean(), user_blocking: z.boolean(),
-  remote_write_enabled: z.boolean(), connector_async_operations: z.boolean(),
+  remote_write_enabled: z.boolean(),
+  native_builder_enabled: z.boolean().optional(), connector_async_operations: z.boolean(),
   connector_execution_mode: z.string(), immediate_execution_supported: z.boolean(),
   public_oauth_enabled: z.boolean(), quick_pairing_enabled: z.boolean(), passwordless_oauth_enabled: z.boolean(),
   mcp_version: z.string(), mcp_protocol_version: z.string(),
