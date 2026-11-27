@@ -29,7 +29,7 @@ const protectedResourceMetadata = publicOrigin + '/.well-known/oauth-protected-r
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '256kb' }));
-app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.1.1' }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.2.0' }));
 
 // OAuth 2.1 / RFC 9728 protected-resource metadata. Nginx routes this path to MCP.
 const metadata = {
@@ -132,7 +132,7 @@ function scopeError(scope: string) {
 }
 
 function createServer(token: string, session: Session): McpServer {
-  const server = new McpServer({ name: 'WordRava', version: '1.1.1' });
+  const server = new McpServer({ name: 'WordRava', version: '1.2.0' });
   server.registerTool('wordrava_list_sites', {
     outputSchema: sitesSchema,
     description: 'List only the WordPress sites in the signed-in WordRava account, including whether each site is blocked. Does not query site content.',
@@ -208,7 +208,7 @@ function createServer(token: string, session: Session): McpServer {
   }, async () => {
     try {
       const capabilities = await centerGet<Record<string, unknown>>('/api/v1/capabilities', token);
-      return good({ ...capabilities, mcp_version: '1.1.1', mcp_protocol_version: '1.0' }, capabilitySchema);
+      return good({ ...capabilities, mcp_version: '1.2.0', mcp_protocol_version: '1.0' }, capabilitySchema);
     }
     catch { return bad('Unable to retrieve current WordRava capabilities.'); }
   });
@@ -352,7 +352,7 @@ function createServer(token: string, session: Session): McpServer {
   }, async ({ site_id, content_type }) => submit(site_id, { kind: 'list_content', contentType: content_type }, false));
   server.registerTool('wordrava_get_content', {
     outputSchema: queuedJobSchema,
-    description: 'Queue a read-only fetch of one WordPress post/page, including its modified_gmt revision. Returns an asynchronous job ID.',
+    description: 'Queue a read-only fetch of one WordPress post/page, including its modified_gmt revision and, with Connector 1.2.0, detected builder type. Use wordrava_read_builder for supported native documents. Returns an asynchronous job ID.',
     inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']), item_id: z.number().int().positive() }, annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: Get content…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
   }, async ({ site_id, content_type, item_id }) => submit(site_id, { kind: 'get_content', contentType: content_type, itemId: item_id }, false));
   server.registerTool('wordrava_create_draft', {

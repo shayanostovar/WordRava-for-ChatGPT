@@ -44,6 +44,63 @@ const seoFields = z.object({
 export function registerDedicatedOperations(server: McpServer, submit: Submit, auth: {
   oauthContentRead: AuthMetadata; oauthContentWrite: AuthMetadata;
 }) {
+  const builder = z.enum(['elementor','gutenberg']);
+  const nodeId = z.string().regex(/^[A-Za-z0-9_.-]{1,120}(?![\s\S])/);
+  const builderField = z.enum(['title','editor','html','text','inner_html']);
+  const controlKey = z.string().regex(/^[a-z][a-z0-9_]{0,79}(?![\s\S])/);
+  const builderRevision = z.string().regex(/^[a-f0-9]{64}(?![\s\S])/);
+  const builderControlValue = z.union([
+    z.string().min(1).max(2048),
+    z.object({size:z.number().min(0).max(2000),unit:z.enum(['px','em','rem','%','vw','vh'])}).strict(),
+    z.object({id:z.number().int().positive()}).strict(),
+    z.object({url:z.string().url().max(2048),is_external:z.boolean().optional(),nofollow:z.boolean().optional()}).strict(),
+  ]);
+  const builderIdentity = {site_id:z.string().uuid(),content_type:contentType,item_id:z.number().int().positive()};
+  const builderApproval = {expected_revision:builderRevision,expected_modified_gmt:revision,user_confirmed:approved,request_id:requestId};
+  const builderMeta=(write:boolean,label:string)=>({... (write ? auth.oauthContentWrite : auth.oauthContentRead),
+    'openai/toolInvocation/invoking':'WordRava: '+label+'…','openai/toolInvocation/invoked':'WordRava: Request submitted'});
+  const invalidBuilderInput=()=>({isError:true as const,content:[{type:'text' as const,text:'Invalid builder arguments. Use a fresh native builder read and the exact supported operation.'}]});
+  server.registerTool('wordrava_read_builder', {
+    outputSchema:queuedJobSchema,title:'Read native page builder',
+    description:'Preview: inspect native Elementor or Gutenberg node inventory, parent IDs, supported fields/controls, document and latest snapshot revisions. Read a page of nodes, or one field/control with its exact node ID. Requires Center preview enabled and Connector 1.2.0. Not a generic page source replacement.',
+    inputSchema:{...builderIdentity,builder:z.enum(['auto','elementor','gutenberg']),offset:z.number().int().min(0).max(5000).optional(),node_id:nodeId.optional(),field:builderField.optional(),control:controlKey.optional()},
+    annotations:queuedRead,_meta:builderMeta(false,'Read page builder'),
+  },async({site_id,content_type,item_id,builder,offset,node_id,field,control})=>{
+    if((node_id===undefined)!==(field===undefined&&control===undefined)||(field!==undefined&&control!==undefined)||(node_id!==undefined&&offset!==undefined))return invalidBuilderInput();
+    const query=node_id===undefined?{offset:offset??0}:control!==undefined?{node_id,control}:{node_id,field};
+    return submit(site_id,{kind:'builder_read',contentType:content_type,itemId:item_id,title:builder,content:JSON.stringify(query)},false);
+  });
+  server.registerTool('wordrava_patch_builder', {
+    outputSchema:queuedJobSchema,title:'Patch native page builder field',
+    description:'Preview: replace one exact unique fragment in a supported Elementor/Gutenberg text or HTML field, after reading its current value and obtaining exact approval. Requires document hash and modified_gmt. No executable markup or generic metadata writes. Poll and verify.',
+    inputSchema:{...builderIdentity,builder,node_id:nodeId,field:builderField,find:z.string().min(1).max(40000),replace:z.string().max(40000),...builderApproval},
+    annotations:sensitiveWrite,_meta:builderMeta(true,'Patch page builder'),
+  },async({site_id,content_type,item_id,builder,node_id,field,find,replace,expected_revision,expected_modified_gmt,user_confirmed,request_id})=>
+    submit(site_id,{kind:'builder_patch',contentType:content_type,itemId:item_id,title:builder,content:JSON.stringify({node_id,field,find,replace,expected_revision}),expectedModifiedGmt:expected_modified_gmt,confirmChanges:user_confirmed},true,request_id));
+  server.registerTool('wordrava_set_builder_control', {
+    outputSchema:queuedJobSchema,title:'Set an Elementor control',
+    description:'Preview: set one registered, allowlisted Elementor control using its exact key on an existing node. Read the control first. Supports selected color, typography, alignment, responsive dimensions, image attachment and link controls. Global/dynamic settings and arbitrary metadata are protected. Requires exact approval and fresh revision.',
+    inputSchema:{...builderIdentity,node_id:nodeId,control:controlKey,value:builderControlValue,...builderApproval},
+    annotations:sensitiveWrite,_meta:builderMeta(true,'Set Elementor control'),
+  },async({site_id,content_type,item_id,node_id,control,value,expected_revision,expected_modified_gmt,user_confirmed,request_id})=>
+    submit(site_id,{kind:'builder_control',contentType:content_type,itemId:item_id,title:'elementor',content:JSON.stringify({node_id,control,value,expected_revision}),expectedModifiedGmt:expected_modified_gmt,confirmChanges:user_confirmed},true,request_id));
+  server.registerTool('wordrava_edit_builder_structure', {
+    outputSchema:queuedJobSchema,title:'Insert, move or remove a native builder node',
+    description:'Preview: insert one supported installed native widget/container or top-level core Gutenberg block, move one node, or remove one exact subtree. Read tree and parent IDs first. Use __document__ for the root. Position is zero-based in destination after removing a moved node. Elementor supports flex containers; Gutenberg supports top-level blocks only. Deletion may remove all descendants. User must approve the exact action and impact.',
+    inputSchema:{...builderIdentity,builder,action:z.enum(['insert','move','remove']),node_id:nodeId.optional(),parent_id:nodeId.optional(),position:z.number().int().min(0).max(5000).optional(),node_type:z.enum(['container','heading','text-editor','html','button','image','divider','spacer','core/paragraph','core/heading','core/html','core/separator','core/spacer']).optional(),...builderApproval},
+    annotations:sensitiveWrite,_meta:builderMeta(true,'Edit page structure'),
+  },async({site_id,content_type,item_id,builder,action,node_id,parent_id,position,node_type,expected_revision,expected_modified_gmt,user_confirmed,request_id})=>{
+    if(action==='insert'?(node_id!==undefined||parent_id===undefined||position===undefined||node_type===undefined):action==='move'?(node_id===undefined||parent_id===undefined||position===undefined||node_type!==undefined):(node_id===undefined||parent_id!==undefined||position!==undefined||node_type!==undefined))return invalidBuilderInput();
+    const patch=action==='insert'?{parent_id,position,node_type}:action==='move'?{node_id,parent_id,position}:{node_id};
+    return submit(site_id,{kind:'builder_structure',contentType:content_type,itemId:item_id,title:builder,content:JSON.stringify({action,expected_revision,...patch}),expectedModifiedGmt:expected_modified_gmt,confirmChanges:user_confirmed},true,request_id);
+  });
+  server.registerTool('wordrava_restore_builder_snapshot', {
+    outputSchema:queuedJobSchema,title:'Restore latest native builder snapshot',
+    description:'Preview: restore only the latest protected local pre-edit snapshot of one Elementor/Gutenberg document. Read current document and snapshot revisions first. This replaces the current native tree with the previous tree and may undo an entire edit. Obtain exact explicit approval. This is not full site backup or arbitrary revision history. Poll and reread.',
+    inputSchema:{...builderIdentity,builder,snapshot_revision:builderRevision,...builderApproval},
+    annotations:sensitiveWrite,_meta:builderMeta(true,'Restore builder snapshot'),
+  },async({site_id,content_type,item_id,builder,snapshot_revision,expected_revision,expected_modified_gmt,user_confirmed,request_id})=>
+    submit(site_id,{kind:'builder_restore',contentType:content_type,itemId:item_id,title:builder,content:JSON.stringify({snapshot_revision,expected_revision}),expectedModifiedGmt:expected_modified_gmt,confirmChanges:user_confirmed},true,request_id));
   server.registerTool('wordrava_list_themes', {
     outputSchema: queuedJobSchema,
     title: 'List installed themes',
@@ -83,7 +140,7 @@ export function registerDedicatedOperations(server: McpServer, submit: Submit, a
   server.registerTool('wordrava_update_published', {
     outputSchema: queuedJobSchema,
     title: 'Update published content',
-    description: 'Replace the title and body of one already-published WordPress post/page after approval. The change becomes public. Requires draft-write and publication opt-ins, native publication permission and the latest content revision. Does not edit page-builder structures or arbitrary metadata.',
+    description: 'Replace the title and body of one already-published classic WordPress post/page after approval. Do not replace page-builder documents; use the supported native preview tools. The change becomes public. Requires draft-write and publication opt-ins, native publication permission and the latest content revision. Does not edit page-builder structures or arbitrary metadata.',
     inputSchema: { site_id: z.string().uuid(), content_type: contentType, item_id: z.number().int().positive(),
       title: z.string().min(1).max(200), content: z.string().max(100000), expected_modified_gmt: revision,
       user_confirmed: approved, request_id: requestId },

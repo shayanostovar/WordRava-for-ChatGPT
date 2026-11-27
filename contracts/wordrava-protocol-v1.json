@@ -3,7 +3,7 @@
   "protocol": "wordrava",
   "protocolVersion": "1.0",
   "minimumConnectorProtocol": "1.0",
-  "centerVersion": "1.1.1",
+  "centerVersion": "1.2.0",
   "pairing": {
     "issuer": "center",
     "claimant": "wordpress-connector",
@@ -64,10 +64,15 @@
       "wordrava_inspect_plugin_zip",
       "wordrava_inspect_theme_zip",
       "wordrava_install_plugin_zip",
-      "wordrava_install_theme_zip"
+      "wordrava_install_theme_zip",
+      "wordrava_read_builder",
+      "wordrava_patch_builder",
+      "wordrava_set_builder_control",
+      "wordrava_edit_builder_structure",
+      "wordrava_restore_builder_snapshot"
     ],
     "writeFeatureFlag": "WORDRAVA_WRITES_ENABLED",
-    "mcpToolCount": 35,
+    "mcpToolCount": 40,
     "toolReviewPolicy": "Named, individually described tools only. Generic future-operation, arbitrary REST and arbitrary ability dispatch are not exposed to models.",
     "readOnlyAnnotation": "Submitting a read job or staging a file changes server state and is annotated readOnlyHint=false."
   },
@@ -107,7 +112,8 @@
         "list_themes",
         "seo_read",
         "inspect_plugin_zip",
-        "inspect_theme_zip"
+        "inspect_theme_zip",
+        "builder_read"
       ],
       "write": [
         "create_draft",
@@ -122,7 +128,11 @@
         "restore_content",
         "seo_update",
         "install_plugin_zip",
-        "install_theme_zip"
+        "install_theme_zip",
+        "builder_patch",
+        "builder_control",
+        "builder_structure",
+        "builder_restore"
       ]
     },
     "idempotencyHeader": "Idempotency-Key",
@@ -134,7 +144,7 @@
     "writes": "Idempotent confirmed writes only; publication additionally requires WordPress administrator opt-in and revision match",
     "limitations": [
       "No atomic rollback of content edits; use current revisions and a separate site backup.",
-      "Permanent deletion and native Elementor/Divi/Bricks/WPBakery editing are not implemented.",
+      "Native builder preview supports bounded Elementor text, registered controls and flexbox structure changes, Gutenberg text and top-level block operations, and a single local snapshot restore. Divi/Bricks/WPBakery and other builder edits, full responsive/theme/template design, and arbitrary builder operations are not implemented.",
       "SEO adapters cover11 normalized post/page metadata fields; global SEO settings, sitemap configuration and arbitrary schema templates are not exposed.",
       "Package installation adds executable code, requires separate WordPress installation consent and capabilities, never overwrites an installed slug and never auto-activates.",
       "Operations use outbound WordPress polling; a working WordPress cron or administrative poll is required.",
@@ -152,7 +162,25 @@
       "overwrite": false,
       "autoActivate": false
     },
-    "seoRevision": "Both expectedModifiedGmt and exact64-hex expected_seo_revision required for updates; published content also requires publish permission."
+    "seoRevision": "Both expectedModifiedGmt and exact64-hex expected_seo_revision required for updates; published content also requires publish permission.",
+    "builderBeta": {
+      "adapters": [
+        "elementor",
+        "gutenberg"
+      ],
+      "featureFlag": "WORDRAVA_BUILDERS_ENABLED",
+      "enabledByDefault": false,
+      "minimumConnectorVersion": "1.2.0",
+      "read": "Paginated node inventory, supported fields and controls, exact revision, local snapshot metadata",
+      "patch": "Exact unique literal replacement in a supported field",
+      "control": "Elementor installed control registry and typed allowlist; no arbitrary setting paths",
+      "structure": "Explicit insert, move, remove; Elementor flex containers and supported installed widgets; Gutenberg supported top-level blocks",
+      "restore": "Restore exact last protected local snapshot; current document and snapshot revisions required",
+      "permissions": "Local draft-write opt-in, native edit permissions and explicit approval; published changes require local publication opt-in and native publish permission",
+      "verification": "Native save, strict persisted tree/readback check; uncertain save requires re-read, never blind retry",
+      "unsupported": "Fail closed; no generic post-content overwrite of detected native builder pages",
+      "status": "preview; actual builder and production integration required before enabling"
+    }
   },
   "usage": {
     "endpoint": "GET /api/v1/usage/{siteId}",
@@ -205,9 +233,9 @@
     "secretHandling": "WordPress generates the one-time secret; browser continuation carries it only in URL fragment, clears the fragment before same-origin form submission. Never paste it in chat."
   },
   "releaseComponents": {
-    "center": "1.1.1",
-    "wordpressConnector": "1.1.1",
-    "chatgptMcp": "1.1.1",
+    "center": "1.2.0",
+    "wordpressConnector": "1.2.0",
+    "chatgptMcp": "1.2.0",
     "protocol": "1.0",
     "writes": "feature-gated; site owner WordPress opt-in, native capabilities and explicit user approval"
   },

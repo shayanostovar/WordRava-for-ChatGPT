@@ -20,7 +20,7 @@ names = set(re.findall(r"registerTool\('([^']+)'", source))
 ext = plugin["extensions"]["com.openai"]
 ui, review = ext["interface"], ext["review"]
 assert plugin["name"] == "wordrava" and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", plugin["name"])
-assert plugin["version"] == package["version"] == "1.1.1"
+assert plugin["version"] == package["version"] == "1.2.0"
 assert plugin.get("$schema") == "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json", "Unsupported plugin manifest schema"
 assert mcp.get("$schema") == "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json", "Unsupported MCP manifest schema"
 for field, maximum in {"displayName": 30, "shortDescription": 30, "developerName": 80, "longDescription": 4000}.items():
@@ -61,7 +61,7 @@ assert auth["client"] == {"mode": "provided", "clientId": "wordrava-chatgpt", "t
 assert auth["baseScopes"] == ["sites:read", "content:read"]
 assert auth["resource"] == cfg["url"] and auth["authorizationServerBase"] == "https://wordrava.shayanostovar.com"
 assert not cfg.get("headers") and "clientSecret" not in json.dumps(mcp)
-assert len(names) == 35
+assert len(names) == 40
 for removed in ["wordrava_execute_read", "wordrava_execute_write", "wordrava_connect_wordpress",
                 "wordrava_read_rest_route", "wordrava_run_read_ability"]:
     assert removed not in names
@@ -78,5 +78,5 @@ for field in ["logo", "composerIcon"]:
     width, height = struct.unpack(">II", raw[16:24])
     assert width == height and 48 <= width <= 4096
     assert hashlib.sha256(raw).hexdigest() == "aab2538babaceec8fe09363a9dec59a6e332e208c2959993e155db4fac2f7264"
-print("Public plugin metadata checks passed: 35 named tools, 5 positive/3 negative cases, OAuth/file schema and original logo.")
+print("Public plugin metadata checks passed: 40 named tools, 5 positive/3 negative cases, OAuth/file schema and original logo.")
 print("Owner identity, domain challenge, reviewer credentials/video and the OpenAI scan remain external review steps.")

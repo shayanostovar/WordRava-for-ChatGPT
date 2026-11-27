@@ -1,4 +1,4 @@
-# WordRava for ChatGPT v1.1.1
+# WordRava for ChatGPT v1.2.0
 
 WordRava connects WordPress to ChatGPT and Codex through WordRava Center, OAuth authorization code + PKCE and a remote Streamable HTTP MCP server. **By ShayanOstovar**.
 
@@ -13,7 +13,7 @@ WordRava connects WordPress to ChatGPT and Codex through WordRava Center, OAuth 
 - Stage a ZIP attached through ChatGPT, inspect plugin/theme metadata and SHA-256, then explicitly approve installation of those exact bytes. Installation refuses overwrite and never activates the package automatically.
 - Plan supported operations and poll asynchronous jobs to a verified result.
 
-The public catalog contains **35 named tools**. Initial OAuth linking requests read access. Writes require `content:write`, explicit approval and the matching WordPress administrator opt-in. SEO, publication, site administration and code installation have separate local controls. Center feature flags, account/site ownership and native WordPress capabilities are enforced on each operation.
+The public catalog contains **40 named tools** (five builder tools are a separately gated preview). Initial OAuth linking requests read access. Writes require `content:write`, explicit approval and the matching WordPress administrator opt-in. SEO, publication, site administration and code installation have separate local controls. Center feature flags, account/site ownership and native WordPress capabilities are enforced on each operation.
 
 The connector executes jobs by outbound WordPress polling. WP-Cron or manual administration sync must run; queueing is not immediate execution. Read jobs reserve quota and are correctly annotated as stateful even though they do not edit WordPress.
 
@@ -43,13 +43,13 @@ python3 scripts/build_review_fixtures.py
 python3 scripts/build_plugin.py
 ```
 
-The reproducible review bundle is `dist/wordrava-chatgpt-plugin-1.1.1-review-draft.zip`, with both manifests at the archive root and the supplied original ribbon PNG assets. `npm test` exercises actual MCP transport and schemas against a disposable HTTPS Center mock. Connector and Center integration checks cover their corresponding live implementations separately.
+The reproducible review bundle is `dist/wordrava-chatgpt-plugin-1.2.0-review-draft.zip`, with both manifests at the archive root and the supplied original ribbon PNG assets. `npm test` exercises actual MCP transport and schemas against a disposable HTTPS Center mock. Connector and Center integration checks cover their corresponding live implementations separately.
 
 Repository release and deployment are separate from OpenAI review and Directory publication. Owner identity, domain verification, reviewer access, a real demo video and the portal's scan remain required. No credentials or review secrets belong in the ZIP.
 
 ## Deployment and documentation
 
-Main-branch workflows validate source and publish immutable SHA-tagged GHCR images. Center's restricted deployment workflow selects the approved MCP image. The coordinated application release is 1.1.1; the wire protocol remains 1.0 with shared schema1.3.
+Main-branch workflows validate source and publish immutable SHA-tagged GHCR images. Center's restricted deployment workflow selects the approved MCP image. The coordinated application release is 1.2.0; the wire protocol remains 1.0 with shared schema1.3.
 
 - [Runtime integration contract](docs/INTEGRATION.md)
 - [English submission guide](docs/MARKETPLACE_RELEASE.md)
@@ -59,6 +59,10 @@ Main-branch workflows validate source and publish immutable SHA-tagged GHCR imag
 - [MCP and OAuth declaration](marketplace/mcp.json)
 - [Center](https://github.com/shayanostovar/WordRavaCenter)
 - [WordPress Connector](https://github.com/shayanostovar/WordRava-WordPress-Connector)
+
+## Release 1.2.0
+
+Bounded native Elementor/Gutenberg preview: read, targeted text/HTML patch, registered Elementor controls, supported structure mutation and latest local snapshot restore. Full builder coverage is not implemented. Requires Center preview enabled after real integration testing and Connector 1.2.0. Supported theme icons and tool invocation metadata do not customize ChatGPT's global reasoning animation.
 
 ## Release 1.1.1
 
