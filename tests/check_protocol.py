@@ -16,9 +16,7 @@ assert c['operation']['status'] == 'implemented-controlled-public-release'
 assert c['operation']['endpoint'] == 'POST /api/v1/sites/{siteId}/jobs'
 assert c['operation']['connectorPoll'] == 'POST /api/v1/connector-jobs/poll'
 assert {'seo_read', 'inspect_plugin_zip', 'inspect_theme_zip'} <= set(c['operation']['types']['read'])
-assert set(c['operation']['types']['write']) == {'create_draft', 'update_draft', 'publish_draft', 'import_media_url',
-    'activate_theme', 'activate_plugin', 'deactivate_plugin', 'update_published', 'trash_content', 'restore_content',
-    'seo_update', 'install_plugin_zip', 'install_theme_zip', 'builder_patch', 'builder_control', 'builder_structure', 'builder_restore'}
+assert set(c['operation']['types']['write']) == {'create_draft', 'update_draft', 'publish_draft', 'import_media_url', 'activate_theme', 'activate_plugin', 'deactivate_plugin', 'update_published', 'trash_content', 'restore_content', 'seo_update', 'install_plugin_zip', 'install_theme_zip', 'builder_patch', 'builder_control', 'builder_structure', 'builder_restore', 'theme_identity_update', 'theme_css_update', 'theme_css_restore', 'theme_part_update', 'theme_part_restore', 'polylang_set_language', 'polylang_link'}
 assert 'builder_read' in c['operation']['types']['read']
 assert c['quickPairing']['version'] == 2 and '/oauth/connect-wordpress' in c['quickPairing']['start']
 assert c['operation']['packageLimits']['overwrite'] is False
@@ -27,9 +25,13 @@ assert c['usage']['limitSource'] == 'center-plan'
 source = '\n'.join((root / file).read_text() for file in ['src/server.ts', 'src/operations.ts'])
 names = set(re.findall(r"registerTool\('([^']+)'", source))
 expected = set(c['capabilities']['readOnlyMcpTools'] + c['capabilities']['writeMcpTools'])
-assert names == expected and len(names) == c['capabilities']['mcpToolCount'] == 40
+assert names == expected and len(names) == c['capabilities']['mcpToolCount'] == 51
 assert "version: '1.2.0'" in source
 for value in ['securitySchemes', 'content:write', 'mcp/www_authenticate', 'openai/profile', 'openai/fileParams', 'Idempotency-Key']:
     assert value in source
 assert 'https://wordrava.shayanostovar.com/mcp' in (root / 'marketplace/mcp.json').read_text()
-print('MCP 1.2.0 / protocol1.0 schema1.3: coordinated versions, browser pairing and 40 named-tool contracts passed.')
+print('MCP 1.2.0 / protocol1.0 schema1.3: coordinated versions, browser pairing and 51 named-tool contracts passed.')
+
+assert ["theme_read","theme_parts_list","theme_part_read","polylang_read"] == c['operation']['types']['read'][-4:]
+assert c['operation']['compatibilityDevelopment']['minimumConnectorVersion'] == '1.2.3'
+assert c['operation']['compatibilityDevelopment']['status'] == 'development-unreleased'

@@ -69,10 +69,21 @@
       "wordrava_patch_builder",
       "wordrava_set_builder_control",
       "wordrava_edit_builder_structure",
-      "wordrava_restore_builder_snapshot"
+      "wordrava_restore_builder_snapshot",
+      "wordrava_read_theme_appearance",
+      "wordrava_update_theme_identity",
+      "wordrava_update_custom_css",
+      "wordrava_restore_custom_css",
+      "wordrava_list_theme_parts",
+      "wordrava_read_theme_part",
+      "wordrava_update_theme_part",
+      "wordrava_restore_theme_part",
+      "wordrava_read_polylang_translation",
+      "wordrava_set_polylang_language",
+      "wordrava_link_polylang_translations"
     ],
     "writeFeatureFlag": "WORDRAVA_WRITES_ENABLED",
-    "mcpToolCount": 40,
+    "mcpToolCount": 51,
     "toolReviewPolicy": "Named, individually described tools only. Generic future-operation, arbitrary REST and arbitrary ability dispatch are not exposed to models.",
     "readOnlyAnnotation": "Submitting a read job or staging a file changes server state and is annotated readOnlyHint=false."
   },
@@ -113,7 +124,11 @@
         "seo_read",
         "inspect_plugin_zip",
         "inspect_theme_zip",
-        "builder_read"
+        "builder_read",
+        "theme_read",
+        "theme_parts_list",
+        "theme_part_read",
+        "polylang_read"
       ],
       "write": [
         "create_draft",
@@ -132,7 +147,14 @@
         "builder_patch",
         "builder_control",
         "builder_structure",
-        "builder_restore"
+        "builder_restore",
+        "theme_identity_update",
+        "theme_css_update",
+        "theme_css_restore",
+        "theme_part_update",
+        "theme_part_restore",
+        "polylang_set_language",
+        "polylang_link"
       ]
     },
     "idempotencyHeader": "Idempotency-Key",
@@ -180,6 +202,55 @@
       "verification": "Native save, strict persisted tree/readback check; uncertain save requires re-read, never blind retry",
       "unsupported": "Fail closed; no generic post-content overwrite of detected native builder pages",
       "status": "preview; actual builder and production integration required before enabling"
+    },
+    "compatibilityDevelopment": {
+      "targetRelease": "1.2.3",
+      "status": "development-unreleased",
+      "minimumConnectorVersion": "1.2.3",
+      "inventory": {
+        "page": [
+          1,
+          10000
+        ],
+        "per_page": [
+          1,
+          50
+        ],
+        "default_page_size": {
+          "content": 20,
+          "media": 50
+        },
+        "language": "all or an active Polylang language; no silent old-connector fallback",
+        "result": "pagination metadata, per-item language and translation IDs; offset inventory is not a snapshot"
+      },
+      "permissions": {
+        "profiles": [
+          "read_only",
+          "read_write"
+        ],
+        "legacyPolicy": "Preserve old grants; never silently expand them. A new explicit WordPress administrator profile is needed for additional operations.",
+        "newWrites": "Read & Write profile, native WordPress capability, OAuth content:write, confirmed exact operation, current revision and stable idempotency key"
+      },
+      "appearance": {
+        "coreIdentity": [
+          "site_title",
+          "tagline",
+          "custom_logo",
+          "site_icon"
+        ],
+        "css": "Active theme native Additional CSS only; refuses preprocessed/oversized CSS and unsafe markup; local bounded snapshot",
+        "headerFooter": "Existing native active block-theme header/footer only; database override, no PHP/theme files; bounded snapshot restores text, not original file origin",
+        "unimplemented": "Theme-specific options and non-native header builders require dedicated adapters"
+      },
+      "polylang": {
+        "operations": [
+          "read language and group",
+          "assign language to unlinked post/page",
+          "merge non-conflicting translation groups"
+        ],
+        "unimplemented": "Language administration, term translations, translated menus, Pro-specific functionality and unlink/replacement require separate adapters"
+      },
+      "releaseGate": "Every compatibility target and required theme operation must have real versioned integration evidence before 1.2.3 is published."
     }
   },
   "usage": {
