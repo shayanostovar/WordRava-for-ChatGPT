@@ -136,7 +136,7 @@ function createServer(token: string, session: Session): McpServer {
   server.registerTool('wordrava_list_sites', {
     outputSchema: sitesSchema,
     description: 'List only the WordPress sites in the signed-in WordRava account, including whether each site is blocked. Does not query site content.',
-    inputSchema: {}, annotations: readAnnotations, _meta: oauthSites,
+    inputSchema: {}, annotations: readAnnotations, _meta: { ...oauthSites, 'openai/toolInvocation/invoking': "WordRava: List sites…", 'openai/toolInvocation/invoked': "WordRava: Request finished" },
   }, async () => {
     try { return good(await centerGet<unknown[]>('/api/v1/sites', token), sitesSchema); }
     catch { return bad('Unable to retrieve your WordRava sites.'); }
@@ -147,7 +147,7 @@ function createServer(token: string, session: Session): McpServer {
     outputSchema: { id: z.string().min(1), name: z.string().optional(),
       email: z.string().optional(), nickname: z.string().optional() },
     annotations: readAnnotations,
-    _meta: { ...oauthSites, 'openai/profile': true },
+    _meta: { 'openai/toolInvocation/invoking': "WordRava: My account…", 'openai/toolInvocation/invoked': "WordRava: Request finished",  ...oauthSites, 'openai/profile': true },
   }, async () => {
     try {
       const account = await centerGet<{ id?: string, email?: string }>('/api/v1/me', token);
@@ -160,7 +160,7 @@ function createServer(token: string, session: Session): McpServer {
   server.registerTool('wordrava_connection_help', {
     title: 'Connect a WordPress site',
     description: 'Explain the WordPress browser pairing workflow. Never requests pairing codes, passwords or authentication secrets in chat. Marketplace installation already contains the MCP server and OAuth settings; users do not enter a server URL, client ID or scopes.',
-    inputSchema: {}, outputSchema: connectionHelpSchema, annotations: readAnnotations, _meta: oauthSites,
+    inputSchema: {}, outputSchema: connectionHelpSchema, annotations: readAnnotations, _meta: { ...oauthSites, 'openai/toolInvocation/invoking': "WordRava: Connection help…", 'openai/toolInvocation/invoked': "WordRava: Request finished" },
   }, async () => good({
     download_url: publicOrigin + '/download', documentation_url: publicOrigin + '/docs',
     steps: [
@@ -174,7 +174,7 @@ function createServer(token: string, session: Session): McpServer {
     outputSchema: pairingStatusSchema,
     description: 'Check whether a WordPress administrator confirmed a pending one-time WordRava pairing. Does not reveal secrets.',
     inputSchema: { request_id: z.string().uuid() },
-    annotations: readAnnotations, _meta: oauthSites,
+    annotations: readAnnotations, _meta: { ...oauthSites, 'openai/toolInvocation/invoking': "WordRava: Pairing status…", 'openai/toolInvocation/invoked': "WordRava: Checked operation status" },
   }, async ({ request_id }) => {
     try {
       const result = await centerGet<{status:string,site_id?:string|null}>(`/api/v1/pairing/status/${request_id}`, token);
@@ -188,7 +188,7 @@ function createServer(token: string, session: Session): McpServer {
   server.registerTool('wordrava_site_usage', {
     outputSchema: quotaSchema,
     description: 'Read exact current UTC-day per-site quota: effective plan and override source, successful operations, pending/running reservations, failed jobs (not charged), remaining, daily limit and next 00:00 UTC reset time. Use this whenever the user asks about capacity of a site.',
-    inputSchema: { site_id: z.string().uuid() }, annotations: readAnnotations, _meta: oauthSites,
+    inputSchema: { site_id: z.string().uuid() }, annotations: readAnnotations, _meta: { ...oauthSites, 'openai/toolInvocation/invoking': "WordRava: Site usage…", 'openai/toolInvocation/invoked': "WordRava: Request finished" },
   }, async ({ site_id }) => {
     try { return good(await centerGet<unknown>(`/api/v1/usage/${site_id}`, token), quotaSchema); }
     catch { return bad('Site is blocked, unavailable, or not owned by your WordRava account.'); }
@@ -196,7 +196,7 @@ function createServer(token: string, session: Session): McpServer {
   server.registerTool('wordrava_account_usage', {
     outputSchema: accountUsageSchema,
     description: 'Read the current WordRava user account capacity across all active connected sites: each site effective plan, usage, reserved operations, failed jobs, remaining units and exact next reset at 00:00 UTC. Quotas are independent PER SITE; account totals are a sum, not a shared account-wide pool. Use when asked about my quota, my plan or remaining capacity.',
-    inputSchema: {}, annotations: readAnnotations, _meta: oauthSites,
+    inputSchema: {}, annotations: readAnnotations, _meta: { ...oauthSites, 'openai/toolInvocation/invoking': "WordRava: Account usage…", 'openai/toolInvocation/invoked': "WordRava: Request finished" },
   }, async () => {
     try { return good(await centerGet<unknown>('/api/v1/account/usage', token), accountUsageSchema); }
     catch { return bad('Unable to retrieve usage for the current WordRava account.'); }
@@ -204,7 +204,7 @@ function createServer(token: string, session: Session): McpServer {
   server.registerTool('wordrava_capabilities', {
     outputSchema: capabilitySchema,
     description: 'Read the current supported WordRava features and protocol. Use to check whether content operations are enabled before trying them.',
-    inputSchema: {}, annotations: readAnnotations, _meta: oauthSites,
+    inputSchema: {}, annotations: readAnnotations, _meta: { ...oauthSites, 'openai/toolInvocation/invoking': "WordRava: Capabilities…", 'openai/toolInvocation/invoked': "WordRava: Request finished" },
   }, async () => {
     try {
       const capabilities = await centerGet<Record<string, unknown>>('/api/v1/capabilities', token);
@@ -254,7 +254,7 @@ function createServer(token: string, session: Session): McpServer {
       }).strict(),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
-    _meta: { ...oauthContentWrite, 'openai/fileParams': ['file'] },
+    _meta: { 'openai/toolInvocation/invoking': "WordRava: Stage package…", 'openai/toolInvocation/invoked': "WordRava: Request finished",  ...oauthContentWrite, 'openai/fileParams': ['file'] },
   }, async ({ site_id, package_type, file }) => {
     if (!can('content:write')) return scopeError('content:write');
     try {
@@ -280,12 +280,12 @@ function createServer(token: string, session: Session): McpServer {
   server.registerTool('wordrava_discover_site', {
     outputSchema: queuedJobSchema,
     description: 'Discover this WordPress installation before planning any changes: installed plugin slugs and versions, active theme, custom post types, taxonomies, REST namespaces, installed adapters and available permission levels. Discovery does not imply automatic support for unknown plugins.',
-    inputSchema: { site_id: z.string().uuid() }, annotations: queuedReadAnnotations, _meta: oauthContentRead,
+    inputSchema: { site_id: z.string().uuid() }, annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: Discover site…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
   }, async ({ site_id }) => submit(site_id, { kind: 'discover_capabilities', contentType: 'post' }, false));
   server.registerTool('wordrava_list_media', {
     outputSchema: queuedJobSchema,
     description: 'List the latest 50 media library attachments, including IDs, MIME types and URLs. Read-only.',
-    inputSchema: { site_id: z.string().uuid() }, annotations: queuedReadAnnotations, _meta: oauthContentRead,
+    inputSchema: { site_id: z.string().uuid() }, annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: List media…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
   }, async ({ site_id }) => submit(site_id, { kind: 'list_media', contentType: 'post' }, false));
   server.registerTool('wordrava_import_image', {
     outputSchema: queuedJobSchema,
@@ -293,7 +293,7 @@ function createServer(token: string, session: Session): McpServer {
     inputSchema: { site_id: z.string().uuid(), image_url: z.string().url().max(2000),
       title: z.string().min(1).max(200), user_confirmed: z.literal(true),
       request_id: z.string().uuid() },
-    annotations: { ...writeAnnotations, openWorldHint: true }, _meta: oauthContentWrite,
+    annotations: { ...writeAnnotations, openWorldHint: true }, _meta: { ...oauthContentWrite, 'openai/toolInvocation/invoking': "WordRava: Import image…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
   }, async ({ site_id, image_url, title, user_confirmed, request_id }) =>
     submit(site_id, { kind: 'import_media_url', contentType: 'post', title,
       content: image_url, confirmChanges: user_confirmed }, true, request_id));
@@ -304,7 +304,7 @@ function createServer(token: string, session: Session): McpServer {
       expected_modified_gmt: z.string().min(10).max(40),
       user_confirmed: z.literal(true).describe('True only when the user has explicitly approved publishing this exact draft.'),
       request_id: z.string().uuid() },
-    annotations: { ...writeAnnotations, destructiveHint: true, openWorldHint: true }, _meta: oauthContentWrite,
+    annotations: { ...writeAnnotations, destructiveHint: true, openWorldHint: true }, _meta: { ...oauthContentWrite, 'openai/toolInvocation/invoking': "WordRava: Publish draft…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
   }, async ({ site_id, content_type, item_id, expected_modified_gmt, user_confirmed, request_id }) =>
     submit(site_id, { kind: 'publish_draft', contentType: content_type, itemId: item_id,
       expectedModifiedGmt: expected_modified_gmt, confirmChanges: user_confirmed }, true, request_id));
@@ -314,7 +314,7 @@ function createServer(token: string, session: Session): McpServer {
   server.registerTool('wordrava_plan_operation', {
     outputSchema: catalogSchema,
     description: 'List supported WordPress operation kinds, scopes and risk for a connected site. Planning never modifies WordPress. Use it to understand permissions and supported operations. Every callable operation has its own named tool in the reviewed catalog.',
-    inputSchema: { site_id: z.string().uuid() }, annotations: readAnnotations, _meta: oauthContentRead,
+    inputSchema: { site_id: z.string().uuid() }, annotations: readAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: Plan operation…", 'openai/toolInvocation/invoked': "WordRava: Request finished" },
   }, async ({ site_id }) => {
     if (!can('content:read')) return scopeError('content:read');
     try { return good(await centerGet<unknown>(`/api/v1/sites/${site_id}/operations`, token), catalogSchema); }
@@ -324,7 +324,7 @@ function createServer(token: string, session: Session): McpServer {
     outputSchema: jobStatusSchema,
     description: 'Poll an asynchronous operation by job ID. Check the result before retrying any write.',
     inputSchema: { site_id: z.string().uuid(), job_id: z.string().uuid() },
-    annotations: readAnnotations, _meta: oauthContentRead,
+    annotations: readAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: Operation status…", 'openai/toolInvocation/invoked': "WordRava: Checked operation status" },
   }, async ({ site_id, job_id }) => {
     if (!can('content:read')) return scopeError('content:read');
     try { return good(await centerGet<unknown>(`/api/v1/sites/${site_id}/jobs/${job_id}`, token), jobStatusSchema); }
@@ -333,34 +333,34 @@ function createServer(token: string, session: Session): McpServer {
   server.registerTool('wordrava_site_overview', {
     outputSchema: queuedJobSchema,
     description: 'Queue a read-only WordPress site overview (site name, WordPress version and active theme). Returns an asynchronous job ID.',
-    inputSchema: { site_id: z.string().uuid() }, annotations: queuedReadAnnotations, _meta: oauthContentRead,
+    inputSchema: { site_id: z.string().uuid() }, annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: Site overview…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
   }, async ({ site_id }) => submit(site_id, { kind: 'site_overview', contentType: 'post' }, false));
   server.registerTool('wordrava_list_plugins', {
     outputSchema: queuedJobSchema,
     description: 'Queue a read-only list of installed plugins and activation status for a connected site. Returns an asynchronous job ID.',
-    inputSchema: { site_id: z.string().uuid() }, annotations: queuedReadAnnotations, _meta: oauthContentRead,
+    inputSchema: { site_id: z.string().uuid() }, annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: List plugins…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
   }, async ({ site_id }) => submit(site_id, { kind: 'list_plugins', contentType: 'post' }, false));
   server.registerTool('wordrava_list_menus', {
     outputSchema: queuedJobSchema,
     description: 'Queue read-only WordPress menu names and links for a connected site. Returns an asynchronous job ID.',
-    inputSchema: { site_id: z.string().uuid() }, annotations: queuedReadAnnotations, _meta: oauthContentRead,
+    inputSchema: { site_id: z.string().uuid() }, annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: List menus…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
   }, async ({ site_id }) => submit(site_id, { kind: 'list_menus', contentType: 'post' }, false));
   server.registerTool('wordrava_list_content', {
     outputSchema: queuedJobSchema,
     description: 'Queue read-only listing of the latest 20 WordPress posts or pages. No content edits. Returns an asynchronous job ID.',
-    inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']) }, annotations: queuedReadAnnotations, _meta: oauthContentRead,
+    inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']) }, annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: List content…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
   }, async ({ site_id, content_type }) => submit(site_id, { kind: 'list_content', contentType: content_type }, false));
   server.registerTool('wordrava_get_content', {
     outputSchema: queuedJobSchema,
     description: 'Queue a read-only fetch of one WordPress post/page, including its modified_gmt revision. Returns an asynchronous job ID.',
-    inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']), item_id: z.number().int().positive() }, annotations: queuedReadAnnotations, _meta: oauthContentRead,
+    inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']), item_id: z.number().int().positive() }, annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: Get content…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
   }, async ({ site_id, content_type, item_id }) => submit(site_id, { kind: 'get_content', contentType: content_type, itemId: item_id }, false));
   server.registerTool('wordrava_create_draft', {
     outputSchema: queuedJobSchema,
     description: 'Create a WordPress DRAFT post/page only, after user approval and WordPress-side opt-in. Never publish. Enqueues an asynchronous job.',
     inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']), title: z.string().min(1).max(200), content: z.string().max(100000),
       user_confirmed: z.literal(true).describe('Must be true only after user explicitly approves the exact draft content.'), request_id: z.string().uuid().describe('Stable idempotency UUID; reuse on retries.') },
-    annotations: writeAnnotations, _meta: oauthContentWrite,
+    annotations: writeAnnotations, _meta: { ...oauthContentWrite, 'openai/toolInvocation/invoking': "WordRava: Create draft…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
   }, async ({ site_id, content_type, title, content, user_confirmed, request_id }) => submit(site_id,
     { kind: 'create_draft', contentType: content_type, title, content, confirmChanges: user_confirmed }, true, request_id));
   server.registerTool('wordrava_update_draft', {
@@ -368,14 +368,14 @@ function createServer(token: string, session: Session): McpServer {
     description: 'Update an existing DRAFT only. Requires exact modified_gmt revision, explicit approval and WordPress-side opt-in. Never publish or delete.',
     inputSchema: { site_id: z.string().uuid(), content_type: z.enum(['post', 'page']), item_id: z.number().int().positive(),
       title: z.string().min(1).max(200), content: z.string().max(100000), expected_modified_gmt: z.string().min(10).max(40),
-      user_confirmed: z.literal(true), request_id: z.string().uuid() }, annotations: updateAnnotations, _meta: oauthContentWrite,
+      user_confirmed: z.literal(true), request_id: z.string().uuid() }, annotations: updateAnnotations, _meta: { ...oauthContentWrite, 'openai/toolInvocation/invoking': "WordRava: Update draft…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
   }, async ({ site_id, content_type, item_id, title, content, expected_modified_gmt, user_confirmed, request_id }) => submit(site_id,
     { kind: 'update_draft', contentType: content_type, itemId: item_id, title, content, expectedModifiedGmt: expected_modified_gmt,
       confirmChanges: user_confirmed }, true, request_id));
   server.registerTool('wordrava_job_status', {
     outputSchema: jobStatusSchema,
     description: 'Read the status and sanitized result of a queued WordPress operation. Use the job ID returned by a previous read or draft tool.',
-    inputSchema: { site_id: z.string().uuid(), job_id: z.string().uuid() }, annotations: readAnnotations, _meta: oauthContentRead,
+    inputSchema: { site_id: z.string().uuid(), job_id: z.string().uuid() }, annotations: readAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: Job status…", 'openai/toolInvocation/invoked': "WordRava: Checked operation status" },
   }, async ({ site_id, job_id }) => {
     if (!can('content:read')) return scopeError('content:read');
     try { return good(await centerGet<unknown>(`/api/v1/sites/${site_id}/jobs/${job_id}`, token), jobStatusSchema); }
