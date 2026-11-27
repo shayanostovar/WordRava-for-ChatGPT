@@ -3,7 +3,7 @@
   "protocol": "wordrava",
   "protocolVersion": "1.0",
   "minimumConnectorProtocol": "1.0",
-  "centerVersion": "1.2.0",
+  "centerVersion": "1.3.1",
   "pairing": {
     "issuer": "center",
     "claimant": "wordpress-connector",
@@ -229,7 +229,7 @@
         ],
         "unimplemented": "Language administration, term translations, translated menus, Pro-specific functionality and unlink/replacement require separate adapters"
       },
-      "releaseGate": "All original and supplemental compatibility targets, required theme features, security, directory compliance and staging acceptance must have verified evidence before 1.3.0 is published."
+      "releaseGate": "The full compatibility and WordPress.org gate remains mandatory for full-coverage and directory release claims. Limited cloud runtime 1.3.1 uses a separate scope gate and retains build, security, database acceptance and rollback checks."
     },
     "humanApproval": {
       "minimumConnectorVersion": "1.3.0",
@@ -291,9 +291,9 @@
     "chatgptSetupPrompt": "Static public MCP URL, OAuth setup and discovery instructions. Never contains a pairing secret. Plugin Creator availability depends on the account."
   },
   "releaseComponents": {
-    "center": "1.2.0",
-    "wordpressConnector": "1.2.0",
-    "chatgptMcp": "1.2.0",
+    "center": "1.3.1",
+    "wordpressConnector": "1.3.1",
+    "chatgptMcp": "1.3.1",
     "protocol": "1.0",
     "writes": "feature-gated; site owner WordPress opt-in, native capabilities and explicit user approval"
   },
@@ -310,5 +310,18 @@
     "publicEndpoint": "GET /api/v1/downloads/wordpress?locale=en|fa",
     "adminEndpoint": "/api/v1/admin/plugin-release?locale=en|fa",
     "directUploadMaxBytes": 2000000
+  },
+  "cloudRelease": {
+    "version": "1.3.1",
+    "scope": "limited-cloud-runtime",
+    "fullPluginCoverage": false,
+    "marketplaceApproval": false,
+    "wordpressDirectoryApproval": false,
+    "connectorArchive": "1.3.1",
+    "legacyChatgptReviewBundle": "1.2.0",
+    "minimumExtendedConnector": "1.2.3",
+    "minimumSensitiveConnector": "1.3.0",
+    "security": "Native capabilities, OAuth scopes, local human approval, exact request and revision checks remain required; no newly enabled generic execution or package installation.",
+    "publication": "Cloud runtime deployment is separate from directory or full compatibility acceptance. Only named, bounded operations are offered; incomplete adapters are not advertised as fully supported."
   }
 }

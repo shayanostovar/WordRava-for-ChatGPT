@@ -20,7 +20,7 @@ names = set(re.findall(r"registerTool\('([^']+)'", source))
 ext = plugin["extensions"]["com.openai"]
 ui, review = ext["interface"], ext["review"]
 assert plugin["name"] == "wordrava" and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", plugin["name"])
-assert plugin["version"] == package["version"] == "1.2.0"
+assert plugin["version"] == package["version"] == "1.3.1"
 assert plugin.get("$schema") == "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json", "Unsupported plugin manifest schema"
 assert mcp.get("$schema") == "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json", "Unsupported MCP manifest schema"
 for field, maximum in {"displayName": 30, "shortDescription": 30, "developerName": 80, "longDescription": 4000}.items():

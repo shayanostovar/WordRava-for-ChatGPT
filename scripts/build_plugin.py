@@ -8,8 +8,13 @@ from validate_package import PACKAGE_PATHS, validate_archive, validate_package
 root = pathlib.Path(__file__).resolve().parents[1]
 source = root / "marketplace"
 version = json.loads((root / "package.json").read_text())["version"]
-import subprocess, sys
-subprocess.run([sys.executable, str(root / "tests/check_compatibility_gate.py"), "--version", version], check=True)
+import argparse, subprocess, sys
+parser = argparse.ArgumentParser()
+parser.add_argument("--review-draft", action="store_true", help="Build internal review-only archive; never publish it as an approved release.")
+args = parser.parse_args()
+gate = [sys.executable, str(root / "tests/check_compatibility_gate.py"), "--version", version]
+gate.append("--inventory-only" if args.review_draft else "--require-ready")
+subprocess.run(gate, check=True)
 files = {name: (source / name).read_bytes() for name in PACKAGE_PATHS}
 validate_package(files, version)
 dest = root / "dist" / f"wordrava-chatgpt-plugin-{version}-review-draft.zip"

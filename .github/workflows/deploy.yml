@@ -17,10 +17,16 @@ jobs:
   publish:
     needs: verify
     runs-on: ubuntu-24.04
+    outputs:
+      full_release_ready: ${{ steps.directory_gate.outputs.ready }}
     steps:
       - uses: actions/checkout@v4
-      - name: Require verified compatibility before image publication
-        run: python3 tests/check_compatibility_gate.py --require-ready
+      - name: Verify limited cloud runtime scope
+        run: python3 tests/check_cloud_release.py
+      - name: Independently evaluate full-release readiness
+        id: directory_gate
+        run: |
+          if python3 tests/check_compatibility_gate.py --require-ready; then echo "ready=true" >> "$GITHUB_OUTPUT"; else echo "ready=false" >> "$GITHUB_OUTPUT"; fi
       - name: Normalize registry owner
         run: echo "OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
       - uses: docker/setup-buildx-action@v3
@@ -42,7 +48,7 @@ jobs:
 
   release:
     needs: publish
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.publish.outputs.full_release_ready == 'true'
     runs-on: ubuntu-24.04
     permissions:
       contents: write

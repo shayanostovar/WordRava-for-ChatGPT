@@ -29,7 +29,7 @@ const protectedResourceMetadata = publicOrigin + '/.well-known/oauth-protected-r
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '256kb' }));
-app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.2.0' }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.3.1' }));
 
 // OAuth 2.1 / RFC 9728 protected-resource metadata. Nginx routes this path to MCP.
 const metadata = {
@@ -132,7 +132,7 @@ function scopeError(scope: string) {
 }
 
 function createServer(token: string, session: Session): McpServer {
-  const server = new McpServer({ name: 'WordRava', version: '1.2.0' });
+  const server = new McpServer({ name: 'WordRava', version: '1.3.1' });
   server.registerTool('wordrava_list_sites', {
     outputSchema: sitesSchema,
     description: 'List only the WordPress sites in the signed-in WordRava account, including whether each site is blocked. Does not query site content.',
@@ -187,7 +187,7 @@ function createServer(token: string, session: Session): McpServer {
   });
   server.registerTool('wordrava_site_usage', {
     outputSchema: quotaSchema,
-    description: 'Read exact current UTC-day per-site quota: effective plan and override source, successful operations, pending/running reservations, failed jobs (not charged), remaining, daily limit and next 00:00 UTC reset time. The standard Free allowance in this development target is 120 operations per site per day; the effective limit and remaining capacity must always come from this live response, never from a hardcoded estimate. Use this whenever the user asks about capacity of a site.',
+    description: 'Read exact current UTC-day per-site quota: effective plan and override source, successful operations, pending/running reservations, failed jobs (not charged), remaining, daily limit and next 00:00 UTC reset time. The standard Free allowance is 120 operations per site per day; the effective limit and remaining capacity must always come from this live response, never from a hardcoded estimate. Use this whenever the user asks about capacity of a site.',
     inputSchema: { site_id: z.string().uuid() }, annotations: readAnnotations, _meta: { ...oauthSites, 'openai/toolInvocation/invoking': "WordRava: Site usage…", 'openai/toolInvocation/invoked': "WordRava: Request finished" },
   }, async ({ site_id }) => {
     try { return good(await centerGet<unknown>(`/api/v1/usage/${site_id}`, token), quotaSchema); }
@@ -208,7 +208,7 @@ function createServer(token: string, session: Session): McpServer {
   }, async () => {
     try {
       const capabilities = await centerGet<Record<string, unknown>>('/api/v1/capabilities', token);
-      return good({ ...capabilities, mcp_version: '1.2.0', mcp_protocol_version: '1.0' }, capabilitySchema);
+      return good({ ...capabilities, mcp_version: '1.3.1', mcp_protocol_version: '1.0' }, capabilitySchema);
     }
     catch { return bad('Unable to retrieve current WordRava capabilities.'); }
   });

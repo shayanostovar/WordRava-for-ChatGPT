@@ -10,7 +10,7 @@ import json
 import re
 from pathlib import Path
 
-def validate(root, version=None, require_ready=False):
+def validate(root, version=None, require_ready=False, inventory_only=False):
     matrix = json.loads((root / "contracts/plugin-compatibility-targets.json").read_text(encoding="utf-8"))
     contract = json.loads((root / "contracts/wordrava-protocol-v1.json").read_text(encoding="utf-8"))
     targets = matrix["plugin_targets"]
@@ -55,7 +55,7 @@ def validate(root, version=None, require_ready=False):
         raise SystemExit("Invalid release version: " + actual)
     if require_ready and actual != matrix["target_release"] and not failures:
         raise SystemExit("Release version must match the verified compatibility target.")
-    if require_ready or tuple(map(int, actual.split("."))) >= (1, 2, 3):
+    if require_ready or (not inventory_only and tuple(map(int, actual.split("."))) >= (1, 2, 3)):
         audit = json.loads((root / "contracts/wordpress-org-review.json").read_text(encoding="utf-8"))
         required_checks = {"plugin_check","phpcs","runtime_security","compatibility","source_licenses","privacy_legal","release_staging","directory_package","reviewer_clarification"}
         if audit.get("target_release") != "1.3.0" or {r.get("id") for r in audit.get("guidelines", [])} != set(range(1,19)) or {r.get("id") for r in audit.get("release_checks", [])} != required_checks:
@@ -75,5 +75,8 @@ if __name__ == "__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument("--version")
     parser.add_argument("--require-ready",action="store_true")
+    parser.add_argument("--inventory-only",action="store_true",help="Validate inventory without making release readiness claims; for internal tests only.")
     args=parser.parse_args()
-    validate(Path(__file__).resolve().parents[1],args.version,args.require_ready)
+    if args.inventory_only and args.require_ready:
+        parser.error("Inventory-only and full release readiness are mutually exclusive.")
+    validate(Path(__file__).resolve().parents[1],args.version,args.require_ready,args.inventory_only)

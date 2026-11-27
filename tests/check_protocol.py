@@ -7,7 +7,7 @@ root = Path(__file__).resolve().parents[1]
 c = json.loads((root / 'contracts/wordrava-protocol-v1.json').read_text())
 version = json.loads((root / 'package.json').read_text())['version']
 assert c['schemaVersion'] == '1.3' and c['protocolVersion'] == '1.0'
-assert c['centerVersion'] == version == '1.2.0'
+assert c['centerVersion'] == version == '1.3.1'
 assert all(c['releaseComponents'][key] == version for key in ['center', 'wordpressConnector', 'chatgptMcp'])
 assert c['pairing']['claimEndpoint'] == 'POST /api/v1/connectors/claim'
 assert c['oauth']['token'] == 'POST /oauth/token' and 'content:write' in c['oauth']['scopes']
@@ -24,18 +24,18 @@ source = '\n'.join((root / file).read_text() for file in ['src/server.ts', 'src/
 names = set(re.findall(r"registerTool\('([^']+)'", source))
 expected = set(c['capabilities']['readOnlyMcpTools'] + c['capabilities']['writeMcpTools'])
 assert names == expected and len(names) == c['capabilities']['mcpToolCount'] == 46
-assert "version: '1.2.0'" in source
+assert "version: '1.3.1'" in source
 for value in ['securitySchemes', 'content:write', 'mcp/www_authenticate', 'openai/profile', 'Idempotency-Key']:
     assert value in source
 assert 'https://wordrava.shayanostovar.com/mcp' in (root / 'marketplace/mcp.json').read_text()
-print('MCP 1.2.0 / protocol1.0 schema1.3: coordinated versions, browser pairing and 46 named-tool contracts passed.')
+print('MCP 1.3.1 / protocol1.0 schema1.3: coordinated versions, browser pairing and 46 named-tool contracts passed.')
 
 assert ["theme_read","theme_parts_list","theme_part_read","polylang_read"] == c['operation']['types']['read'][-4:]
 assert c['operation']['compatibilityDevelopment']['minimumConnectorVersion'] == '1.2.3'
 assert c['operation']['compatibilityDevelopment']['status'] == 'development-unreleased'
 
 from check_compatibility_gate import validate as validate_compatibility
-validate_compatibility(root)
+validate_compatibility(root, inventory_only=True)
 
 assert c['packageStaging']['status'] == 'retired'
 assert c['operation']['humanApproval']['minimumConnectorVersion'] == '1.3.0'

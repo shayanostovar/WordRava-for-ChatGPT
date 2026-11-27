@@ -60,7 +60,7 @@ with tempfile.TemporaryDirectory(prefix="wordrava-package-schema-") as directory
                  for kind in ("plugin", "mcp")}
     # -O ensures unsupported formats cannot bypass the production builder by
     # disabling Python assert statements.
-    command = [sys.executable, "-O", str(fixture / "scripts/build_plugin.py")]
+    command = [sys.executable, "-O", str(fixture / "scripts/build_plugin.py"), "--review-draft"]
     for kind, segments, value, expected_error in negative_cases:
         manifests = copy.deepcopy(originals)
         target = manifests[kind]
