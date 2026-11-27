@@ -35,3 +35,6 @@ print('MCP 1.2.0 / protocol1.0 schema1.3: coordinated versions, browser pairing 
 assert ["theme_read","theme_parts_list","theme_part_read","polylang_read"] == c['operation']['types']['read'][-4:]
 assert c['operation']['compatibilityDevelopment']['minimumConnectorVersion'] == '1.2.3'
 assert c['operation']['compatibilityDevelopment']['status'] == 'development-unreleased'
+
+from check_compatibility_gate import validate as validate_compatibility
+validate_compatibility(root)

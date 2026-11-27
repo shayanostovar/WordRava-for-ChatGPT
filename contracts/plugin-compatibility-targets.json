@@ -1,0 +1,2066 @@
+{
+  "target_release": "1.2.3",
+  "requested_entries": 101,
+  "unique_plugin_targets": 98,
+  "note": "Acceptance scope, not a support claim. Each feature needs named typed operations, compatible edition/version, real disposable WordPress integration tests, permission-denial and error verification. The existing 1.2.0 release remains unchanged. Premium features require legitimate licensed staging installations. No unsafe arbitrary PHP, SQL, REST, secret export, provider authorization bypass, or permanent deletion is implied by Read & Write.",
+  "plugin_targets": [
+    {
+      "id": "wp-001",
+      "requested_index": 1,
+      "name": "Contact Form 7",
+      "aliases": [],
+      "category": "forms",
+      "required_features": [
+        "forms",
+        "fields",
+        "mail",
+        "validation",
+        "messages",
+        "integrations"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-002",
+      "requested_index": 2,
+      "name": "Yoast SEO",
+      "aliases": [],
+      "category": "seo",
+      "required_features": [
+        "post_metadata",
+        "global_titles",
+        "robots",
+        "sitemap",
+        "schema",
+        "integrations"
+      ],
+      "status": "partial_unverified",
+      "notes": [
+        "Existing Yoast post metadata adapter; global settings and other features remain incomplete."
+      ],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-003",
+      "requested_index": 3,
+      "name": "Elementor Website Builder",
+      "aliases": [],
+      "category": "builder",
+      "required_features": [
+        "documents",
+        "widgets",
+        "layout",
+        "responsive",
+        "styles",
+        "templates",
+        "global_settings"
+      ],
+      "status": "partial_unverified",
+      "notes": [
+        "Existing bounded native Elementor preview; not full layout/design parity."
+      ],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-004",
+      "requested_index": 4,
+      "name": "Elementor Pro",
+      "aliases": [],
+      "category": "builder",
+      "required_features": [
+        "theme_builder",
+        "headers",
+        "footers",
+        "forms",
+        "popups",
+        "dynamic_tags",
+        "custom_css",
+        "conditions"
+      ],
+      "status": "partial_unverified",
+      "notes": [
+        "Elementor base document detection/preview is not Elementor Pro-specific support."
+      ],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-005",
+      "requested_index": 5,
+      "name": "WooCommerce",
+      "aliases": [],
+      "category": "commerce",
+      "required_features": [
+        "products",
+        "variations",
+        "inventory",
+        "orders",
+        "coupons",
+        "shipping",
+        "tax",
+        "settings",
+        "reports"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-006",
+      "requested_index": 6,
+      "name": "Akismet Anti-spam",
+      "aliases": [],
+      "category": "security",
+      "required_features": [
+        "status",
+        "comment_moderation",
+        "spam_statistics",
+        "settings",
+        "credential_safe_configuration"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-007",
+      "requested_index": 7,
+      "name": "Jetpack",
+      "aliases": [],
+      "category": "platform",
+      "required_features": [
+        "modules",
+        "security",
+        "performance",
+        "stats",
+        "settings",
+        "connected_services"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-008",
+      "requested_index": 8,
+      "name": "Slider Revolution",
+      "aliases": [],
+      "category": "slider",
+      "required_features": [
+        "modules",
+        "slides",
+        "layers",
+        "animation",
+        "responsive",
+        "templates",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-009",
+      "requested_index": 9,
+      "name": "Wordfence Security",
+      "aliases": [],
+      "category": "security",
+      "required_features": [
+        "firewall",
+        "scan",
+        "status",
+        "alerts",
+        "blocks",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-010",
+      "requested_index": 10,
+      "name": "Site Kit by Google",
+      "aliases": [],
+      "category": "analytics",
+      "required_features": [
+        "services",
+        "connection_status",
+        "reports",
+        "settings",
+        "credential_safe_configuration"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-011",
+      "requested_index": 11,
+      "name": "LiteSpeed Cache",
+      "aliases": [],
+      "category": "cache",
+      "required_features": [
+        "settings",
+        "cache_purge",
+        "optimization",
+        "exclusions",
+        "diagnostics"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-012",
+      "requested_index": 12,
+      "name": "Wordfence Login Security",
+      "aliases": [],
+      "category": "security",
+      "required_features": [
+        "two_factor_status",
+        "login_policy",
+        "recaptcha",
+        "settings",
+        "recovery"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-013",
+      "requested_index": 13,
+      "name": "Rank Math SEO",
+      "aliases": [],
+      "category": "seo",
+      "required_features": [
+        "post_metadata",
+        "global_titles",
+        "sitemap",
+        "schema",
+        "redirection",
+        "analytics",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-014",
+      "requested_index": 14,
+      "name": "All in One SEO",
+      "aliases": [],
+      "category": "seo",
+      "required_features": [
+        "post_metadata",
+        "global_titles",
+        "robots",
+        "sitemap",
+        "schema",
+        "redirects",
+        "settings"
+      ],
+      "status": "partial_unverified",
+      "notes": [
+        "Existing AIOSEO post metadata adapter; global settings and other features remain incomplete."
+      ],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-015",
+      "requested_index": 15,
+      "name": "WP Rocket",
+      "aliases": [],
+      "category": "cache",
+      "required_features": [
+        "settings",
+        "cache_purge",
+        "preload",
+        "optimization",
+        "exclusions"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-016",
+      "requested_index": 16,
+      "name": "Redirection",
+      "aliases": [],
+      "category": "seo",
+      "required_features": [
+        "redirects",
+        "groups",
+        "logs",
+        "import_export",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-017",
+      "requested_index": 17,
+      "name": "WPBakery",
+      "aliases": [],
+      "category": "builder",
+      "required_features": [
+        "documents",
+        "shortcodes",
+        "layout",
+        "responsive",
+        "styles",
+        "templates",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-018",
+      "requested_index": 18,
+      "name": "MonsterInsights",
+      "aliases": [],
+      "category": "analytics",
+      "required_features": [
+        "reports",
+        "tracking",
+        "settings",
+        "integrations",
+        "credential_safe_configuration"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-019",
+      "requested_index": 19,
+      "name": "CookieYes",
+      "aliases": [],
+      "category": "consent",
+      "required_features": [
+        "banner",
+        "categories",
+        "cookies",
+        "consent_policy",
+        "logs",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-020",
+      "requested_index": 20,
+      "name": "Complianz",
+      "aliases": [],
+      "category": "consent",
+      "required_features": [
+        "banner",
+        "categories",
+        "cookies",
+        "consent_policy",
+        "documents",
+        "integrations"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-021",
+      "requested_index": 21,
+      "name": "Yoast Duplicate Post",
+      "aliases": [],
+      "category": "content",
+      "required_features": [
+        "clone",
+        "rewrite_republish",
+        "permissions",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-022",
+      "requested_index": 22,
+      "name": "WPForms",
+      "aliases": [
+        {
+          "requested_index": 25,
+          "name": "WPForms – Easy Form Builder"
+        }
+      ],
+      "category": "forms",
+      "required_features": [
+        "forms",
+        "fields",
+        "validation",
+        "notifications",
+        "confirmations",
+        "entries",
+        "integrations"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-023",
+      "requested_index": 23,
+      "name": "Essential Addons for Elementor",
+      "aliases": [],
+      "category": "builder_addon",
+      "required_features": [
+        "widgets",
+        "controls",
+        "templates",
+        "extensions",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-024",
+      "requested_index": 24,
+      "name": "Smash Balloon Social Photo Feed",
+      "aliases": [],
+      "category": "marketing",
+      "required_features": [
+        "feeds",
+        "layout",
+        "moderation",
+        "connections",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-026",
+      "requested_index": 26,
+      "name": "Gravity Forms",
+      "aliases": [],
+      "category": "forms",
+      "required_features": [
+        "forms",
+        "fields",
+        "conditional_logic",
+        "notifications",
+        "confirmations",
+        "entries",
+        "feeds",
+        "integrations"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-027",
+      "requested_index": 27,
+      "name": "Ultimate Addons for Elementor",
+      "aliases": [],
+      "category": "builder_addon",
+      "required_features": [
+        "widgets",
+        "controls",
+        "templates",
+        "extensions",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-028",
+      "requested_index": 28,
+      "name": "Jetpack Boost",
+      "aliases": [],
+      "category": "cache",
+      "required_features": [
+        "settings",
+        "critical_css",
+        "optimization",
+        "diagnostics"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-029",
+      "requested_index": 29,
+      "name": "Autoptimize",
+      "aliases": [],
+      "category": "cache",
+      "required_features": [
+        "settings",
+        "optimization",
+        "exclusions",
+        "cache_purge"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-030",
+      "requested_index": 30,
+      "name": "Smush Image Optimization",
+      "aliases": [],
+      "category": "media",
+      "required_features": [
+        "image_inventory",
+        "optimization",
+        "bulk_jobs",
+        "settings",
+        "diagnostics"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-031",
+      "requested_index": 31,
+      "name": "ElementsKit Elementor Addons and Templates",
+      "aliases": [
+        {
+          "requested_index": 54,
+          "name": "ElementsKit Elementor Addons"
+        }
+      ],
+      "category": "builder_addon",
+      "required_features": [
+        "widgets",
+        "controls",
+        "templates",
+        "header_footer",
+        "mega_menu",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-032",
+      "requested_index": 32,
+      "name": "All-in-One WP Migration and Backup",
+      "aliases": [],
+      "category": "backup",
+      "required_features": [
+        "backup_inventory",
+        "export",
+        "import",
+        "restore",
+        "storage",
+        "diagnostics"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-033",
+      "requested_index": 33,
+      "name": "WPML Multilingual CMS",
+      "aliases": [],
+      "category": "multilingual",
+      "required_features": [
+        "languages",
+        "content_translations",
+        "terms",
+        "menus",
+        "strings",
+        "translation_jobs",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-034",
+      "requested_index": 34,
+      "name": "Cookie Notice & Compliance",
+      "aliases": [],
+      "category": "consent",
+      "required_features": [
+        "banner",
+        "consent_policy",
+        "categories",
+        "integrations",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-035",
+      "requested_index": 35,
+      "name": "WP Super Cache",
+      "aliases": [],
+      "category": "cache",
+      "required_features": [
+        "settings",
+        "cache_purge",
+        "preload",
+        "exclusions",
+        "diagnostics"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-036",
+      "requested_index": 36,
+      "name": "TablePress",
+      "aliases": [],
+      "category": "content",
+      "required_features": [
+        "tables",
+        "cells",
+        "columns",
+        "rows",
+        "import_export",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-037",
+      "requested_index": 37,
+      "name": "Starter Templates",
+      "aliases": [],
+      "category": "builder_addon",
+      "required_features": [
+        "templates",
+        "preview",
+        "import",
+        "assets",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-038",
+      "requested_index": 38,
+      "name": "Popup Maker",
+      "aliases": [],
+      "category": "marketing",
+      "required_features": [
+        "popups",
+        "triggers",
+        "targeting",
+        "appearance",
+        "settings",
+        "analytics"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-039",
+      "requested_index": 39,
+      "name": "MC4WP: Mailchimp for WordPress",
+      "aliases": [],
+      "category": "marketing",
+      "required_features": [
+        "forms",
+        "fields",
+        "audiences",
+        "integrations",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-040",
+      "requested_index": 40,
+      "name": "Code Snippets",
+      "aliases": [],
+      "category": "code",
+      "required_features": [
+        "snippet_inventory",
+        "review",
+        "approved_safe_edit",
+        "activation",
+        "rollback",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-041",
+      "requested_index": 41,
+      "name": "LayerSlider",
+      "aliases": [],
+      "category": "slider",
+      "required_features": [
+        "projects",
+        "slides",
+        "layers",
+        "animation",
+        "responsive",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-042",
+      "requested_index": 42,
+      "name": "The Events Calendar",
+      "aliases": [],
+      "category": "content",
+      "required_features": [
+        "events",
+        "venues",
+        "organizers",
+        "recurrence_if_available",
+        "views",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-043",
+      "requested_index": 43,
+      "name": "Regenerate Thumbnails",
+      "aliases": [],
+      "category": "media",
+      "required_features": [
+        "image_sizes",
+        "regeneration",
+        "bulk_jobs",
+        "settings",
+        "diagnostics"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-044",
+      "requested_index": 44,
+      "name": "GTranslate",
+      "aliases": [],
+      "category": "multilingual",
+      "required_features": [
+        "languages",
+        "selector",
+        "translation_configuration",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-045",
+      "requested_index": 45,
+      "name": "GiveWP",
+      "aliases": [],
+      "category": "commerce",
+      "required_features": [
+        "donation_forms",
+        "donations",
+        "donors",
+        "reports",
+        "settings",
+        "payment_configuration"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-046",
+      "requested_index": 46,
+      "name": "Solid Security",
+      "aliases": [],
+      "category": "security",
+      "required_features": [
+        "modules",
+        "login_policy",
+        "firewall",
+        "logs",
+        "alerts",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-047",
+      "requested_index": 47,
+      "name": "Limit Login Attempts Reloaded",
+      "aliases": [],
+      "category": "security",
+      "required_features": [
+        "lockouts",
+        "allowlists",
+        "blocklists",
+        "policy",
+        "logs",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-048",
+      "requested_index": 48,
+      "name": "GTM4WP",
+      "aliases": [],
+      "category": "analytics",
+      "required_features": [
+        "container_configuration",
+        "data_layer",
+        "events",
+        "integrations",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-049",
+      "requested_index": 49,
+      "name": "Fusion Builder",
+      "aliases": [],
+      "category": "builder",
+      "required_features": [
+        "documents",
+        "elements",
+        "layout",
+        "responsive",
+        "styles",
+        "header_footer",
+        "templates",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-050",
+      "requested_index": 50,
+      "name": "HubSpot All-In-One Marketing",
+      "aliases": [],
+      "category": "marketing",
+      "required_features": [
+        "forms",
+        "tracking",
+        "contacts_authorized",
+        "integrations",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-051",
+      "requested_index": 51,
+      "name": "WP-PageNavi",
+      "aliases": [],
+      "category": "content",
+      "required_features": [
+        "pagination_labels",
+        "pagination_rules",
+        "style",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-052",
+      "requested_index": 52,
+      "name": "WP Statistics",
+      "aliases": [],
+      "category": "analytics",
+      "required_features": [
+        "reports",
+        "filters",
+        "privacy",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-053",
+      "requested_index": 53,
+      "name": "Polylang",
+      "aliases": [
+        {
+          "requested_index": 101,
+          "name": "polylang"
+        }
+      ],
+      "category": "multilingual",
+      "required_features": [
+        "languages",
+        "content_translations",
+        "term_translations",
+        "menus",
+        "strings",
+        "settings",
+        "pro_features"
+      ],
+      "status": "partial_unverified",
+      "notes": [
+        "Development: multilingual pagination, read translation relationships, assign unlinked page language, merge nonconflicting groups."
+      ],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-055",
+      "requested_index": 55,
+      "name": "Beaver Builder",
+      "aliases": [],
+      "category": "builder",
+      "required_features": [
+        "documents",
+        "modules",
+        "layout",
+        "responsive",
+        "styles",
+        "templates",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-056",
+      "requested_index": 56,
+      "name": "Widgets for Google Reviews",
+      "aliases": [],
+      "category": "marketing",
+      "required_features": [
+        "widgets",
+        "reviews",
+        "layout",
+        "moderation",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-057",
+      "requested_index": 57,
+      "name": "Premium Addons for Elementor",
+      "aliases": [],
+      "category": "builder_addon",
+      "required_features": [
+        "widgets",
+        "controls",
+        "templates",
+        "extensions",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-058",
+      "requested_index": 58,
+      "name": "Ninja Forms",
+      "aliases": [],
+      "category": "forms",
+      "required_features": [
+        "forms",
+        "fields",
+        "actions",
+        "validation",
+        "submissions",
+        "integrations",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-059",
+      "requested_index": 59,
+      "name": "Borlabs Cookie",
+      "aliases": [],
+      "category": "consent",
+      "required_features": [
+        "banner",
+        "services",
+        "categories",
+        "content_blockers",
+        "consent_logs",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-060",
+      "requested_index": 60,
+      "name": "Astra Pro",
+      "aliases": [],
+      "category": "theme",
+      "required_features": [
+        "customizer",
+        "header_footer",
+        "typography",
+        "colors",
+        "layout",
+        "global_settings",
+        "custom_css"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-061",
+      "requested_index": 61,
+      "name": "Custom Post Type UI",
+      "aliases": [],
+      "category": "content",
+      "required_features": [
+        "post_types",
+        "taxonomies",
+        "labels",
+        "capabilities",
+        "registration",
+        "import_export"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-062",
+      "requested_index": 62,
+      "name": "MetaSlider",
+      "aliases": [],
+      "category": "slider",
+      "required_features": [
+        "slideshows",
+        "slides",
+        "captions",
+        "layout",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-063",
+      "requested_index": 63,
+      "name": "Gutenberg",
+      "aliases": [],
+      "category": "builder",
+      "required_features": [
+        "blocks",
+        "documents",
+        "patterns",
+        "templates",
+        "global_styles",
+        "header_footer",
+        "responsive"
+      ],
+      "status": "partial_unverified",
+      "notes": [
+        "Existing bounded native Gutenberg preview; development native header/footer and CSS only."
+      ],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-064",
+      "requested_index": 64,
+      "name": "PixelYourSite",
+      "aliases": [],
+      "category": "analytics",
+      "required_features": [
+        "pixels",
+        "events",
+        "consent",
+        "integrations",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-065",
+      "requested_index": 65,
+      "name": "Photo Gallery by 10Web",
+      "aliases": [],
+      "category": "media",
+      "required_features": [
+        "galleries",
+        "albums",
+        "images",
+        "layout",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-066",
+      "requested_index": 66,
+      "name": "All-In-One Security (AIOS)",
+      "aliases": [],
+      "category": "security",
+      "required_features": [
+        "firewall",
+        "login_policy",
+        "blocks",
+        "logs",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-067",
+      "requested_index": 67,
+      "name": "Page Builder by SiteOrigin",
+      "aliases": [],
+      "category": "builder",
+      "required_features": [
+        "documents",
+        "rows",
+        "widgets",
+        "layout",
+        "responsive",
+        "styles",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-068",
+      "requested_index": 68,
+      "name": "Oxygen",
+      "aliases": [],
+      "category": "builder",
+      "required_features": [
+        "documents",
+        "components",
+        "templates",
+        "styles",
+        "responsive",
+        "header_footer",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-069",
+      "requested_index": 69,
+      "name": "Formidable Forms",
+      "aliases": [],
+      "category": "forms",
+      "required_features": [
+        "forms",
+        "fields",
+        "views",
+        "actions",
+        "entries",
+        "validation",
+        "integrations"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-070",
+      "requested_index": 70,
+      "name": "JetElements",
+      "aliases": [],
+      "category": "builder_addon",
+      "required_features": [
+        "widgets",
+        "controls",
+        "templates",
+        "extensions",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-071",
+      "requested_index": 71,
+      "name": "WP Armour",
+      "aliases": [],
+      "category": "security",
+      "required_features": [
+        "anti_spam",
+        "form_integrations",
+        "logs",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-072",
+      "requested_index": 72,
+      "name": "Fluent Forms",
+      "aliases": [],
+      "category": "forms",
+      "required_features": [
+        "forms",
+        "fields",
+        "conditional_logic",
+        "notifications",
+        "entries",
+        "integrations"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-073",
+      "requested_index": 73,
+      "name": "Kadence Blocks",
+      "aliases": [],
+      "category": "builder_addon",
+      "required_features": [
+        "blocks",
+        "controls",
+        "layout",
+        "responsive",
+        "styles",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-074",
+      "requested_index": 74,
+      "name": "GDPR Cookie Compliance",
+      "aliases": [],
+      "category": "consent",
+      "required_features": [
+        "banner",
+        "categories",
+        "cookies",
+        "integrations",
+        "consent_policy",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-075",
+      "requested_index": 75,
+      "name": "WooPayments",
+      "aliases": [],
+      "category": "payment",
+      "required_features": [
+        "connection_status",
+        "methods",
+        "configuration",
+        "transactions",
+        "refund_policy",
+        "credential_safe_configuration"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-076",
+      "requested_index": 76,
+      "name": "Joinchat",
+      "aliases": [],
+      "category": "marketing",
+      "required_features": [
+        "chat_button",
+        "appearance",
+        "rules",
+        "messages",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-077",
+      "requested_index": 77,
+      "name": "WooCommerce PayPal Payments",
+      "aliases": [],
+      "category": "payment",
+      "required_features": [
+        "connection_status",
+        "methods",
+        "configuration",
+        "transactions",
+        "refund_policy",
+        "credential_safe_configuration"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-078",
+      "requested_index": 78,
+      "name": "Max Mega Menu",
+      "aliases": [],
+      "category": "theme",
+      "required_features": [
+        "menus",
+        "menu_items",
+        "locations",
+        "mega_menu",
+        "styles",
+        "responsive",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-079",
+      "requested_index": 79,
+      "name": "WooCommerce Stripe Payment Gateway",
+      "aliases": [],
+      "category": "payment",
+      "required_features": [
+        "connection_status",
+        "methods",
+        "configuration",
+        "transactions",
+        "refund_policy",
+        "credential_safe_configuration"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-080",
+      "requested_index": 80,
+      "name": "SiteOrigin Widgets Bundle",
+      "aliases": [],
+      "category": "builder_addon",
+      "required_features": [
+        "widgets",
+        "controls",
+        "templates",
+        "styles",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-081",
+      "requested_index": 81,
+      "name": "TranslatePress",
+      "aliases": [],
+      "category": "multilingual",
+      "required_features": [
+        "languages",
+        "translations",
+        "strings",
+        "selector",
+        "seo_if_available",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-082",
+      "requested_index": 82,
+      "name": "JetEngine",
+      "aliases": [],
+      "category": "content",
+      "required_features": [
+        "post_types",
+        "taxonomies",
+        "meta_fields",
+        "relations",
+        "listings",
+        "queries",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-083",
+      "requested_index": 83,
+      "name": "Smart Slider 3",
+      "aliases": [],
+      "category": "slider",
+      "required_features": [
+        "projects",
+        "slides",
+        "layers",
+        "animation",
+        "responsive",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-084",
+      "requested_index": 84,
+      "name": "NextGEN Gallery",
+      "aliases": [],
+      "category": "media",
+      "required_features": [
+        "galleries",
+        "albums",
+        "images",
+        "layout",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-085",
+      "requested_index": 85,
+      "name": "Duplicator",
+      "aliases": [],
+      "category": "backup",
+      "required_features": [
+        "backup_inventory",
+        "packages",
+        "export",
+        "restore",
+        "storage",
+        "diagnostics"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-086",
+      "requested_index": 86,
+      "name": "Spectra Gutenberg Blocks",
+      "aliases": [],
+      "category": "builder_addon",
+      "required_features": [
+        "blocks",
+        "controls",
+        "layout",
+        "responsive",
+        "styles",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-087",
+      "requested_index": 87,
+      "name": "Click to Chat – HoliThemes",
+      "aliases": [],
+      "category": "marketing",
+      "required_features": [
+        "chat_button",
+        "appearance",
+        "rules",
+        "messages",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-088",
+      "requested_index": 88,
+      "name": "CleanTalk Anti-Spam",
+      "aliases": [],
+      "category": "security",
+      "required_features": [
+        "spam_status",
+        "moderation",
+        "logs",
+        "integrations",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-089",
+      "requested_index": 89,
+      "name": "Forminator Forms",
+      "aliases": [],
+      "category": "forms",
+      "required_features": [
+        "forms",
+        "polls",
+        "quizzes",
+        "fields",
+        "notifications",
+        "entries",
+        "integrations"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-090",
+      "requested_index": 90,
+      "name": "FluentSMTP",
+      "aliases": [],
+      "category": "email",
+      "required_features": [
+        "connections",
+        "routing",
+        "test_delivery",
+        "logs",
+        "settings",
+        "credential_safe_configuration"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-091",
+      "requested_index": 91,
+      "name": "AddToAny Share Buttons",
+      "aliases": [],
+      "category": "marketing",
+      "required_features": [
+        "services",
+        "placement",
+        "appearance",
+        "sharing_rules",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-092",
+      "requested_index": 92,
+      "name": "OptinMonster",
+      "aliases": [],
+      "category": "marketing",
+      "required_features": [
+        "campaigns",
+        "targeting",
+        "appearance",
+        "integrations",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-093",
+      "requested_index": 93,
+      "name": "EWWW Image Optimizer",
+      "aliases": [],
+      "category": "media",
+      "required_features": [
+        "image_inventory",
+        "optimization",
+        "bulk_jobs",
+        "settings",
+        "diagnostics"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-094",
+      "requested_index": 94,
+      "name": "Image Optimizer",
+      "aliases": [],
+      "category": "media",
+      "required_features": [
+        "plugin_identity",
+        "image_inventory",
+        "optimization",
+        "bulk_jobs",
+        "settings",
+        "diagnostics"
+      ],
+      "status": "identity_unresolved",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-095",
+      "requested_index": 95,
+      "name": "CoBlocks",
+      "aliases": [],
+      "category": "builder_addon",
+      "required_features": [
+        "blocks",
+        "controls",
+        "layout",
+        "responsive",
+        "styles",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-096",
+      "requested_index": 96,
+      "name": "Mailchimp for WooCommerce",
+      "aliases": [],
+      "category": "marketing",
+      "required_features": [
+        "store_sync",
+        "audiences",
+        "products",
+        "consent",
+        "integrations",
+        "settings"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-097",
+      "requested_index": 97,
+      "name": "Ally – Web Accessibility & Usability",
+      "aliases": [],
+      "category": "accessibility",
+      "required_features": [
+        "widget",
+        "appearance",
+        "accessibility_settings",
+        "diagnostics"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-098",
+      "requested_index": 98,
+      "name": "Ocean Extra",
+      "aliases": [],
+      "category": "theme",
+      "required_features": [
+        "customizer",
+        "header_footer",
+        "typography",
+        "colors",
+        "layout",
+        "global_settings",
+        "custom_css"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-099",
+      "requested_index": 99,
+      "name": "GeneratePress Premium",
+      "aliases": [],
+      "category": "theme",
+      "required_features": [
+        "customizer",
+        "elements",
+        "header_footer",
+        "typography",
+        "colors",
+        "layout",
+        "custom_css"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "wp-100",
+      "requested_index": 100,
+      "name": "ExactMetrics",
+      "aliases": [],
+      "category": "analytics",
+      "required_features": [
+        "reports",
+        "tracking",
+        "settings",
+        "integrations",
+        "credential_safe_configuration"
+      ],
+      "status": "not_implemented",
+      "notes": [],
+      "supported_plugin_files": [],
+      "tested_versions": [],
+      "evidence": {}
+    }
+  ],
+  "appearance_targets": [
+    {
+      "id": "appearance-core-identity",
+      "name": "Core site identity and branding",
+      "required_features": [
+        "read",
+        "update",
+        "revision_check",
+        "verify"
+      ],
+      "status": "partial_unverified",
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "appearance-native-css",
+      "name": "WordPress native Additional CSS",
+      "required_features": [
+        "read",
+        "update",
+        "snapshot",
+        "restore",
+        "unsafe_markup_rejection"
+      ],
+      "status": "partial_unverified",
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "appearance-block-header-footer",
+      "name": "Native block theme header and footer",
+      "required_features": [
+        "list",
+        "read",
+        "update",
+        "snapshot",
+        "restore",
+        "revision_check",
+        "responsive_review"
+      ],
+      "status": "partial_unverified",
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "appearance-classic-customizer",
+      "name": "Classic and commercial theme Customizer, global settings, header/footer and theme-owned CSS",
+      "required_features": [
+        "theme_specific_registry",
+        "typed_controls",
+        "theme_header_footer",
+        "global_styles",
+        "theme_owned_css",
+        "snapshot",
+        "restore"
+      ],
+      "status": "not_implemented",
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "inventory-pagination",
+      "name": "Complete paginated and multilingual inventories",
+      "required_features": [
+        "content_pagination",
+        "media_pagination",
+        "language_filter",
+        "translations",
+        "old_connector_rejection",
+        "real_wordpress_integration"
+      ],
+      "status": "partial_unverified",
+      "tested_versions": [],
+      "evidence": {}
+    },
+    {
+      "id": "permission-profiles",
+      "name": "Read Only and Read & Write end-to-end authorization",
+      "required_features": [
+        "new_pairing",
+        "legacy_migration",
+        "revocation",
+        "native_caps",
+        "oauth",
+        "sensitive_confirmation",
+        "security_tests"
+      ],
+      "status": "partial_unverified",
+      "tested_versions": [],
+      "evidence": {}
+    }
+  ]
+}
