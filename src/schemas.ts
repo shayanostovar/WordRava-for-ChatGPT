@@ -6,6 +6,7 @@ export const queuedJobSchema = z.object({
   operation: z.literal('queued'), job_id: z.string().uuid(), status: z.string(),
   poll_after_seconds: z.number().nonnegative().optional(), reused: z.boolean().optional(),
   next_step: z.string(),
+  requires_local_human_approval: z.boolean().optional(),
 });
 export const jobStatusSchema = z.object({
   job_id: z.string().uuid(), kind: z.string(), status: z.string(),
@@ -42,6 +43,7 @@ export const capabilitySchema = z.object({
 });
 const catalogEntry = z.object({
   kind: z.string(), scope: z.string(), requires_confirmation: z.boolean(),
+  requires_local_human_approval: z.boolean().optional(),
   needs_revision: z.boolean().optional(), needs_expected_state: z.boolean().optional(),
   wordpress_opt_in: z.string().optional(),
 });

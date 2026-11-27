@@ -219,7 +219,12 @@ function createServer(token: string, session: Session): McpServer {
     if (!can(write ? 'content:write' : 'content:read')) return scopeError(write ? 'content:write' : 'content:read');
     try {
       const job = await centerPost<unknown>(`/api/v1/sites/${site_id}/jobs`, token, input, request_id);
-      return good({ operation: 'queued', ...(job as object), next_step: 'Use wordrava_job_status with the returned job_id. The WordPress connector runs by WP-Cron or manual sync.' }, queuedJobSchema);
+      const sensitive = write && !['create_draft','update_draft'].includes(String(input.kind));
+      return good({ operation: 'queued', ...(job as object),
+        requires_local_human_approval: sensitive,
+        next_step: sensitive
+          ? 'Use wordrava_job_status. This sensitive request needs the paired administrator to review and approve the exact job in WordPress > WordRava > Permissions. ChatGPT cannot approve it. Do not retry or report success before execution is verified.'
+          : 'Use wordrava_job_status with the returned job_id. The WordPress connector runs by WP-Cron or manual sync.' }, queuedJobSchema);
     } catch (error) {
       if (error instanceof CenterHttpError && error.status === 503) {
         if (error.code === 'builder_preview_disabled') return bad('Native page-builder operations are disabled by the Center administrator.', error.code, { http_status: 503 });
@@ -227,6 +232,7 @@ function createServer(token: string, session: Session): McpServer {
         if (error.code === 'writes_disabled') return bad('Remote write operations are disabled by the Center administrator.', error.code, { http_status: 503 });
         return bad('WordRava Center is temporarily unavailable or a feature is disabled. Check capabilities before retrying.', error.code, { http_status: 503 });
       }
+      if (error instanceof CenterHttpError && error.code === 'human_approval_connector_upgrade_required') return bad('Sensitive changes require Connector 1.3.0 or newer with site-local human approval. Upgrade from an authorized release when available; do not bypass the approval.', error.code, { http_status: 409 });
       if (error instanceof CenterHttpError && error.code === 'compatibility_connector_upgrade_required') return bad('Native appearance and Polylang operations require WordPress Connector 1.2.3 or newer.', error.code, { http_status: 409 });
       if (error instanceof CenterHttpError && error.code === 'inventory_connector_upgrade_required') return bad('Paginated and language-filtered inventory requires WordPress Connector 1.2.3 or newer. An older connector cannot establish a complete inventory.', error.code, { http_status: 409 });
       if (error instanceof CenterHttpError && error.code === 'builder_connector_upgrade_required') return bad('Native builder operations require WordPress Connector 1.2.0 or newer.', error.code, { http_status: 409 });
@@ -342,7 +348,7 @@ function createServer(token: string, session: Session): McpServer {
   });
   server.registerTool('wordrava_operation_status', {
     outputSchema: jobStatusSchema,
-    description: 'Poll an asynchronous operation by job ID. Check the result before retrying any write.',
+    description: 'Poll an asynchronous operation by job ID. A running job with approval_required needs the paired WordPress administrator’s decision in WordRava > Permissions; never approve for the user or assume success. Check the result before retrying any write.',
     inputSchema: { site_id: z.string().uuid(), job_id: z.string().uuid() },
     annotations: readAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: Operation status…", 'openai/toolInvocation/invoked': "WordRava: Checked operation status" },
   }, async ({ site_id, job_id }) => {
@@ -394,7 +400,7 @@ function createServer(token: string, session: Session): McpServer {
       confirmChanges: user_confirmed }, true, request_id));
   server.registerTool('wordrava_job_status', {
     outputSchema: jobStatusSchema,
-    description: 'Read the status and sanitized result of a queued WordPress operation. Use the job ID returned by a previous read or draft tool.',
+    description: 'Read the status and sanitized result of a queued WordPress operation. A running job with approval_required needs the paired administrator’s decision in WordPress > WordRava > Permissions. Use the job ID returned by any queued tool. Do not retry or claim success until the outcome is verified.',
     inputSchema: { site_id: z.string().uuid(), job_id: z.string().uuid() }, annotations: readAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: Job status…", 'openai/toolInvocation/invoked': "WordRava: Checked operation status" },
   }, async ({ site_id, job_id }) => {
     if (!can('content:read')) return scopeError('content:read');

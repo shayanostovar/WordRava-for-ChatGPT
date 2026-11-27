@@ -213,6 +213,8 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
     assert.equal(requests.findLast(r=>r.method==='POST').body.kind,'theme_read');
     const result=await call('wordrava_update_custom_css',css);
     assert.equal(result.structuredContent.job_id,jobId);
+    assert.equal(result.structuredContent.requires_local_human_approval,true);
+    assert.match(result.structuredContent.next_step,/WordRava > Permissions/);
     let request=requests.findLast(r=>r.method==='POST');
     assert.equal(request.idempotency,requestId);
     assert.equal(request.body.kind,'theme_css_update');
