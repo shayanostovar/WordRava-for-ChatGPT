@@ -144,21 +144,13 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
       assert.ok(!('outputSchema' in tool.inputSchema.properties), `${tool.name}: schema leaked into inputs`);
     }
     for (const removed of ['wordrava_execute_read', 'wordrava_execute_write', 'wordrava_connect_wordpress',
-      'wordrava_read_rest_route', 'wordrava_run_read_ability']) assert.equal(byName[removed], undefined);
-    for (const name of ['wordrava_get_seo', 'wordrava_inspect_plugin_zip', 'wordrava_list_content']) {
+      'wordrava_read_rest_route', 'wordrava_run_read_ability', 'wordrava_stage_package', 'wordrava_inspect_plugin_zip', 'wordrava_inspect_theme_zip', 'wordrava_install_plugin_zip', 'wordrava_install_theme_zip']) assert.equal(byName[removed], undefined);
+    for (const name of ['wordrava_get_seo', 'wordrava_list_content']) {
       assert.equal(byName[name].annotations.readOnlyHint, false, 'Queueing persists state');
     }
-    for (const name of ['wordrava_update_seo', 'wordrava_install_plugin_zip', 'wordrava_install_theme_zip',
+    for (const name of ['wordrava_update_seo',
       'wordrava_update_draft', 'wordrava_publish_draft']) assert.equal(byName[name].annotations.destructiveHint, true);
     assert.equal(byName.wordrava_my_account._meta['openai/profile'], true);
-  });
-  await t.test('native file descriptor declares exactly the supported required file fields', () => {
-    const stage = byName.wordrava_stage_package;
-    assert.deepEqual(stage._meta['openai/fileParams'], ['file']);
-    assert.deepEqual(stage.inputSchema.properties.file.required.sort(), ['download_url', 'file_id']);
-    assert.deepEqual(Object.keys(stage.inputSchema.properties.file.properties).sort(),
-      ['download_url', 'file_id', 'file_name', 'mime_type']);
-    assert.equal(stage.annotations.readOnlyHint, false); assert.equal(stage.annotations.openWorldHint, true);
   });
   await t.test('account and status responses minimize internal identifiers and timestamps', async () => {
     const result = await call('wordrava_list_sites');
@@ -259,44 +251,11 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
     assert.equal(errorOf(raw).code, 'center_http_500');
     assert.ok(!JSON.stringify(raw).includes('must-not-leak'));
   });
-  await t.test('attached ZIP staging is scoped, bounded-schema and produces temporary inspection input', async () => {
-    const args = { site_id: siteId, package_type: 'plugin', file: {
-      download_url: source, file_id: 'file_review', mime_type: 'application/zip', file_name: 'review.zip' } };
+  await t.test('retired package tools never submit requests', async () => {
     const before = postCount();
-    assert.equal((await call('wordrava_stage_package', args, read)).isError, true);
+    for (const name of ['wordrava_stage_package','wordrava_inspect_plugin_zip','wordrava_inspect_theme_zip','wordrava_install_plugin_zip','wordrava_install_theme_zip']) {
+      assert.equal((await call(name, { site_id: siteId })).isError, true);
+    }
     assert.equal(postCount(), before);
-    const result = await call('wordrava_stage_package', args);
-    assert.equal(result.structuredContent.source_url, source); assert.equal(result.structuredContent.expires_in, 1800);
-    assert.equal(result.structuredContent.package_id, undefined);
-    assert.deepEqual(requests.findLast(r => r.method === 'POST').body, { package_type: 'plugin', file: args.file });
-    for (const file of ['/workspace/test.zip', { download_url: source },
-      { ...args.file, download_url: 'http://localhost/test.zip' }, { ...args.file, extra: 'unused context' }]) {
-      const count = postCount(); assert.equal((await call('wordrava_stage_package', { ...args, file })).isError, true);
-      assert.equal(postCount(), count);
-    }
-    const expired = await call('wordrava_stage_package', { ...args, file: { ...args.file, file_name: 'expired.zip' } });
-    assert.equal(errorOf(expired).code, 'package_source_expired');
-  });
-  await t.test('package installation binds approved exact bytes and identity; no activation is implied', async () => {
-    for (const type of ['plugin', 'theme']) {
-      const inspect = await call(`wordrava_inspect_${type}_zip`, { site_id: siteId, source_url: source });
-      assert.equal(inspect.isError, undefined);
-      assert.deepEqual(JSON.parse(requests.findLast(r => r.method === 'POST').body.content), { source_url: source });
-      const args = { site_id: siteId, source_url: source, sha256: digest, expected_slug: 'review-package',
-        expected_version: '1.0.0', user_confirmed: true, request_id: requestId };
-      const result = await call(`wordrava_install_${type}_zip`, args);
-      assert.equal(result.isError, undefined);
-      const request = requests.findLast(r => r.method === 'POST');
-      assert.equal(request.idempotency, requestId); assert.equal(request.body.title, 'review-package');
-      assert.equal(request.body.confirmChanges, true); assert.equal(request.body.kind, `install_${type}_zip`);
-      assert.deepEqual(JSON.parse(request.body.content), { source_url: source, sha256: digest, expected_version: '1.0.0' });
-      for (const invalid of [{ user_confirmed: false }, { sha256: 'a' }, { expected_slug: '../bad' },
-        { source_url: 'https://user:password@example.test/x.zip' }, { request_id: undefined },
-        { expected_version: '1.1.1\n' }, { expected_slug: 'review\n' }, { sha256: digest + '\n' }]) {
-        const count = postCount();
-        assert.equal((await call(`wordrava_install_${type}_zip`, { ...args, ...invalid })).isError, true);
-        assert.equal(postCount(), count);
-      }
-    }
   });
 });
