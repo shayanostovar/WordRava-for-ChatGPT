@@ -1,0 +1,27 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "wordrava": {
+      "type": "streamable-http",
+      "url": "https://wordrava.shayanostovar.com/mcp",
+      "extensions": {
+        "com.openai": {
+          "auth": {
+            "type": "oauth",
+            "client": {
+              "mode": "provided",
+              "clientId": "wordrava-chatgpt",
+              "tokenEndpointAuthMethod": "none"
+            },
+            "authorizationServerBase": "https://wordrava.shayanostovar.com",
+            "resource": "https://wordrava.shayanostovar.com/mcp",
+            "baseScopes": [
+              "sites:read",
+              "content:read"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
