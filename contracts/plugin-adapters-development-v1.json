@@ -34,8 +34,38 @@
         "request_id": "UUID",
         "user_confirmed": true
       }
+    },
+    {
+      "kind": "cf7_form_list",
+      "tool": "wordrava_cf7_list_forms",
+      "scope": "content:read",
+      "schema": {
+        "page": "integer 1..10000",
+        "per_page": "integer 1..25"
+      }
+    },
+    {
+      "kind": "cf7_form_read",
+      "tool": "wordrava_cf7_get_form",
+      "scope": "content:read",
+      "schema": {
+        "item_id": "positive int32"
+      }
+    },
+    {
+      "kind": "cf7_form_rename",
+      "tool": "wordrava_cf7_rename_form",
+      "scope": "content:write",
+      "local_human_approval": true,
+      "schema": {
+        "item_id": "positive int32",
+        "expected_revision": "lowercase sha256",
+        "title": "UTF-8 <=200 bytes",
+        "request_id": "UUID",
+        "user_confirmed": true
+      }
     }
   ],
-  "coverage": "published simple products; non-sale regular-price and name only",
+  "coverage": "WooCommerce: published simple products; non-sale regular-price and name only. Contact Form 7: published forms, field names/types/required metadata, title-only rename; no private configuration.",
   "production_enabled": false
 }

@@ -326,6 +326,28 @@ function createServer(token: string, session: Session): McpServer {
       if(name===undefined && regular_price===undefined) return bad('Choose at least one supported product field.','invalid_woocommerce_patch');
       return submit(site_id,{kind:'woo_product_update',contentType:'post',itemId:item_id,content:JSON.stringify({expected_revision,name,regular_price}),confirmChanges:user_confirmed},true,request_id);
     });
+    server.registerTool('wordrava_cf7_list_forms', {
+      outputSchema:queuedJobSchema,
+      description:'Development staging only: list published Contact Form 7 forms by ID and title. Bounded pagination. Does not export mail, submissions, credentials or integration settings.',
+      inputSchema:{site_id:z.string().uuid(),page:z.number().int().min(1).max(10000).default(1),per_page:z.number().int().min(1).max(25).default(20)},
+      annotations:queuedReadAnnotations,
+      _meta:{...oauthContentRead,'openai/toolInvocation/invoking':'WordRava: Read forms…','openai/toolInvocation/invoked':'WordRava: Form request submitted'},
+    },async ({site_id,page,per_page})=>submit(site_id,{kind:'cf7_form_list',contentType:'post',content:JSON.stringify({page,per_page})},false));
+    server.registerTool('wordrava_cf7_get_form',{
+      outputSchema:queuedJobSchema,
+      description:'Development staging only: read published Contact Form 7 form title, bounded field names/types/required metadata and a keyed revision. No field values or private mail/integration properties.',
+      inputSchema:{site_id:z.string().uuid(),item_id:productId},
+      annotations:queuedReadAnnotations,
+      _meta:{...oauthContentRead,'openai/toolInvocation/invoking':'WordRava: Read form…','openai/toolInvocation/invoked':'WordRava: Form request submitted'},
+    },async ({site_id,item_id})=>submit(site_id,{kind:'cf7_form_read',contentType:'post',itemId:item_id},false));
+    server.registerTool('wordrava_cf7_rename_form',{
+      outputSchema:queuedJobSchema,
+      description:'Development staging only: rename one published Contact Form 7 form through its native API, preserving all other properties. Read the form first. Requires exact approval, revision, site-local human approval and native permission. Poll the same job and verify returned state. Does not edit fields, mail, validation or integrations.',
+      inputSchema:{site_id:z.string().uuid(),item_id:productId,expected_revision:revision,title:productName,
+        user_confirmed:z.literal(true).describe('True only after explicit approval of the exact rename.'),request_id:z.string().uuid()},
+      annotations:updateAnnotations,
+      _meta:{...oauthContentWrite,'openai/toolInvocation/invoking':'WordRava: Request form rename…','openai/toolInvocation/invoked':'WordRava: Form request submitted'},
+    },async ({site_id,item_id,expected_revision,title,user_confirmed,request_id})=>submit(site_id,{kind:'cf7_form_rename',contentType:'post',itemId:item_id,content:JSON.stringify({expected_revision,title}),confirmChanges:user_confirmed},true,request_id));
   }
   const metadataCategory=z.enum(['plugins','themes','post_types','taxonomies','rest','abilities','settings','metadata','blocks','shortcodes','widgets','menu_locations','sidebars','theme_features']);
   server.registerTool('wordrava_discover_site', {

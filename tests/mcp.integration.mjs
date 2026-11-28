@@ -84,6 +84,11 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
       return reply({job_id:jobId,kind:'woo_product_update',status:'running',result:JSON.stringify({approval_required:true,expires_at_utc:'2026-11-28T10:00:00Z'}),execution_mode:'outbound_polling',pending_seconds:null,next_action:'Review exact operation in WordRava > Settings.'});
     if (req.url === `/api/v1/sites/${siteId}/jobs/${jobId}`) {
       const kind = requests.findLast(r=>r.method==='POST' && r.path===`/api/v1/sites/${siteId}/jobs`)?.body?.kind;
+      if (kind==='cf7_form_rename') return reply({job_id:jobId,kind,status:'running',result:JSON.stringify({approval_required:true,expires_at_utc:'2026-11-28T10:00:00Z'}),execution_mode:'outbound_polling',pending_seconds:null,next_action:'Review exact operation in WordRava > Settings.'});
+      if (kind==='cf7_form_list' || kind==='cf7_form_read') {
+        const form={id:7,title:'Fixture',revision:digest,fields:[{name:'your-email',type:'email',required:true}]};
+        return reply({job_id:jobId,kind,status:'success',result:JSON.stringify(kind==='cf7_form_list'?{ok:true,items:[{id:7,title:'Fixture'}]}:{ok:true,form}),execution_mode:'outbound_polling',pending_seconds:null,next_action:null});
+      }
       if (kind==='woo_catalog_list' || kind==='woo_product_read') {
         const product={id:7,name:'Fixture',regular_price:'12.50',revision:digest};
         return reply({job_id:jobId,kind,status:'success',result:JSON.stringify(kind==='woo_catalog_list'?{ok:true,items:[product]}:{ok:true,product}),execution_mode:'outbound_polling',pending_seconds:null,next_action:null});
@@ -348,6 +353,33 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
     assert.equal(req.body.kind,'woo_product_update');
     assert.equal(req.body.confirmChanges,true);
     assert.deepEqual(JSON.parse(req.body.content),{expected_revision:digest,name:'Updated product',regular_price:'15.25'});
+  });
+  await t.test('Contact Form 7 staging adapter: native metadata and exact rename contract',async()=>{
+    const names=['wordrava_cf7_list_forms','wordrava_cf7_get_form','wordrava_cf7_rename_form'];
+    const enabled=process.env.WORDRAVA_PLUGIN_ADAPTERS_DEV==='true' && process.env.NODE_ENV==='development';
+    for (const name of names) assert.equal(!!byName[name],enabled,name);
+    if (!enabled) return;
+    const listed=await call(names[0],{site_id:siteId,page:1,per_page:10},read);
+    assert.equal(JSON.parse(listed.structuredContent.result).items[0].id,7);
+    let req=requests.findLast(r=>r.method==='POST');
+    assert.equal(req.body.kind,'cf7_form_list');
+    assert.deepEqual(JSON.parse(req.body.content),{page:1,per_page:10});
+    const exact=await call(names[1],{site_id:siteId,item_id:7},read);
+    assert.equal(JSON.parse(exact.structuredContent.result).form.fields[0].required,true);
+    const patch={site_id:siteId,item_id:7,expected_revision:digest,title:'Renamed form',request_id:requestId,user_confirmed:true};
+    const before=postCount();
+    assert.equal(errorOf(await call(names[2],patch,read)).code,'insufficient_scope');
+    assert.equal((await call(names[2],{...patch,title:'<script>bad</script>'})).isError,true);
+    assert.equal((await call(names[2],{...patch,expected_revision:'stale'})).isError,true);
+    assert.equal((await call(names[2],{...patch,user_confirmed:false})).isError,true);
+    assert.equal((await call(names[0],{site_id:siteId,per_page:26},read)).isError,true);
+    assert.equal(postCount(),before);
+    const renamed=await call(names[2],patch);
+    assert.equal(renamed.structuredContent.status,'running');
+    assert.equal(renamed.structuredContent.requires_local_human_approval,true);
+    req=requests.findLast(r=>r.method==='POST');
+    assert.equal(req.body.kind,'cf7_form_rename');assert.equal(req.idempotency,requestId);
+    assert.deepEqual(JSON.parse(req.body.content),{expected_revision:digest,title:'Renamed form'});
   });
   await t.test('retired package tools never submit requests', async () => {
     const before = postCount();
