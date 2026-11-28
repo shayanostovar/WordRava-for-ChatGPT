@@ -272,6 +272,11 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
     let request=requests.findLast(r=>r.method==='POST');
     assert.equal(request.body.kind,'capability_inventory');
     assert.deepEqual(JSON.parse(request.body.content),{category:'post_types',page:1,per_page:10});
+    for (const category of ['menu_locations','sidebars','theme_features']) {
+      const discovery=await call('wordrava_deep_discover',{site_id:siteId,category},read);
+      assert.equal(discovery.structuredContent.job_id,jobId);
+      assert.equal(JSON.parse(requests.findLast(r=>r.method==='POST').body.content).category,category);
+    }
     const result=await call('wordrava_capability_catalog',{site_id:siteId,category:'post_types',search:'unknown_resource'},read);
     assert.equal(result.structuredContent.items[0].identifier,'unknown_resource');
     const catalogCount=requests.filter(r=>r.path.includes('/capability-catalog?')).length;

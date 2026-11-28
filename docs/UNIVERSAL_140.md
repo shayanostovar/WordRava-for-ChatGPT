@@ -5,3 +5,5 @@ Development-only generic MCP interface. Set WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED
 The four stable tools queue category inventory, search the persistent site catalog, inspect an exact capability and list public post metadata through a locally opted-in native adapter. Use wordrava_job_status for the asynchronous result. Continue inventory pagination with the exact returned inventory_revision; a changed inventory must restart. An old connector cannot run these operations. The existing named tools remain backward compatible.
 
 Discovery does not authorize arbitrary REST or Ability invocation, source-code execution, option access or writes. The initial adapter is intentionally read-only. Source and manifest release metadata remain at the last runtime version until a verified coordinated release; no package is approved or built for distribution by this commit.
+
+Development follow-up: shared inventory contract includes menu_locations, sidebars and theme_features. These are discovery-only registry categories; no execution is authorized. Production gate remains intact.

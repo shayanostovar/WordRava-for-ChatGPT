@@ -18,7 +18,10 @@
     "metadata",
     "blocks",
     "shortcodes",
-    "widgets"
+    "widgets",
+    "menu_locations",
+    "sidebars",
+    "theme_features"
   ],
   "pagination": {
     "max_page": 10000,

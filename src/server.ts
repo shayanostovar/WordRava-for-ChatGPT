@@ -262,7 +262,7 @@ function createServer(token: string, session: Session): McpServer {
   // is independently accepted. No raw route, ability, option or source code
   // can be submitted. Connector and Center both enforce the actual boundary.
   if (process.env.WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED === 'true') {
-    const category = z.enum(['plugins','themes','post_types','taxonomies','rest','abilities','settings','metadata','blocks','shortcodes','widgets']);
+    const category = z.enum(['plugins','themes','post_types','taxonomies','rest','abilities','settings','metadata','blocks','shortcodes','widgets','menu_locations','sidebars','theme_features']);
     const hash = z.string().regex(/^[a-f0-9]{64}$/);
     const pagination = { page: z.number().int().min(1).max(10000).default(1),
       per_page: z.number().int().min(1).max(25).default(20) };
