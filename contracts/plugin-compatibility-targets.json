@@ -18,8 +18,10 @@
         "messages",
         "integrations"
       ],
-      "status": "not_implemented",
-      "notes": [],
+      "status": "partial_unverified",
+      "notes": [
+        "1.5.0 development branch: published forms list, field metadata and title-only rename; real integration and other required features pending."
+      ],
       "supported_plugin_files": [],
       "tested_versions": [],
       "evidence": {}
@@ -110,8 +112,10 @@
         "settings",
         "reports"
       ],
-      "status": "not_implemented",
-      "notes": [],
+      "status": "partial_unverified",
+      "notes": [
+        "1.5.0 development branch: published simple-product list/read/name/non-sale regular-price update; full integration and other required features pending."
+      ],
       "supported_plugin_files": [],
       "tested_versions": [],
       "evidence": {}

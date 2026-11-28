@@ -1,0 +1,71 @@
+{
+  "status": "development_not_production_approved",
+  "target_release": "1.5.0",
+  "feature_flag": "WORDRAVA_PLUGIN_ADAPTERS_DEV",
+  "staging_sites": "WORDRAVA_PLUGIN_ADAPTERS_DEV_SITE_IDS",
+  "operations": [
+    {
+      "kind": "woo_catalog_list",
+      "tool": "wordrava_woo_list_products",
+      "scope": "content:read",
+      "schema": {
+        "page": "integer 1..10000",
+        "per_page": "integer 1..25"
+      }
+    },
+    {
+      "kind": "woo_product_read",
+      "tool": "wordrava_woo_get_product",
+      "scope": "content:read",
+      "schema": {
+        "item_id": "positive int32"
+      }
+    },
+    {
+      "kind": "woo_product_update",
+      "tool": "wordrava_woo_update_product",
+      "scope": "content:write",
+      "local_human_approval": true,
+      "schema": {
+        "item_id": "positive int32",
+        "expected_revision": "lowercase sha256",
+        "name": "optional UTF-8 <=200 bytes",
+        "regular_price": "optional decimal string",
+        "request_id": "UUID",
+        "user_confirmed": true
+      }
+    },
+    {
+      "kind": "cf7_form_list",
+      "tool": "wordrava_cf7_list_forms",
+      "scope": "content:read",
+      "schema": {
+        "page": "integer 1..10000",
+        "per_page": "integer 1..25"
+      }
+    },
+    {
+      "kind": "cf7_form_read",
+      "tool": "wordrava_cf7_get_form",
+      "scope": "content:read",
+      "schema": {
+        "item_id": "positive int32"
+      }
+    },
+    {
+      "kind": "cf7_form_rename",
+      "tool": "wordrava_cf7_rename_form",
+      "scope": "content:write",
+      "local_human_approval": true,
+      "schema": {
+        "item_id": "positive int32",
+        "expected_revision": "lowercase sha256",
+        "title": "UTF-8 <=200 bytes",
+        "request_id": "UUID",
+        "user_confirmed": true
+      }
+    }
+  ],
+  "coverage": "WooCommerce: published simple products; non-sale regular-price and name only. Contact Form 7: published forms, field names/types/required metadata, title-only rename; no private configuration.",
+  "production_enabled": false
+}

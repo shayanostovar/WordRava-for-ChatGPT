@@ -25,7 +25,11 @@ source = '\n'.join((root / file).read_text() for file in ['src/server.ts', 'src/
 names = set(re.findall(r"registerTool\('([^']+)'", source))
 expected = set(c['capabilities']['readOnlyMcpTools'] + c['capabilities']['writeMcpTools'])
 universal_names = {'wordrava_deep_discover','wordrava_capability_catalog','wordrava_capability_details','wordrava_list_resources'}
-assert names == expected | universal_names and len(expected) == c['capabilities']['mcpToolCount'] == 46
+adapter_contract = json.loads((root / 'contracts/plugin-adapters-development-v1.json').read_text())
+adapter_names = {op['tool'] for op in adapter_contract['operations']}
+assert adapter_contract['production_enabled'] is False
+assert names == expected | universal_names | adapter_names and len(expected) == c['capabilities']['mcpToolCount'] == 46
+assert "process.env.WORDRAVA_PLUGIN_ADAPTERS_DEV === 'true' && process.env.NODE_ENV === 'development'" in source
 assert "WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED === 'true'" in source
 assert "version: '1.4.4'" in source
 for value in ['securitySchemes', 'content:write', 'mcp/www_authenticate', 'openai/profile', 'Idempotency-Key']:
