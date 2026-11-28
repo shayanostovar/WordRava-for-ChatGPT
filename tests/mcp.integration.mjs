@@ -78,6 +78,8 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
       }
       return reply({ job_id: jobId, status: 'pending', poll_after_seconds: 10 }, 202);
     }
+    if (req.url === `/api/v1/sites/${siteId}/jobs/${jobId}` && requests.findLast(r=>r.method==='POST' && r.path===`/api/v1/sites/${siteId}/jobs`)?.body?.kind==='theme_css_update')
+      return reply({job_id:jobId,kind:'theme_css_update',status:'running',result:JSON.stringify({approval_required:true,expires_at_utc:'2026-11-28T10:00:00Z'}),execution_mode:'outbound_polling',pending_seconds:null,next_action:'Review exact operation in WordRava > Settings.'});
     if (req.url === `/api/v1/sites/${siteId}/jobs/${jobId}`) return reply({ job_id: jobId,
       kind: 'seo_read', status: 'succeeded', result: JSON.stringify({ provider: 'yoast', seo_revision: digest }),
       execution_mode: 'outbound_polling', pending_seconds: null, next_action: null,
@@ -216,7 +218,8 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
     const result=await call('wordrava_update_custom_css',css);
     assert.equal(result.structuredContent.job_id,jobId);
     assert.equal(result.structuredContent.requires_local_human_approval,true);
-    assert.match(result.structuredContent.next_step,/WordRava > Permissions/);
+    assert.equal(result.structuredContent.status,'running');
+    assert.match(result.structuredContent.next_step,/WordRava > Settings/);
     let request=requests.findLast(r=>r.method==='POST');
     assert.equal(request.idempotency,requestId);
     assert.equal(request.body.kind,'theme_css_update');

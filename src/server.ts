@@ -257,7 +257,7 @@ function createServer(token: string, session: Session): McpServer {
       const next = latest && terminal(status)
         ? 'Use the returned result now. Success must be verified from the result; do not queue duplicates.'
         : latest && approvalPending(latest)
-          ? 'The exact sensitive operation awaits the WordPress administrator’s approval. Ask only for that approval; the worker will resume automatically.'
+          ? 'The exact sensitive operation awaits the WordPress administrator’s approval. Ask the administrator to review that exact operation in WordRava > Settings; the worker will resume automatically.'
           : 'Continue with wordrava_job_status using this same job_id; the tool waits briefly and retrieves the result automatically. Do not routinely ask for manual sync, create duplicate jobs, or claim completion while pending. ' + (latest?.next_action??'Check worker availability only if the job remains pending.');
       return good({ operation: 'queued', ...job, status,
         result: latest?.result ?? null,
