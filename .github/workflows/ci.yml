@@ -25,6 +25,8 @@ jobs:
         if: hashFiles('contracts/universal-capabilities-v1.json') != ''
         env:
           WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED: 'true'
+          WORDRAVA_PLUGIN_ADAPTERS_DEV: 'true'
+          NODE_ENV: 'development'
         run: npm test
       - name: Assert full distribution remains blocked
         if: hashFiles('contracts/universal-capabilities-v1.json') != ''

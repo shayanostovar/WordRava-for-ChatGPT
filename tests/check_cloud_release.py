@@ -31,5 +31,8 @@ require(c["packageStaging"]["status"] == "retired", "Executable package staging 
 forbidden = {"rest_read","run_read_ability","install_plugin_zip","install_theme_zip","inspect_plugin_zip","inspect_theme_zip"}
 require(not forbidden.intersection(c["operation"]["types"]["read"] + c["operation"]["types"]["write"]), "Forbidden execution operation")
 require(c["capabilities"]["mcpToolCount"] == 46, "Unexpected tool scope; review new operations explicitly")
+adapter_contract = json.loads((root / "contracts/plugin-adapters-development-v1.json").read_text())
+require(adapter_contract["production_enabled"] is False, "Unreviewed plugin adapter release")
+require("process.env.WORDRAVA_PLUGIN_ADAPTERS_DEV === 'true' && process.env.NODE_ENV === 'development'" in (root / "src/server.ts").read_text(), "Missing staging adapter gate")
 validate(root, inventory_only=True)
 print("Limited cloud 1.4.4 scope validated; Universal disabled; no full-compatibility or marketplace approval claimed.")

@@ -64,7 +64,12 @@ assert auth["client"] == {"mode": "provided", "clientId": "wordrava-chatgpt", "t
 assert auth["baseScopes"] == ["sites:read", "content:read"]
 assert auth["resource"] == cfg["url"] and auth["authorizationServerBase"] == "https://wordrava.shayanostovar.com"
 assert not cfg.get("headers") and "clientSecret" not in json.dumps(mcp)
-assert len(names - {'wordrava_deep_discover','wordrava_capability_catalog','wordrava_capability_details','wordrava_list_resources'}) == 46
+adapter_contract = json.loads((repo / "contracts/plugin-adapters-development-v1.json").read_text())
+adapter_names = {op["tool"] for op in adapter_contract["operations"]}
+assert adapter_contract["production_enabled"] is False
+assert len(names - {'wordrava_deep_discover','wordrava_capability_catalog','wordrava_capability_details','wordrava_list_resources'} - adapter_names) == 46
+assert not adapter_names.intersection(contract["capabilities"]["readOnlyMcpTools"] + contract["capabilities"]["writeMcpTools"])
+assert "process.env.WORDRAVA_PLUGIN_ADAPTERS_DEV === 'true' && process.env.NODE_ENV === 'development'" in source
 assert "WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED === 'true'" in source
 for removed in ["wordrava_execute_read", "wordrava_execute_write", "wordrava_connect_wordpress",
                 "wordrava_read_rest_route", "wordrava_run_read_ability", "wordrava_stage_package", "wordrava_inspect_plugin_zip", "wordrava_inspect_theme_zip", "wordrava_install_plugin_zip", "wordrava_install_theme_zip"]:

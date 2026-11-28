@@ -80,6 +80,15 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
     }
     if (req.url === `/api/v1/sites/${siteId}/jobs/${jobId}` && requests.findLast(r=>r.method==='POST' && r.path===`/api/v1/sites/${siteId}/jobs`)?.body?.kind==='theme_css_update')
       return reply({job_id:jobId,kind:'theme_css_update',status:'running',result:JSON.stringify({approval_required:true,expires_at_utc:'2026-11-28T10:00:00Z'}),execution_mode:'outbound_polling',pending_seconds:null,next_action:'Review exact operation in WordRava > Settings.'});
+    if (req.url === `/api/v1/sites/${siteId}/jobs/${jobId}` && requests.findLast(r=>r.method==='POST' && r.path===`/api/v1/sites/${siteId}/jobs`)?.body?.kind==='woo_product_update')
+      return reply({job_id:jobId,kind:'woo_product_update',status:'running',result:JSON.stringify({approval_required:true,expires_at_utc:'2026-11-28T10:00:00Z'}),execution_mode:'outbound_polling',pending_seconds:null,next_action:'Review exact operation in WordRava > Settings.'});
+    if (req.url === `/api/v1/sites/${siteId}/jobs/${jobId}`) {
+      const kind = requests.findLast(r=>r.method==='POST' && r.path===`/api/v1/sites/${siteId}/jobs`)?.body?.kind;
+      if (kind==='woo_catalog_list' || kind==='woo_product_read') {
+        const product={id:7,name:'Fixture',regular_price:'12.50',revision:digest};
+        return reply({job_id:jobId,kind,status:'success',result:JSON.stringify(kind==='woo_catalog_list'?{ok:true,items:[product]}:{ok:true,product}),execution_mode:'outbound_polling',pending_seconds:null,next_action:null});
+      }
+    }
     if (req.url === `/api/v1/sites/${siteId}/jobs/${jobId}`) return reply({ job_id: jobId,
       kind: 'seo_read', status: 'succeeded', result: JSON.stringify({ provider: 'yoast', seo_revision: digest }),
       execution_mode: 'outbound_polling', pending_seconds: null, next_action: null,
@@ -306,6 +315,39 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
     request=requests.findLast(r=>r.method==='POST');
     assert.equal(request.body.kind,'capability_resource_list');
     assert.deepEqual(JSON.parse(request.body.content),{capability_id:digest,capability_revision:digest,page:1,per_page:20});
+  });
+  await t.test('WooCommerce named staging adapter: gated tools, typed queue and approval', async () => {
+    const names=['wordrava_woo_list_products','wordrava_woo_get_product','wordrava_woo_update_product'];
+    const enabled=process.env.WORDRAVA_PLUGIN_ADAPTERS_DEV==='true' && process.env.NODE_ENV==='development';
+    for (const name of names) assert.equal(!!byName[name],enabled,name);
+    if (!enabled) return;
+    const listed=await call(names[0],{site_id:siteId,page:2,per_page:10},read);
+    assert.equal(listed.structuredContent.status,'success');
+    assert.equal(JSON.parse(listed.structuredContent.result).items[0].id,7);
+    let req=requests.findLast(r=>r.method==='POST');
+    assert.equal(req.body.kind,'woo_catalog_list');
+    assert.deepEqual(JSON.parse(req.body.content),{page:2,per_page:10});
+    const exact=await call(names[1],{site_id:siteId,item_id:7},read);
+    assert.equal(JSON.parse(exact.structuredContent.result).product.revision,digest);
+    req=requests.findLast(r=>r.method==='POST');
+    assert.deepEqual(req.body,{kind:'woo_product_read',contentType:'post',itemId:7});
+    const patch={site_id:siteId,item_id:7,expected_revision:digest,name:'Updated product',regular_price:'15.25',request_id:requestId,user_confirmed:true};
+    const before=postCount();
+    assert.equal(errorOf(await call(names[2],patch,read)).code,'insufficient_scope');
+    assert.equal(errorOf(await call(names[1],{site_id:siteId,item_id:7},sites)).code,'insufficient_scope');
+    for (const invalid of [{regular_price:'-1'},{regular_price:'1e2'},{regular_price:'15.1234567'},{name:'<script>x</script>'},{expected_revision:'stale'},{user_confirmed:false}])
+      assert.equal((await call(names[2],{...patch,...invalid})).isError,true);
+    assert.equal((await call(names[2],{...patch,name:undefined,regular_price:undefined})).isError,true);
+    assert.equal((await call(names[0],{site_id:siteId,per_page:26},read)).isError,true);
+    assert.equal(postCount(),before);
+    const updated=await call(names[2],patch);
+    assert.equal(updated.structuredContent.status,'running');
+    assert.equal(updated.structuredContent.requires_local_human_approval,true);
+    req=requests.findLast(r=>r.method==='POST');
+    assert.equal(req.idempotency,requestId);
+    assert.equal(req.body.kind,'woo_product_update');
+    assert.equal(req.body.confirmChanges,true);
+    assert.deepEqual(JSON.parse(req.body.content),{expected_revision:digest,name:'Updated product',regular_price:'15.25'});
   });
   await t.test('retired package tools never submit requests', async () => {
     const before = postCount();

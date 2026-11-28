@@ -270,6 +270,7 @@ function createServer(token: string, session: Session): McpServer {
         if (error.code === 'operations_disabled') return bad('Remote operations are disabled by the Center administrator.', error.code, { http_status: 503 });
         if (error.code === 'writes_disabled') return bad('Remote write operations are disabled by the Center administrator.', error.code, { http_status: 503 });
         if (error.code === 'universal_discovery_disabled') return bad('Universal capability discovery is not enabled on this Center.', error.code, { http_status: 503 });
+        if (error.code === 'plugin_adapters_development_disabled') return bad('This experimental plugin adapter is not enabled for the isolated staging site.', error.code, { http_status: 503 });
         return bad('WordRava Center is temporarily unavailable or a feature is disabled. Check capabilities before retrying.', error.code, { http_status: 503 });
       }
       if (error instanceof CenterHttpError && error.code === 'metadata_discovery_connector_upgrade_required') return bad('Update Connector to 1.4.4 for paginated runtime metadata; the basic discovery tool remains available without a category.', error.code, {http_status:409});
@@ -293,6 +294,39 @@ function createServer(token: string, session: Session): McpServer {
       return bad('WordRava rejected the request; verify your site ownership, scope and operation arguments.', error instanceof CenterHttpError ? error.code : 'center_unavailable');
     }
   };
+  // Experimental, explicitly named adapters: invisible in the production tool catalog.
+  if (process.env.WORDRAVA_PLUGIN_ADAPTERS_DEV === 'true' && process.env.NODE_ENV === 'development') {
+    const productId = z.number().int().positive().max(2147483647);
+    const revision = z.string().regex(/^[a-f0-9]{64}$(?![\s\S])/);
+    const productName = z.string().min(1).max(200).refine(v => v.trim() === v && Buffer.byteLength(v,'utf8') <= 200 && !/[<>\x00-\x1f\x7f]/.test(v), 'Use a plain product name of at most 200 UTF-8 bytes');
+    const regularPrice = z.string().regex(/^(?:0|[1-9][0-9]{0,8})(?:\.[0-9]{1,6})?$(?![\s\S])/);
+    server.registerTool('wordrava_woo_list_products', {
+      outputSchema: queuedJobSchema,
+      description: 'Development staging only: list published WooCommerce simple products with prices and revisions using bounded pagination. Does not read customers, orders, private or variable products.',
+      inputSchema: {site_id:z.string().uuid(),page:z.number().int().min(1).max(10000).default(1),per_page:z.number().int().min(1).max(25).default(20)},
+      annotations: queuedReadAnnotations,
+      _meta: {...oauthContentRead,'openai/toolInvocation/invoking':'WordRava: Read products…','openai/toolInvocation/invoked':'WordRava: Product request submitted'},
+    }, async ({site_id,page,per_page}) => submit(site_id,{kind:'woo_catalog_list',contentType:'post',content:JSON.stringify({page,per_page})},false));
+    server.registerTool('wordrava_woo_get_product', {
+      outputSchema: queuedJobSchema,
+      description: 'Development staging only: read one published simple WooCommerce product and its exact adapter revision before proposing an edit.',
+      inputSchema: {site_id:z.string().uuid(),item_id:productId},
+      annotations: queuedReadAnnotations,
+      _meta: {...oauthContentRead,'openai/toolInvocation/invoking':'WordRava: Read product…','openai/toolInvocation/invoked':'WordRava: Product request submitted'},
+    }, async ({site_id,item_id}) => submit(site_id,{kind:'woo_product_read',contentType:'post',itemId:item_id},false));
+    server.registerTool('wordrava_woo_update_product', {
+      outputSchema: queuedJobSchema,
+      description: 'Development staging only: change the name or non-sale regular price of one published simple WooCommerce product through its native API. Read first, obtain approval for the exact change, and use the exact revision. Requires site-local human approval and native permission. Poll the same job and verify its returned read-back. Price changes affect storefront purchases. Does not change sale prices, stock, orders or customers.',
+      inputSchema: {site_id:z.string().uuid(),item_id:productId,expected_revision:revision,name:productName.optional(),regular_price:regularPrice.optional(),
+        user_confirmed:z.literal(true).describe('True only after explicit approval of the exact product change.'),
+        request_id:z.string().uuid().describe('Stable UUID: never change it when retrying the same approved operation.')},
+      annotations:updateAnnotations,
+      _meta:{...oauthContentWrite,'openai/toolInvocation/invoking':'WordRava: Request product update…','openai/toolInvocation/invoked':'WordRava: Product request submitted'},
+    },async ({site_id,item_id,expected_revision,name,regular_price,user_confirmed,request_id})=>{
+      if(name===undefined && regular_price===undefined) return bad('Choose at least one supported product field.','invalid_woocommerce_patch');
+      return submit(site_id,{kind:'woo_product_update',contentType:'post',itemId:item_id,content:JSON.stringify({expected_revision,name,regular_price}),confirmChanges:user_confirmed},true,request_id);
+    });
+  }
   const metadataCategory=z.enum(['plugins','themes','post_types','taxonomies','rest','abilities','settings','metadata','blocks','shortcodes','widgets','menu_locations','sidebars','theme_features']);
   server.registerTool('wordrava_discover_site', {
     outputSchema: queuedJobSchema,
