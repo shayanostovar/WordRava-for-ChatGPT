@@ -1,0 +1,9 @@
+# WordRava 1.4.2 onboarding
+
+Use an existing authorized WordRava connection first. Never create duplicates. WordPress pairing is not proof of ChatGPT authorization. Confirm the intended site with the real list-sites tool.
+
+**Web:** Open ChatGPT Plugins, select + and Add custom MCP server, enter WordRava and https://wordrava.shayanostovar.com/mcp, choose OAuth, and provide registered public client ID wordrava-chatgpt if the UI requests static credentials; no client secret. Existing exact redirect allowlist, PKCE and authorization scope checks stay in force. Complete the risk review and authorization. Business/Enterprise/Edu creation is permission dependent; Pro custom MCP may be read/fetch only. Do not claim all personal accounts support this. No dynamic registration is introduced.
+
+**Desktop:** Imported remote MCP ZIPs may be labeled Desktop only. Plugin Creator cannot remove that restriction. Use the private-beta archive in the personal onboarding distribution, not an approved marketplace release. If Plugin Creator is missing, direct the user to its actual directory install card if available, ask whether installation is complete (yes/no), and resume in the same conversation. If the real tool is not exposed yet, ask the user to select @plugin-creator and resend the setup message. Do not claim creation until its actual result. Installation and OAuth require user review. If the user wants web access, do not send them to desktop as though this were a web fix.
+
+Read-only verification must succeed before declaring a connection ready. Use Persian for a Persian user and English for an English user. Reference: https://help.openai.com/en/articles/12584461-connecting-custom-mcp-servers-in-chatgpt and https://help.openai.com/en/articles/20001504-importing-and-syncing-plugin-marketplaces-from-github.

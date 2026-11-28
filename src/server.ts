@@ -29,7 +29,7 @@ const protectedResourceMetadata = publicOrigin + '/.well-known/oauth-protected-r
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '256kb' }));
-app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.4.0' }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.4.2' }));
 
 // OAuth 2.1 / RFC 9728 protected-resource metadata. Nginx routes this path to MCP.
 const metadata = {
@@ -132,7 +132,7 @@ function scopeError(scope: string) {
 }
 
 function createServer(token: string, session: Session): McpServer {
-  const server = new McpServer({ name: 'WordRava', version: '1.4.0' });
+  const server = new McpServer({ name: 'WordRava', version: '1.4.2' });
   server.registerTool('wordrava_list_sites', {
     outputSchema: sitesSchema,
     description: 'List only the WordPress sites in the signed-in WordRava account, including whether each site is blocked. Does not query site content.',
@@ -159,17 +159,27 @@ function createServer(token: string, session: Session): McpServer {
   });
   server.registerTool('wordrava_connection_help', {
     title: 'Connect a WordPress site',
-    description: 'Explain the WordPress browser pairing workflow. Never requests pairing codes, passwords or authentication secrets in chat. Marketplace installation already contains the MCP server and OAuth settings; users do not enter a server URL, client ID or scopes.',
-    inputSchema: {}, outputSchema: connectionHelpSchema, annotations: readAnnotations, _meta: { ...oauthSites, 'openai/toolInvocation/invoking': "WordRava: Connection help…", 'openai/toolInvocation/invoked': "WordRava: Request finished" },
-  }, async () => good({
-    download_url: publicOrigin + '/download', documentation_url: publicOrigin + '/docs',
-    steps: [
-      'Install WordRava Connector on the WordPress site and open WordRava → Quick Connect as its administrator.',
-      'Use Continue in browser. Keep the generated one-time code in the browser flow; never paste it into chat.',
-      'Review the site in WordRava Center, then explicitly approve the returned confirmation in WordPress administration.',
-      'Return here and use wordrava_list_sites to verify the connection. Remote writes remain disabled until the matching WordPress opt-in and your explicit approval.',
-    ],
-  }, connectionHelpSchema));
+    description: 'Guide WordPress pairing and ChatGPT setup in the requested language. Distinguish WordPress pairing from verified ChatGPT authorization. Ask one question at a time; when installation is required, ask the user to confirm completion and resume in the same chat. A ZIP containing MCP configuration may be Desktop only. Web custom MCP availability depends on the account and workspace. Never request pairing codes, passwords or authentication secrets in chat.',
+    inputSchema: { language: z.enum(['en','fa']).optional().describe('Language of the user or WordPress interface; default en') }, outputSchema: connectionHelpSchema, annotations: readAnnotations, _meta: { ...oauthSites, 'openai/toolInvocation/invoking': "WordRava: Connection help…", 'openai/toolInvocation/invoked': "WordRava: Request finished" },
+  }, async ({language}) => {
+    const fa=language==='fa';
+    return good({
+      download_url: publicOrigin + (fa?'/fa/download':'/download'), documentation_url: publicOrigin + (fa?'/fa/docs#connection':'/docs#connection'),
+      steps: fa?[
+        'در پیشخوان وردپرس وارد WordRava شوید. دسترسی را انتخاب و اتصال را در مرورگر و سپس در وردپرس تأیید کنید. رمز و کد یک‌بارمصرف را در گفتگو نفرستید.',
+        'اتصال وردپرس به سنتر به معنی مجازشدن ChatGPT نیست. اگر WordRava همین حالا در گفتگو در دسترس است، ابزار wordrava_list_sites را اجرا کنید. تنها در صورت مشاهده سایت موردنظر، موفقیت را اعلام کنید.',
+        'اگر کاربر روی وب است و اتصال در دسترس نیست، ابتدا امکان افزودن MCP سفارشی را بررسی کنید: Plugins → + → Add custom MCP server، نام WordRava، آدرس https://wordrava.shayanostovar.com/mcp، OAuth و در صورت درخواست شناسه عمومی wordrava-chatgpt. مجوزهای Workspace و تأیید خطر لازم‌اند. اگر مجاز نیست، محدودیت را واضح بگویید؛ ZIP را راه‌حل تضمینی وب معرفی نکنید.',
+        'برای دسکتاپ، در صورت نیاز Plugin Creator را از دایرکتوری Plugins نصب کنید. بپرسید «Plugin Creator را نصب کردید؟ (بله/خیر)». بعد از بله، ابزار واقعی ساخت را اجرا کنید؛ اگر هنوز در دسترس نیست از کاربر بخواهید @plugin-creator را انتخاب و درخواست قبلی را دوباره ارسال کند. به راهنمای کلی بسنده نکنید.',
+        'پس از نصب یا ساخت، از همان مرورگر و حساب WordRava، OAuth را مجاز کنید. در همان گفتگو سایت‌ها را بررسی کنید و فقط با نتیجه واقعی اعلام موفقیت کنید. دسترسی نوشتن همچنان به مجوز وردپرس و تأییدهای لازم وابسته است.'
+      ]:[
+        'Open WordRava in your WordPress dashboard, choose access, confirm in the browser, then approve in WordPress. Never paste passwords or one-time pairing codes into chat.',
+        'WordPress pairing is not ChatGPT authorization. If WordRava is available in this chat, call wordrava_list_sites and confirm success only if the intended site is returned.',
+        'For web, check whether the account/workspace permits custom MCP: Plugins → + → Add custom MCP server, name WordRava, endpoint https://wordrava.shayanostovar.com/mcp, OAuth, and the public client ID wordrava-chatgpt if requested. Workspace permissions and risk review apply. If unavailable, explain the restriction; do not describe an imported ZIP as guaranteed web access.',
+        'For desktop, install Plugin Creator from the Plugins directory if needed. Ask: “Have you installed Plugin Creator? Yes or no.” After Yes, invoke its real creation tool. If it is still unavailable, ask the user to select @plugin-creator and resend the previous setup request. Do not stop at generic instructions.',
+        'After installation or creation, authorize OAuth in the same browser and WordRava account. Verify the connected sites in this chat before declaring success. Writes still require WordPress permission and approvals.'
+      ],
+    }, connectionHelpSchema);
+  });
   server.registerTool('wordrava_pairing_status', {
     outputSchema: pairingStatusSchema,
     description: 'Check whether a WordPress administrator confirmed a pending one-time WordRava pairing. Does not reveal secrets.',
@@ -208,7 +218,7 @@ function createServer(token: string, session: Session): McpServer {
   }, async () => {
     try {
       const capabilities = await centerGet<Record<string, unknown>>('/api/v1/capabilities', token);
-      return good({ ...capabilities, universal_discovery_enabled: capabilities.universal_discovery_enabled === true && process.env.WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED === 'true' && process.env.NODE_ENV !== 'production', mcp_version: '1.4.0', mcp_protocol_version: '1.0' }, capabilitySchema);
+      return good({ ...capabilities, universal_discovery_enabled: capabilities.universal_discovery_enabled === true && process.env.WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED === 'true' && process.env.NODE_ENV !== 'production', mcp_version: '1.4.2', mcp_protocol_version: '1.0' }, capabilitySchema);
     }
     catch { return bad('Unable to retrieve current WordRava capabilities.'); }
   });

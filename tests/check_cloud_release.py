@@ -15,7 +15,7 @@ s = c["cloudRelease"]
 def require(value, message):
     if not value:
         raise SystemExit(message)
-require(s["scope"] == "limited-cloud-runtime" and s["version"] == "1.4.0", "Unexpected cloud release scope")
+require(s["scope"] == "limited-cloud-runtime" and s["version"] == "1.4.2", "Unexpected cloud release scope")
 require(s.get("universalProductionEnabled") is False and s.get("universalSchemaDeferred") is True, "Experimental universal must stay disabled")
 u = json.loads((root / "contracts/universal-capabilities-v1.json").read_text())
 require(u["status"] == "development_not_production_approved" and u["execution"]["write_enabled"] is False, "Unverified universal release")
@@ -32,4 +32,4 @@ forbidden = {"rest_read","run_read_ability","install_plugin_zip","install_theme_
 require(not forbidden.intersection(c["operation"]["types"]["read"] + c["operation"]["types"]["write"]), "Forbidden execution operation")
 require(c["capabilities"]["mcpToolCount"] == 46, "Unexpected tool scope; review new operations explicitly")
 validate(root, inventory_only=True)
-print("Limited cloud 1.4.0 scope validated; Universal disabled; no full-compatibility or marketplace approval claimed.")
+print("Limited cloud 1.4.2 scope validated; Universal disabled; no full-compatibility or marketplace approval claimed.")
