@@ -9,6 +9,9 @@ from pathlib import Path
 from check_compatibility_gate import validate
 
 root = Path(__file__).resolve().parents[1]
+# Never publish a partial universal runtime as the legacy 1.3.1 release.
+if (root / "contracts/universal-capabilities-v1.json").exists():
+    raise SystemExit("Universal 1.4.0 development is not approved for production publishing.")
 c = json.loads((root / "contracts/wordrava-protocol-v1.json").read_text())
 s = c["cloudRelease"]
 def require(value, message):

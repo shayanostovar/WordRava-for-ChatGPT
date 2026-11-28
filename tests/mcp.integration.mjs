@@ -63,6 +63,11 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
         file_name: 'review.zip', package_type: body.package_type,
         expires_at_utc: '2026-11-26T12:30:00Z', expires_in: 1800 });
     }
+    if (req.url.startsWith('/api/v1/sites/' + siteId + '/capability-catalog?')) {
+      const q = new URL(req.url,'https://fixture.invalid').searchParams;
+      return reply({schema_version:'1.0',site_id:siteId,category:q.get('category'),complete:true,fresh:true,
+        items:[{id:digest,revision:digest,identifier:'unknown_resource',status:'supported',execution_available:true}],pagination:{page:1,per_page:20,total:1,next_page:null}});
+    }
     if (req.url === `/api/v1/sites/${siteId}/jobs` && req.method === 'POST') {
       if (body.kind === 'seo_update' && JSON.parse(body.content).fields.title === 'CONFLICT') {
         return reply({ error: 'seo_revision_conflict' }, 409);
@@ -251,6 +256,37 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
     const raw = await call('wordrava_update_seo', { ...args, fields: { title: 'RAW_SECRET' } });
     assert.equal(errorOf(raw).code, 'center_http_500');
     assert.ok(!JSON.stringify(raw).includes('must-not-leak'));
+  });
+  await t.test('universal development tools default off and enforce scoped, structured calls', async () => {
+    const names=['wordrava_deep_discover','wordrava_capability_catalog','wordrava_capability_details','wordrava_list_resources'];
+    const enabled=process.env.WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED==='true';
+    for (const name of names) assert.equal(!!byName[name],enabled,name);
+    if (!enabled) return;
+    const before=postCount();
+    assert.equal((await call('wordrava_deep_discover',{site_id:siteId,category:'post_types',page:2},read)).isError,true);
+    assert.equal((await call('wordrava_list_resources',{site_id:siteId,capability_id:'wp-json/arbitrary',capability_revision:digest},read)).isError,true);
+    assert.equal((await call('wordrava_deep_discover',{site_id:siteId,category:'post_types'},sites)).isError,true);
+    assert.equal(postCount(),before);
+    const scan=await call('wordrava_deep_discover',{site_id:siteId,category:'post_types',page:1,per_page:10},read);
+    assert.equal(scan.structuredContent.job_id,jobId);
+    let request=requests.findLast(r=>r.method==='POST');
+    assert.equal(request.body.kind,'capability_inventory');
+    assert.deepEqual(JSON.parse(request.body.content),{category:'post_types',page:1,per_page:10});
+    for (const category of ['menu_locations','sidebars','theme_features']) {
+      const discovery=await call('wordrava_deep_discover',{site_id:siteId,category},read);
+      assert.equal(discovery.structuredContent.job_id,jobId);
+      assert.equal(JSON.parse(requests.findLast(r=>r.method==='POST').body.content).category,category);
+    }
+    const result=await call('wordrava_capability_catalog',{site_id:siteId,category:'post_types',search:'unknown_resource'},read);
+    assert.equal(result.structuredContent.items[0].identifier,'unknown_resource');
+    const catalogCount=requests.filter(r=>r.path.includes('/capability-catalog?')).length;
+    assert.equal((await call('wordrava_capability_details',{site_id:siteId,category:'post_types',capability_id:digest},sites)).isError,true);
+    assert.equal(requests.filter(r=>r.path.includes('/capability-catalog?')).length,catalogCount);
+    const listed=await call('wordrava_list_resources',{site_id:siteId,capability_id:digest,capability_revision:digest},read);
+    assert.equal(listed.structuredContent.job_id,jobId);
+    request=requests.findLast(r=>r.method==='POST');
+    assert.equal(request.body.kind,'capability_resource_list');
+    assert.deepEqual(JSON.parse(request.body.content),{capability_id:digest,capability_revision:digest,page:1,per_page:20});
   });
   await t.test('retired package tools never submit requests', async () => {
     const before = postCount();
