@@ -8,7 +8,7 @@ RUN npm run build && ./node_modules/.bin/tsc --noEmit false --outDir dist
 RUN npm prune --omit=dev
 
 FROM node:22-alpine
-ENV NODE_ENV=production PORT=3100
+ENV NODE_ENV=production PORT=3100 WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED=false
 WORKDIR /app
 COPY --from=build /app/node_modules/ ./node_modules/
 COPY --from=build /app/dist/ ./dist/

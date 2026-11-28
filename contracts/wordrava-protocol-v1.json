@@ -3,7 +3,7 @@
   "protocol": "wordrava",
   "protocolVersion": "1.0",
   "minimumConnectorProtocol": "1.0",
-  "centerVersion": "1.3.1",
+  "centerVersion": "1.4.0",
   "pairing": {
     "issuer": "center",
     "claimant": "wordpress-connector",
@@ -291,9 +291,9 @@
     "chatgptSetupPrompt": "Static public MCP URL, OAuth setup and discovery instructions. Never contains a pairing secret. Plugin Creator availability depends on the account."
   },
   "releaseComponents": {
-    "center": "1.3.1",
+    "center": "1.4.0",
     "wordpressConnector": "1.3.1",
-    "chatgptMcp": "1.3.1",
+    "chatgptMcp": "1.4.0",
     "protocol": "1.0",
     "writes": "feature-gated; site owner WordPress opt-in, native capabilities and explicit user approval"
   },
@@ -312,7 +312,7 @@
     "directUploadMaxBytes": 2000000
   },
   "cloudRelease": {
-    "version": "1.3.1",
+    "version": "1.4.0",
     "scope": "limited-cloud-runtime",
     "fullPluginCoverage": false,
     "marketplaceApproval": false,
@@ -322,6 +322,9 @@
     "minimumExtendedConnector": "1.2.3",
     "minimumSensitiveConnector": "1.3.0",
     "security": "Native capabilities, OAuth scopes, local human approval, exact request and revision checks remain required; no newly enabled generic execution or package installation.",
-    "publication": "Cloud runtime deployment is separate from directory or full compatibility acceptance. Only named, bounded operations are offered; incomplete adapters are not advertised as fully supported."
+    "publication": "Limited cloud runtime only. The experimental Universal feature is disabled on production; existing WordPress and marketplace package versions remain independent. No full coverage or directory approval is claimed.",
+    "universalProductionEnabled": false,
+    "universalSchemaDeferred": true,
+    "marketplaceDraftVersion": "1.3.1"
   }
 }

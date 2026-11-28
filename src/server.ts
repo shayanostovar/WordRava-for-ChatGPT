@@ -29,7 +29,7 @@ const protectedResourceMetadata = publicOrigin + '/.well-known/oauth-protected-r
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '256kb' }));
-app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.3.1' }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.4.0' }));
 
 // OAuth 2.1 / RFC 9728 protected-resource metadata. Nginx routes this path to MCP.
 const metadata = {
@@ -132,7 +132,7 @@ function scopeError(scope: string) {
 }
 
 function createServer(token: string, session: Session): McpServer {
-  const server = new McpServer({ name: 'WordRava', version: '1.3.1' });
+  const server = new McpServer({ name: 'WordRava', version: '1.4.0' });
   server.registerTool('wordrava_list_sites', {
     outputSchema: sitesSchema,
     description: 'List only the WordPress sites in the signed-in WordRava account, including whether each site is blocked. Does not query site content.',
@@ -208,7 +208,7 @@ function createServer(token: string, session: Session): McpServer {
   }, async () => {
     try {
       const capabilities = await centerGet<Record<string, unknown>>('/api/v1/capabilities', token);
-      return good({ ...capabilities, mcp_version: '1.3.1', mcp_protocol_version: '1.0' }, capabilitySchema);
+      return good({ ...capabilities, universal_discovery_enabled: capabilities.universal_discovery_enabled === true && process.env.WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED === 'true' && process.env.NODE_ENV !== 'production', mcp_version: '1.4.0', mcp_protocol_version: '1.0' }, capabilitySchema);
     }
     catch { return bad('Unable to retrieve current WordRava capabilities.'); }
   });
@@ -261,7 +261,7 @@ function createServer(token: string, session: Session): McpServer {
   // Stable universal tools are development-only until the coordinated release
   // is independently accepted. No raw route, ability, option or source code
   // can be submitted. Connector and Center both enforce the actual boundary.
-  if (process.env.WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED === 'true') {
+  if (process.env.WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED === 'true' && process.env.NODE_ENV !== 'production') {
     const category = z.enum(['plugins','themes','post_types','taxonomies','rest','abilities','settings','metadata','blocks','shortcodes','widgets','menu_locations','sidebars','theme_features']);
     const hash = z.string().regex(/^[a-f0-9]{64}$/);
     const pagination = { page: z.number().int().min(1).max(10000).default(1),

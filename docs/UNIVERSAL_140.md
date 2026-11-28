@@ -7,3 +7,5 @@ The four stable tools queue category inventory, search the persistent site catal
 Discovery does not authorize arbitrary REST or Ability invocation, source-code execution, option access or writes. The initial adapter is intentionally read-only. Source and manifest release metadata remain at the last runtime version until a verified coordinated release; no package is approved or built for distribution by this commit.
 
 Development follow-up: shared inventory contract includes menu_locations, sidebars and theme_features. These are discovery-only registry categories; no execution is authorized. Production gate remains intact.
+
+Limited cloud release profile: 1.4.0 runtime retains the previously supported 46-tool boundary. NODE_ENV=production hard-disables experimental tools. The 1.3.1 Marketplace draft is not distributed as an approved 1.4.0 app. Full universal, package and directory release gates remain blocked pending separate acceptance.

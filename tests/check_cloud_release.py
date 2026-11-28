@@ -9,15 +9,20 @@ from pathlib import Path
 from check_compatibility_gate import validate
 
 root = Path(__file__).resolve().parents[1]
-# Never publish a partial universal runtime as the legacy 1.3.1 release.
-if (root / "contracts/universal-capabilities-v1.json").exists():
-    raise SystemExit("Universal 1.4.0 development is not approved for production publishing.")
+# Full universal and directory distribution remain separately blocked.
 c = json.loads((root / "contracts/wordrava-protocol-v1.json").read_text())
 s = c["cloudRelease"]
 def require(value, message):
     if not value:
         raise SystemExit(message)
-require(s["scope"] == "limited-cloud-runtime" and s["version"] == "1.3.1", "Unexpected cloud release scope")
+require(s["scope"] == "limited-cloud-runtime" and s["version"] == "1.4.0", "Unexpected cloud release scope")
+require(s.get("universalProductionEnabled") is False and s.get("universalSchemaDeferred") is True, "Experimental universal must stay disabled")
+u = json.loads((root / "contracts/universal-capabilities-v1.json").read_text())
+require(u["status"] == "development_not_production_approved" and u["execution"]["write_enabled"] is False, "Unverified universal release")
+require("NODE_ENV=production PORT=3100 WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED=false" in (root / "Dockerfile").read_text(), "Missing production feature lock")
+require("process.env.WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED === 'true' && process.env.NODE_ENV !== 'production'" in (root / "src/server.ts").read_text(), "Missing runtime feature lock")
+require(s["connectorArchive"] == c["releaseComponents"]["wordpressConnector"] == "1.3.1", "Unverified Connector package")
+require(json.loads((root / "marketplace/plugin.json").read_text())["version"] == s["marketplaceDraftVersion"] == "1.3.1", "Unverified Marketplace draft version")
 require(s["fullPluginCoverage"] is False and s["marketplaceApproval"] is False and s["wordpressDirectoryApproval"] is False, "Unverified release claims")
 require(c["centerVersion"] == s["version"] == c["releaseComponents"]["chatgptMcp"], "Cloud version mismatch")
 require(c["usage"]["freeDailyLimitDefault"] == 120, "Incorrect Free allowance")
@@ -27,4 +32,4 @@ forbidden = {"rest_read","run_read_ability","install_plugin_zip","install_theme_
 require(not forbidden.intersection(c["operation"]["types"]["read"] + c["operation"]["types"]["write"]), "Forbidden execution operation")
 require(c["capabilities"]["mcpToolCount"] == 46, "Unexpected tool scope; review new operations explicitly")
 validate(root, inventory_only=True)
-print("Limited cloud 1.3.1 scope validated; no full-compatibility or marketplace approval claimed.")
+print("Limited cloud 1.4.0 scope validated; Universal disabled; no full-compatibility or marketplace approval claimed.")

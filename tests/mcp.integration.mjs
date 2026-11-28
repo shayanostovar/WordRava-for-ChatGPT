@@ -52,7 +52,7 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
     if (req.url === `/api/v1/usage/${siteId}`) return reply(quota);
     if (req.url === '/api/v1/account/usage') return reply({ ...quota, sites: [quota], site_count: 1,
       owner_id: 'must-not-leak', note: 'Independent site limits.' });
-    if (req.url === '/api/v1/capabilities') return reply({ center_version: '1.3.1', protocol_version: '1.0',
+    if (req.url === '/api/v1/capabilities') return reply({ center_version: '1.4.0', protocol_version: '1.0',
       quota_source: 'site_plan', site_blocking: true, user_blocking: true, remote_write_enabled: true,
       connector_async_operations: true, connector_execution_mode: 'outbound_polling',
       immediate_execution_supported: false, public_oauth_enabled: true, quick_pairing_enabled: true,
@@ -82,7 +82,7 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
       kind: 'seo_read', status: 'succeeded', result: JSON.stringify({ provider: 'yoast', seo_revision: digest }),
       execution_mode: 'outbound_polling', pending_seconds: null, next_action: null,
       created_at: 'internal timestamp', finished_at: 'internal timestamp' });
-    if (req.url === `/api/v1/sites/${siteId}/operations`) return reply({ version: '1.3.1', site_id: siteId,
+    if (req.url === `/api/v1/sites/${siteId}/operations`) return reply({ version: '1.4.0', site_id: siteId,
       read: [{ kind: 'seo_read', scope: 'content:read', requires_confirmation: false }],
       write: [{ kind: 'seo_update', scope: 'content:write', requires_confirmation: true,
         needs_revision: true, wordpress_opt_in: 'allow_seo' }], workflow: 'Read, approve, call named tool, poll.' });
@@ -114,7 +114,7 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
     await delay(50);
   }
   const connect = async token => {
-    const client = new Client({ name: 'wordrava-contract-test', version: '1.3.1' });
+    const client = new Client({ name: 'wordrava-contract-test', version: '1.4.0' });
     await client.connect(new StreamableHTTPClientTransport(new URL(endpoint + '/mcp'), {
       requestInit: { headers: { authorization: `Bearer ${token}` } },
     }));
@@ -124,7 +124,7 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
   const { tools } = await full.listTools();
   const byName = Object.fromEntries(tools.map(tool => [tool.name, tool]));
   mkdirSync('dist', { recursive: true });
-  writeFileSync('dist/tool-catalog-1.3.1.json', JSON.stringify(tools, null, 2) + '\n');
+  writeFileSync('dist/tool-catalog-1.4.0.json', JSON.stringify(tools, null, 2) + '\n');
   const call = (name, args = {}, client = full) => client.callTool({ name, arguments: args });
   const errorOf = result => JSON.parse(result.content[0].text).error;
   const postCount = () => requests.filter(r => r.method === 'POST').length;
@@ -133,7 +133,7 @@ test('MCP protocol, reviewed schemas, scope boundaries and package/SEO contracts
     const response = await fetch(endpoint + '/mcp', { method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} }) });
     assert.equal(response.status, 401); assert.match(response.headers.get('www-authenticate'), /resource_metadata=/);
-    assert.equal((await (await fetch(endpoint + '/health')).json()).version, '1.3.1');
+    assert.equal((await (await fetch(endpoint + '/health')).json()).version, '1.4.0');
     const metadata = await (await fetch(endpoint + '/.well-known/oauth-protected-resource')).json();
     assert.equal(metadata.resource, 'https://wordrava.shayanostovar.com/mcp');
     assert.ok(metadata.resource_policy_uri.endsWith('/privacy'));

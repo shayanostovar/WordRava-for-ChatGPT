@@ -7,11 +7,14 @@ from validate_package import PACKAGE_PATHS, validate_archive, validate_package
 
 root = pathlib.Path(__file__).resolve().parents[1]
 source = root / "marketplace"
-version = json.loads((root / "package.json").read_text())["version"]
+runtime_version = json.loads((root / "package.json").read_text())["version"]
+version = json.loads((root / "contracts/wordrava-protocol-v1.json").read_text())["cloudRelease"]["marketplaceDraftVersion"]
 import argparse, subprocess, sys
 parser = argparse.ArgumentParser()
 parser.add_argument("--review-draft", action="store_true", help="Build internal review-only archive; never publish it as an approved release.")
 args = parser.parse_args()
+if not args.review_draft and version != runtime_version:
+    raise SystemExit("Marketplace package is not approved for this cloud runtime version.")
 gate = [sys.executable, str(root / "tests/check_compatibility_gate.py"), "--version", version]
 gate.append("--inventory-only" if args.review_draft else "--require-ready")
 subprocess.run(gate, check=True)

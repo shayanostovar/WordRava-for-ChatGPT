@@ -14,13 +14,16 @@ from validate_package import PACKAGE_PATHS, validate_package
 plugin = json.loads((repo / "marketplace/plugin.json").read_text())
 mcp = json.loads((repo / "marketplace/mcp.json").read_text())
 package = json.loads((repo / "package.json").read_text())
-validate_package({name: (repo / "marketplace" / name).read_bytes() for name in PACKAGE_PATHS}, package["version"])
+contract = json.loads((repo / "contracts/wordrava-protocol-v1.json").read_text())
+review_version = contract["cloudRelease"]["marketplaceDraftVersion"]
+validate_package({name: (repo / "marketplace" / name).read_bytes() for name in PACKAGE_PATHS}, review_version)
 source = "\n".join((repo / file).read_text() for file in ["src/server.ts", "src/operations.ts"])
 names = set(re.findall(r"registerTool\('([^']+)'", source))
 ext = plugin["extensions"]["com.openai"]
 ui, review = ext["interface"], ext["review"]
 assert plugin["name"] == "wordrava" and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", plugin["name"])
-assert plugin["version"] == package["version"] == "1.3.1"
+assert plugin["version"] == review_version == "1.3.1"
+assert package["version"] == contract["centerVersion"] == "1.4.0"
 assert plugin.get("$schema") == "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json", "Unsupported plugin manifest schema"
 assert mcp.get("$schema") == "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json", "Unsupported MCP manifest schema"
 for field, maximum in {"displayName": 30, "shortDescription": 30, "developerName": 80, "longDescription": 4000}.items():

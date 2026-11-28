@@ -26,13 +26,12 @@ jobs:
         env:
           WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED: 'true'
         run: npm test
-      - name: Assert incomplete universal development cannot be published
+      - name: Assert full distribution remains blocked
         if: hashFiles('contracts/universal-capabilities-v1.json') != ''
         run: |
           set -euo pipefail
-          if python3 tests/check_cloud_release.py; then echo 'Unexpectedly publishable incomplete universal source'; exit 1; fi
+          if python3 tests/check_compatibility_gate.py --require-ready; then echo 'Unexpectedly approved full distribution'; exit 1; fi
       - name: Validate limited cloud scope
-        if: hashFiles('contracts/universal-capabilities-v1.json') == ''
         run: python3 tests/check_cloud_release.py
       - name: Package internal review-draft Plugin ZIP
         if: hashFiles('contracts/universal-capabilities-v1.json') == ''
