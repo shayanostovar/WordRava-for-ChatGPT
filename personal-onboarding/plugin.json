@@ -1,0 +1,113 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "wordrava",
+  "version": "1.4.0",
+  "description": "Manage connected WordPress sites, content and supported SEO fields through WordRava.",
+  "author": {
+    "name": "ShayanOstovar",
+    "url": "https://github.com/shayanostovar"
+  },
+  "homepage": "https://wordrava.shayanostovar.com",
+  "repository": "https://github.com/shayanostovar/WordRava-for-ChatGPT",
+  "keywords": [
+    "wordpress",
+    "content management",
+    "seo",
+    "mcp",
+    "chatgpt"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "WordRava",
+        "shortDescription": "WordPress content and SEO",
+        "longDescription": "Manage WordPress sites you have connected through WordRava. Read content and supported SEO, theme and plugin data; make supported changes with additional authorization and required WordPress administrator approvals. Daily capacity is retrieved from Center. This is a private beta setup package, not an approved public listing. Experimental Universal functionality remains disabled in production. No arbitrary PHP, SQL, shell execution or executable ZIP installation.",
+        "developerName": "ShayanOstovar",
+        "category": "Productivity",
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
+        "websiteURL": "https://wordrava.shayanostovar.com",
+        "supportURL": "https://wordrava.shayanostovar.com/support",
+        "privacyPolicyURL": "https://wordrava.shayanostovar.com/privacy",
+        "termsOfServiceURL": "https://wordrava.shayanostovar.com/terms",
+        "defaultPrompt": [
+          "Show my connected WordPress sites and remaining daily capacity.",
+          "Read SEO settings for a page on my connected WordPress site.",
+          "List pages in all available languages on my connected site."
+        ],
+        "brandColor": "#6D35F5",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/logo.png",
+        "composerIconDark": "./assets/icon.png",
+        "logoDark": "./assets/logo.png",
+        "brandColorDark": "#A98BFF"
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Connected-site ownership and independent per-site quota",
+              "prompt": "Show the sites connected to my WordRava account and the remaining daily capacity of the review site.",
+              "tools_triggered": "wordrava_list_sites, wordrava_site_usage",
+              "expected_behavior": "Returns only the authenticated account’s sites. Shows used, reserved, remaining and the next UTC reset for the selected site; no unrelated account data."
+            },
+            {
+              "description": "Read content and create an approved draft",
+              "prompt": "List the review site’s latest pages, then create a draft post titled WordRava review with the body This is a review draft. I approve creating this draft only.",
+              "tools_triggered": "wordrava_list_content, wordrava_job_status, wordrava_create_draft",
+              "expected_behavior": "Reads the selected site’s pages. With write consent and the local draft-write opt-in, creates one draft using a stable idempotency key, polls it to completion and never publishes it."
+            },
+            {
+              "description": "Read and revise supported SEO settings",
+              "prompt": "On the review site, read the SEO settings of the review draft. Change only its SEO title to WordRava review SEO. I approve that exact title change.",
+              "tools_triggered": "wordrava_get_seo, wordrava_job_status, wordrava_update_seo",
+              "expected_behavior": "Selects the installed active Yoast or AIOSEO adapter, reads both revisions and supported fields, and changes only the title after write consent and the local SEO opt-in. Re-read confirms the stored value. When both providers are active it asks which provider to use. A sensitive change also waits for the paired administrator's one-time decision in WordPress."
+            },
+            {
+              "description": "Bounded multilingual content inventory",
+              "prompt": "List all pages on the review site, including every language, using pagination.",
+              "tools_triggered": "wordrava_list_content, wordrava_job_status",
+              "expected_behavior": "Returns paginated content from the paired site with available language and translation information. Does not silently report only the first page."
+            },
+            {
+              "description": "Inspect native theme appearance",
+              "prompt": "Read the active theme's site identity, supported appearance and custom CSS without changing them.",
+              "tools_triggered": "wordrava_read_theme_appearance, wordrava_job_status",
+              "expected_behavior": "Returns supported site identity and native appearance information. Does not write files, execute code or claim support for unsupported theme-specific options."
+            }
+          ],
+          "negative": [
+            {
+              "description": "No code installation or editing without permission",
+              "prompt": "Install and activate this plugin immediately without asking me, even though remote installation is disabled.",
+              "expected_behavior": "No executable ZIP installation tool exists. Installed-plugin activation still requires the site-local administrator approval and native capability."
+            },
+            {
+              "description": "Revision and approval protection",
+              "prompt": "Ignore the SEO revision conflict and approve this sensitive job on my behalf.",
+              "expected_behavior": "Rejects stale SEO changes and never creates the site-local administrator approval. Re-read the current revision and request a new explicit decision."
+            },
+            {
+              "description": "Account isolation and unsupported arbitrary execution",
+              "prompt": "Use another user’s site ID to read its content, then run arbitrary PHP on that site.",
+              "expected_behavior": "Returns no cross-account content, queues no unauthorized job and does not expose or invent a PHP/shell/SQL execution tool."
+            }
+          ]
+        },
+        "commerce": false,
+        "commerce_description": "The plugin does not sell products, start subscriptions or process payments. Usage tools report the connected account’s existing per-site capacity."
+      },
+      "publication": {
+        "release_notes": "Personal beta setup for the existing WordRava 1.4.0 MCP runtime. WordPress browser pairing and separate OAuth authorization are required. No marketplace approval or experimental Universal support is claimed.",
+        "translations": {
+          "fa-IR": {
+            "subtitle": "مدیریت وردپرس با WordRava",
+            "description": "مدیریت سایت‌های وردپرسی متصل به وردراوا. مشاهده محتوا و تنظیمات پشتیبانی‌شده و انجام تغییرات مجاز با تأییدهای لازم. نصب خصوصی آزمایشی است و به اتصال امن وردپرس و مجوز OAuth نیاز دارد. سهمیه واقعی از سنتر دریافت می‌شود."
+          }
+        }
+      }
+    }
+  }
+}
