@@ -29,7 +29,7 @@ const protectedResourceMetadata = publicOrigin + '/.well-known/oauth-protected-r
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '256kb' }));
-app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.4.2' }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', component: 'mcp', version: '1.4.4' }));
 
 // OAuth 2.1 / RFC 9728 protected-resource metadata. Nginx routes this path to MCP.
 const metadata = {
@@ -73,10 +73,10 @@ async function centerPost<T>(
   if (!response.ok) throw await responseError(response);
   return await response.json() as T;
 }
-async function centerGet<T>(path: string, token: string): Promise<T> {
+async function centerGet<T>(path: string, token: string, timeoutMs = 12000): Promise<T> {
   const response = await fetch(base + path, {
     headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-    signal: AbortSignal.timeout(12000),
+    signal: AbortSignal.timeout(timeoutMs),
     redirect: 'error',
   });
   if (!response.ok) throw await responseError(response);
@@ -132,7 +132,7 @@ function scopeError(scope: string) {
 }
 
 function createServer(token: string, session: Session): McpServer {
-  const server = new McpServer({ name: 'WordRava', version: '1.4.2' });
+  const server = new McpServer({ name: 'WordRava', version: '1.4.4' });
   server.registerTool('wordrava_list_sites', {
     outputSchema: sitesSchema,
     description: 'List only the WordPress sites in the signed-in WordRava account, including whether each site is blocked. Does not query site content.',
@@ -218,23 +218,52 @@ function createServer(token: string, session: Session): McpServer {
   }, async () => {
     try {
       const capabilities = await centerGet<Record<string, unknown>>('/api/v1/capabilities', token);
-      return good({ ...capabilities, universal_discovery_enabled: capabilities.universal_discovery_enabled === true && process.env.WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED === 'true' && process.env.NODE_ENV !== 'production', mcp_version: '1.4.2', mcp_protocol_version: '1.0' }, capabilitySchema);
+      return good({ ...capabilities, universal_discovery_enabled: capabilities.universal_discovery_enabled === true && process.env.WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED === 'true' && process.env.NODE_ENV !== 'production', mcp_version: '1.4.4', mcp_protocol_version: '1.0' }, capabilitySchema);
     }
     catch { return bad('Unable to retrieve current WordRava capabilities.'); }
   });
   // WordPress operations are asynchronous: the connector retrieves jobs from Center
   // over outbound HTTPS and sends results back. ChatGPT polls wordrava_job_status.
   const can = (scope: string) => session.scope.split(' ').includes(scope);
+  // Observe the original job, never enqueue a duplicate to check status.
+  type JobStatus = z.infer<typeof jobStatusSchema>;
+  const terminal = (status:string) => ['success','succeeded','failed','cancelled','expired'].includes(status);
+  const approvalPending = (job:JobStatus) => job.status==='running' && typeof job.result==='string' && job.result.startsWith('{"approval_required":true,');
+  const waitJob = async (site_id:string,job_id:string,maxMs:number,initial?:JobStatus):Promise<JobStatus|undefined> => {
+    const deadline=Date.now()+maxMs;
+    let latest=initial;
+    while(Date.now()<deadline) {
+      if(latest && (terminal(latest.status)||approvalPending(latest))) return latest;
+      if(latest) await new Promise(resolve=>setTimeout(resolve,Math.min(1200,Math.max(1,deadline-Date.now()))));
+      const remaining=deadline-Date.now();
+      if(remaining<300) break;
+      try {
+        latest=jobStatusSchema.parse(await centerGet<unknown>(`/api/v1/sites/${site_id}/jobs/${job_id}`,token,Math.min(3000,remaining)));
+      } catch { break; }
+    }
+    return latest;
+  };
+  const getJob = async (site_id:string,job_id:string) => {
+    const initial=jobStatusSchema.parse(await centerGet<unknown>(`/api/v1/sites/${site_id}/jobs/${job_id}`,token));
+    return (await waitJob(site_id,job_id,8500,initial))??initial;
+  };
   const submit = async (site_id: string, input: Record<string, unknown>, write: boolean, request_id?: string) => {
     if (!can(write ? 'content:write' : 'content:read')) return scopeError(write ? 'content:write' : 'content:read');
     try {
-      const job = await centerPost<unknown>(`/api/v1/sites/${site_id}/jobs`, token, input, request_id);
+      const job = await centerPost<{job_id:string;status:string;poll_after_seconds?:number;reused?:boolean}>(`/api/v1/sites/${site_id}/jobs`, token, input, request_id);
       const sensitive = write && !['create_draft','update_draft'].includes(String(input.kind));
-      return good({ operation: 'queued', ...(job as object),
-        requires_local_human_approval: sensitive,
-        next_step: sensitive
-          ? 'Use wordrava_job_status. This sensitive request needs the paired administrator to review and approve the exact job in WordPress > WordRava > Permissions. ChatGPT cannot approve it. Do not retry or report success before execution is verified.'
-          : 'Use wordrava_job_status with the returned job_id. The WordPress connector runs by WP-Cron or manual sync.' }, queuedJobSchema);
+      const latest = z.string().uuid().safeParse(job.job_id).success ? await waitJob(site_id,job.job_id,6500) : undefined;
+      const status = latest?.status ?? job.status;
+      const next = latest && terminal(status)
+        ? 'Use the returned result now. Success must be verified from the result; do not queue duplicates.'
+        : latest && approvalPending(latest)
+          ? 'The exact sensitive operation awaits the WordPress administrator’s approval. Ask only for that approval; the worker will resume automatically.'
+          : 'Continue with wordrava_job_status using this same job_id; the tool waits briefly and retrieves the result automatically. Do not routinely ask for manual sync, create duplicate jobs, or claim completion while pending. ' + (latest?.next_action??'Check worker availability only if the job remains pending.');
+      return good({ operation: 'queued', ...job, status,
+        result: latest?.result ?? null,
+        automatic_wake_available:latest?.automatic_wake_available,
+        last_worker_poll_utc:latest?.last_worker_poll_utc,
+        requires_local_human_approval: sensitive, next_step: next }, queuedJobSchema);
     } catch (error) {
       if (error instanceof CenterHttpError && error.status === 503) {
         if (error.code === 'builder_preview_disabled') return bad('Native page-builder operations are disabled by the Center administrator.', error.code, { http_status: 503 });
@@ -243,6 +272,7 @@ function createServer(token: string, session: Session): McpServer {
         if (error.code === 'universal_discovery_disabled') return bad('Universal capability discovery is not enabled on this Center.', error.code, { http_status: 503 });
         return bad('WordRava Center is temporarily unavailable or a feature is disabled. Check capabilities before retrying.', error.code, { http_status: 503 });
       }
+      if (error instanceof CenterHttpError && error.code === 'metadata_discovery_connector_upgrade_required') return bad('Update Connector to 1.4.4 for paginated runtime metadata; the basic discovery tool remains available without a category.', error.code, {http_status:409});
       if (error instanceof CenterHttpError && error.code === 'universal_connector_upgrade_required') return bad('Universal discovery requires a compatible Connector 1.4.0 or newer; do not use a production site for this development capability.', error.code, { http_status: 409 });
       if (error instanceof CenterHttpError && error.code === 'capability_not_registered_or_stale') return bad('Complete a fresh discovery scan and re-read the capability catalog before retrying.', error.code, { http_status: 409 });
       if (error instanceof CenterHttpError && error.code === 'human_approval_connector_upgrade_required') return bad('Sensitive changes require Connector 1.3.0 or newer with site-local human approval. Upgrade from an authorized release when available; do not bypass the approval.', error.code, { http_status: 409 });
@@ -263,11 +293,21 @@ function createServer(token: string, session: Session): McpServer {
       return bad('WordRava rejected the request; verify your site ownership, scope and operation arguments.', error instanceof CenterHttpError ? error.code : 'center_unavailable');
     }
   };
+  const metadataCategory=z.enum(['plugins','themes','post_types','taxonomies','rest','abilities','settings','metadata','blocks','shortcodes','widgets','menu_locations','sidebars','theme_features']);
   server.registerTool('wordrava_discover_site', {
     outputSchema: queuedJobSchema,
-    description: 'Discover this WordPress installation before planning any changes: installed plugin slugs and versions, active theme, custom post types, taxonomies, REST namespaces, installed adapters and available permission levels. Discovery does not imply automatic support for unknown plugins.',
-    inputSchema: { site_id: z.string().uuid() }, annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: Discover site…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
-  }, async ({ site_id }) => submit(site_id, { kind: 'discover_capabilities', contentType: 'post' }, false));
+    description: 'Inspect the installed WordPress site before choosing a supported operation. Omit category for a basic overview, or use one of 14 runtime categories for paginated metadata (Connector 1.4.4+). Follow pagination.next_page with the exact returned inventory_revision and per_page. Registered interfaces are untrusted metadata, not permission to invoke arbitrary plugin code or evidence of complete support. Read native builder/appearance/content tools for exact editable state.',
+    inputSchema: { site_id:z.string().uuid(),category:metadataCategory.optional(),page:z.number().int().min(1).max(10000).optional(),per_page:z.number().int().min(1).max(25).optional(),inventory_revision:z.string().regex(/^[a-f0-9]{64}$/).optional() },
+    annotations: queuedReadAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: Discover site…", 'openai/toolInvocation/invoked': "WordRava: Request submitted" },
+  }, async ({site_id,category,page,per_page,inventory_revision}) => {
+    if(!category) {
+      if(page!==undefined||per_page!==undefined||inventory_revision!==undefined) return bad('Select a metadata category before paginating.','invalid_inventory_request');
+      return submit(site_id,{kind:'discover_capabilities',contentType:'post'},false);
+    }
+    const p=page??1;
+    if(p>1&&!inventory_revision) return bad('Continue with the exact inventory revision.','inventory_revision_required');
+    return submit(site_id,{kind:'discover_capabilities',contentType:'post',content:JSON.stringify({category,page:p,per_page:per_page??20,inventory_revision})},false);
+  });
   // Stable universal tools are development-only until the coordinated release
   // is independently accepted. No raw route, ability, option or source code
   // can be submitted. Connector and Center both enforce the actual boundary.
@@ -376,12 +416,12 @@ function createServer(token: string, session: Session): McpServer {
   });
   server.registerTool('wordrava_operation_status', {
     outputSchema: jobStatusSchema,
-    description: 'Poll an asynchronous operation by job ID. A running job with approval_required needs the paired WordPress administrator’s decision in WordRava > Permissions; never approve for the user or assume success. Check the result before retrying any write.',
+    description: 'Automatically wait briefly for an asynchronous operation by job ID. Use the same ID until terminal; never routinely ask for manual sync. A running job with approval_required needs the paired WordPress administrator’s decision in WordRava > Permissions; never approve for the user or assume success. Check the result before retrying any write.',
     inputSchema: { site_id: z.string().uuid(), job_id: z.string().uuid() },
     annotations: readAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: Operation status…", 'openai/toolInvocation/invoked': "WordRava: Checked operation status" },
   }, async ({ site_id, job_id }) => {
     if (!can('content:read')) return scopeError('content:read');
-    try { return good(await centerGet<unknown>(`/api/v1/sites/${site_id}/jobs/${job_id}`, token), jobStatusSchema); }
+    try { return good(await getJob(site_id,job_id), jobStatusSchema); }
     catch { return bad('Job is unavailable or site is not owned by this account.'); }
   });
   server.registerTool('wordrava_site_overview', {
@@ -428,11 +468,11 @@ function createServer(token: string, session: Session): McpServer {
       confirmChanges: user_confirmed }, true, request_id));
   server.registerTool('wordrava_job_status', {
     outputSchema: jobStatusSchema,
-    description: 'Read the status and sanitized result of a queued WordPress operation. A running job with approval_required needs the paired administrator’s decision in WordPress > WordRava > Permissions. Use the job ID returned by any queued tool. Do not retry or claim success until the outcome is verified.',
+    description: 'Wait briefly and read the status and sanitized result of a queued WordPress operation. Continue checking the same job ID; no routine manual sync. A running job with approval_required needs the paired administrator’s decision in WordPress > WordRava > Permissions. Use the job ID returned by any queued tool. Do not retry or claim success until the outcome is verified.',
     inputSchema: { site_id: z.string().uuid(), job_id: z.string().uuid() }, annotations: readAnnotations, _meta: { ...oauthContentRead, 'openai/toolInvocation/invoking': "WordRava: Job status…", 'openai/toolInvocation/invoked': "WordRava: Checked operation status" },
   }, async ({ site_id, job_id }) => {
     if (!can('content:read')) return scopeError('content:read');
-    try { return good(await centerGet<unknown>(`/api/v1/sites/${site_id}/jobs/${job_id}`, token), jobStatusSchema); }
+    try { return good(await getJob(site_id,job_id), jobStatusSchema); }
     catch { return bad('Job is not available to your WordRava account or the site has been blocked.'); }
   });
   registerDedicatedOperations(server, submit, { oauthContentRead, oauthContentWrite });

@@ -3,7 +3,7 @@
   "protocol": "wordrava",
   "protocolVersion": "1.0",
   "minimumConnectorProtocol": "1.0",
-  "centerVersion": "1.4.2",
+  "centerVersion": "1.4.4",
   "pairing": {
     "issuer": "center",
     "claimant": "wordpress-connector",
@@ -291,9 +291,9 @@
     "chatgptSetupPrompt": "Static public MCP URL, OAuth setup and discovery instructions. Never contains a pairing secret. Plugin Creator availability depends on the account."
   },
   "releaseComponents": {
-    "center": "1.4.2",
+    "center": "1.4.4",
     "wordpressConnector": "1.3.1",
-    "chatgptMcp": "1.4.2",
+    "chatgptMcp": "1.4.4",
     "protocol": "1.0",
     "writes": "feature-gated; site owner WordPress opt-in, native capabilities and explicit user approval"
   },
@@ -312,7 +312,7 @@
     "directUploadMaxBytes": 2000000
   },
   "cloudRelease": {
-    "version": "1.4.2",
+    "version": "1.4.4",
     "scope": "limited-cloud-runtime",
     "fullPluginCoverage": false,
     "marketplaceApproval": false,
@@ -322,7 +322,7 @@
     "minimumExtendedConnector": "1.2.3",
     "minimumSensitiveConnector": "1.3.0",
     "security": "Native capabilities, OAuth scopes, local human approval, exact request and revision checks remain required; no newly enabled generic execution or package installation.",
-    "publication": "Coordinated Center and MCP 1.4.2: monthly/annual pricing and bilingual onboarding; native Web MCP subject to account policy; Desktop private-beta import; Universal remains disabled. No full coverage or directory approval claimed.",
+    "publication": "1.4.4 signed automatic worker wake (root public IPv4 HTTPS), bounded automatic job polling and metadata-only runtime inventory. No unrestricted execution, screenshot service or full marketplace approval.",
     "universalProductionEnabled": false,
     "universalSchemaDeferred": true,
     "marketplaceDraftVersion": "1.3.1",
@@ -332,6 +332,31 @@
       "monthly",
       "annual"
     ],
-    "connectorPreview": "1.4.2"
+    "connectorPreview": "1.4.4"
+  },
+  "connectionStatus": {
+    "endpoint": "POST /api/v1/connector-connection",
+    "authentication": "Current site ID and connector secret; blocked site/owner denied",
+    "states": [
+      "authorized",
+      "not_authorized"
+    ],
+    "meaning": "An unrevoked, unexpired OAuth grant with sites:read for the site's current owner and registered WordRava client/resource. Not a claim of a successful site operation or presence of a specific ChatGPT conversation.",
+    "cache": "no-store; no account or credential data in response"
+  },
+  "workerWake": {
+    "minimumConnectorVersion": "1.4.4",
+    "mode": "signed_notification_then_outbound_poll",
+    "productionDefault": true,
+    "endpoint": "POST /?rest_route=/wordrava/v1/wake",
+    "scope": "existing owner-bound queued work only",
+    "network": "public DNS IPv4 root HTTPS port 443 only; pinned DNS; no redirects/proxy/body/content",
+    "cronFallback": true
+  },
+  "metadataDiscovery": {
+    "tool": "wordrava_discover_site",
+    "categoryPagination": true,
+    "minimumConnectorVersion": "1.4.4",
+    "execution": false
   }
 }

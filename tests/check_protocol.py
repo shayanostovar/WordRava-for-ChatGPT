@@ -7,7 +7,7 @@ root = Path(__file__).resolve().parents[1]
 c = json.loads((root / 'contracts/wordrava-protocol-v1.json').read_text())
 version = json.loads((root / 'package.json').read_text())['version']
 assert c['schemaVersion'] == '1.3' and c['protocolVersion'] == '1.0'
-assert c['centerVersion'] == version == '1.4.2'
+assert c['centerVersion'] == version == '1.4.4'
 assert all(c['releaseComponents'][key] == version for key in ['center', 'chatgptMcp'])
 assert c['releaseComponents']['wordpressConnector'] == c['cloudRelease']['connectorArchive'] == '1.3.1'
 assert c['pairing']['claimEndpoint'] == 'POST /api/v1/connectors/claim'
@@ -27,11 +27,11 @@ expected = set(c['capabilities']['readOnlyMcpTools'] + c['capabilities']['writeM
 universal_names = {'wordrava_deep_discover','wordrava_capability_catalog','wordrava_capability_details','wordrava_list_resources'}
 assert names == expected | universal_names and len(expected) == c['capabilities']['mcpToolCount'] == 46
 assert "WORDRAVA_UNIVERSAL_DISCOVERY_ENABLED === 'true'" in source
-assert "version: '1.4.2'" in source
+assert "version: '1.4.4'" in source
 for value in ['securitySchemes', 'content:write', 'mcp/www_authenticate', 'openai/profile', 'Idempotency-Key']:
     assert value in source
 assert 'https://wordrava.shayanostovar.com/mcp' in (root / 'marketplace/mcp.json').read_text()
-print('MCP 1.4.2 / protocol1.0 schema1.3: coordinated versions, browser pairing and 46 named-tool contracts passed.')
+print('MCP 1.4.4 / protocol1.0 schema1.3: coordinated versions, browser pairing and 46 named-tool contracts passed.')
 
 assert ["theme_read","theme_parts_list","theme_part_read","polylang_read"] == c['operation']['types']['read'][-4:]
 assert c['operation']['compatibilityDevelopment']['minimumConnectorVersion'] == '1.2.3'

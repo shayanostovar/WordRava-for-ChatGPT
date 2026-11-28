@@ -7,11 +7,13 @@ export const queuedJobSchema = z.object({
   poll_after_seconds: z.number().nonnegative().optional(), reused: z.boolean().optional(),
   next_step: z.string(),
   requires_local_human_approval: z.boolean().optional(),
+  result: z.string().nullable().optional(), automatic_wake_available:z.boolean().optional(), last_worker_poll_utc:z.string().nullable().optional(),
 });
 export const jobStatusSchema = z.object({
   job_id: z.string().uuid(), kind: z.string(), status: z.string(),
   result: z.string().nullable(), execution_mode: z.literal('outbound_polling'),
   pending_seconds: z.number().nonnegative().nullable(), next_action: z.string().nullable(),
+  automatic_wake_available:z.boolean().optional(), last_worker_poll_utc:z.string().nullable().optional(),
 });
 export const siteSchema = z.object({
   id: z.string().uuid(), url: z.string(), name: z.string(),
@@ -39,6 +41,7 @@ export const capabilitySchema = z.object({
   native_builder_enabled: z.boolean().optional(), connector_async_operations: z.boolean(),
   universal_discovery_enabled: z.boolean(),
   connector_execution_mode: z.string(), immediate_execution_supported: z.boolean(),
+  automatic_worker_wake_enabled:z.boolean().optional(), minimum_wake_connector_version:z.string().optional(), detailed_metadata_discovery:z.boolean().optional(),
   public_oauth_enabled: z.boolean(), quick_pairing_enabled: z.boolean(), passwordless_oauth_enabled: z.boolean(),
   mcp_version: z.string(), mcp_protocol_version: z.string(),
 });
